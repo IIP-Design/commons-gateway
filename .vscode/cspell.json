@@ -1,0 +1,11 @@
+{
+  "dictionaryDefinitions": [
+    {
+      "name": "Dependencies",
+      "path": "../.config/dictionaries/dependencies.txt"
+    }
+  ],
+  "dictionaries": [
+    "Dependencies"
+  ]
+}

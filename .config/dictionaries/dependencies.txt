@@ -1,0 +1,3 @@
+# Dependency names that set off the spell checker
+thanhpk
+randstr

@@ -20,4 +20,9 @@ vendor
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Editor Settings
+.vscode/*
+!.vscode/cspell.json
+
+# User files
 .DS_Store
