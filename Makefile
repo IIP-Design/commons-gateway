@@ -1,6 +1,7 @@
 .PHONY: build clean deploy
 
 DEV_DIR = .gateway-dev
+DEV_DB  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=disable -e DB_PASSWORD=gateway_dev -e DB_USER=gateway_dev
 
 build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds creds/*.go
@@ -15,4 +16,4 @@ dev:
 	cd $(DEV_DIR); docker-compose up -d
 
 local: build
-	sls invoke local -f creds
+	sls invoke local -f creds $(DEV_DB)
