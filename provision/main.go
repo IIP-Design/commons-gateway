@@ -20,18 +20,20 @@ type Response events.APIGatewayProxyResponse
 func Handler(ctx context.Context) (Response, error) {
 	var buf bytes.Buffer
 
-	pass, salt := GeneratePassword()
+	pass, salt := generateOTP()
 
-	hash := GenerateHash(pass, salt)
+	hash := generateHash(pass, salt)
 
 	message := fmt.Sprintln("Your hash is", hash)
 
 	body, err := json.Marshal(map[string]interface{}{
 		"message": message,
 	})
+
 	if err != nil {
 		return Response{StatusCode: 404}, err
 	}
+
 	json.HTMLEscape(&buf, body)
 
 	resp := Response{

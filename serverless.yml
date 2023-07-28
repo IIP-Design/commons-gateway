@@ -41,11 +41,11 @@ package:
     - ./bin/**
 
 functions:
-  creds:
-    handler: bin/creds
+  provision:
+    handler: bin/provision
     events:
       - httpApi:
-          path: /creds
+          path: /provision
           method: get
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
