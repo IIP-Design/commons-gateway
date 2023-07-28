@@ -42,18 +42,36 @@ flowchart TD
 
 ## Todo
 
-- [ ] Web portal for admin to add guest user email
-- [ ] Okta authentication for admin portal
-- [ ] Save guest user - admin relationship to DB
-- [ ] Check if user already has access
-- [x] Generate guest user password and seed
-- [ ] Send guest user email with password
-- [x] Hash the password salt combo
-- [x] Save the hash and the salt to the DB with the user email
-- [ ] Upload portal for guest user
-- [ ] User inputs email and password
-- [ ] Retrieve the salt and the hash from the DB
-- [ ] Hash the password input with the retrieved salt
-- [ ] Compare the hashes and if matched grant access
-- [ ] Upload files from input to S3
-- [ ] Clean up DB removing user entry with one-time password
+- [ ] Web App - Page for admin to add guest user email
+  - [ ] Okta authentication for admin portal
+  - [ ] Input form for guest email
+  - [ ] Provide guest user access (Provision Access Lambda)
+  - [ ] Manage existing invites?
+- [ ] Lambda Function - Provision Access
+  - [ ] Receive input from Web App admin page
+  - [x] Check if provided user email already has access
+  - [ ] If so notify admin (else proceed as below)
+  - [x] Save guest user - admin relationship to DB
+  - [x] Generate guest user password and salt
+  - [x] Hash the password salt combo
+  - [x] Save the hash and the salt to the DB with the user email
+  - [ ] Send guest user email with password
+  - [ ] Notify admin inviter that password has been sent
+- [ ] Web App - Guest upload portal
+  - [ ] User inputs email and password
+  - [ ] Retrieve the hash and salt from the DB (Grant Access Lambda)
+  - [ ] Hash the password input with the retrieved salt
+  - [ ] Compare the hashes and if matched grant access
+  - [ ] Allow authenticated user to upload documents (Upload Files Lambda)
+  - [ ] Record access?
+  - [ ] On completed upload, remove user access (Cleanup Lambda)
+- [ ] Lambda Function - Grant Access
+  - [ ] Receive input from Web App guest page
+  - [ ] Check if provided user email has access
+  - [ ] If not, notify guest they do not have access (else proceed as below)
+  - [ ] Send the guest hash and salt to the Web App guest page
+- [ ] Lambda Function - Upload files
+  - [ ] Upload files from input to S3
+- [ ] Lambda Function - Cleanup
+  - [ ] Receive input from Web App guest page
+  - [ ] Removing user from access list
