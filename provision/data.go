@@ -22,6 +22,8 @@ func logError(err error) {
 	}
 }
 
+// connectToDB opens a pool connection to a Postgres database using
+// credentials derived from the environment.
 func connectToDB() *sql.DB {
 	host := os.Getenv(db_host)
 	name := os.Getenv(db_name)
@@ -36,41 +38,62 @@ func connectToDB() *sql.DB {
 		name,
 	)
 
-	db, err := sql.Open("postgres", connStr)
+	pool, err := sql.Open("postgres", connStr)
 	logError(err)
 
-	return db
+	return pool
+}
+
+// saveInvite opens a database connection and records the association between an admin
+// user inviter and a guest user invitee along with the date of the invitation.
+func saveInvite(adminEmail string, guestEmail string) error {
+	var err error
+
+	pool := connectToDB()
+
+	defer pool.Close()
+
+	currentTime := time.Now()
+
+	insertInvite := `INSERT INTO "invites"("invitee", "inviter", "date_invited") VALUES ($1, $2, $3);`
+	_, err = pool.Exec(insertInvite, adminEmail, guestEmail, currentTime)
+
+	logError(err)
+
+	return err
 }
 
 // saveCredentials opens a database connection and saves the provided user credentials
 // to the `otp` table. Specifically, it stores the the user email, a hash of their password,
 // and the salt with which the password was hashed, as well as the date on which the
 // password was generated.
-func saveCredentials(email string, hash string, salt string) {
+func saveCredentials(email string, hash string, salt string) error {
 	var err error
 
-	db := connectToDB()
+	pool := connectToDB()
 
-	defer db.Close()
+	defer pool.Close()
 
 	currentTime := time.Now()
 
 	insertCreds := `INSERT INTO "otp"("email", "otp_hash", "salt", "date_created" ) VALUES ($1, $2, $3, $4);`
-	_, err = db.Exec(insertCreds, email, hash, salt, currentTime)
+	_, err = pool.Exec(insertCreds, email, hash, salt, currentTime)
 
 	logError(err)
+
+	return err
 }
 
 // checkForExistingAccess opens a database connection and checks whether the provided
 // email (which has a unique value constraint) is present in the `otp` table. An
 // affirmative check indicates that the given user has already received a one-time password.
-func checkForExistingAccess(email string) bool {
+func checkForExistingAccess(email string) (bool, error) {
 	var err error
 	var hasAccess = false
 
-	db := connectToDB()
+	pool := connectToDB()
 
-	rows, err := db.Query(`SELECT "email" FROM otp;`)
+	rows, err := pool.Query(`SELECT "email" FROM otp;`)
 	logError(err)
 
 	for rows.Next() {
@@ -85,5 +108,5 @@ func checkForExistingAccess(email string) bool {
 		}
 	}
 
-	return hasAccess
+	return hasAccess, err
 }

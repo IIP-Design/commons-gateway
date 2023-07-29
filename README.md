@@ -4,12 +4,12 @@ Serverless functions to grant temporary upload ability to Aprimo.
 
 ## Functions
 
-### Provision Access
+### Provision Credentials
 
 ```mermaid
 flowchart TD
   A[Receive guest and admin email addresses]
-  B[Check if guest already has access]
+  B[Check if guest already has credentials]
   A --> B
   C[NO: Generate password, salt, and hash]
   D[YES: Notify admin that access already granted]
@@ -45,11 +45,11 @@ flowchart TD
 - [ ] Web App - Page for admin to add guest user email
   - [ ] Okta authentication for admin portal
   - [ ] Input form for guest email
-  - [ ] Provide guest user access (Provision Access Lambda)
+  - [ ] Provide guest user access (Provision Credentials Lambda)
   - [ ] Manage existing invites?
-- [ ] Lambda Function - Provision Access
+- [ ] Lambda Function - Provision Credentials
   - [ ] Receive input from Web App admin page
-  - [x] Check if provided user email already has access
+  - [x] Check if provided user email already has credentials
   - [ ] If so notify admin (else proceed as below)
   - [x] Save guest user - admin relationship to DB
   - [x] Generate guest user password and salt
@@ -75,3 +75,4 @@ flowchart TD
 - [ ] Lambda Function - Cleanup
   - [ ] Receive input from Web App guest page
   - [ ] Removing user from access list
+- [ ] Lambda Function - Publish Upload to Aprimo

@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -16,39 +15,75 @@ import (
 // https://serverless.com/framework/docs/providers/aws/events/apigateway/#lambda-proxy-integration
 type Response events.APIGatewayProxyResponse
 
-// Handler is our lambda handler invoked by the `lambda.Start` function call
-func Handler(ctx context.Context) (Response, error) {
-	var buf bytes.Buffer
+// EventData describes the data that the Lambda function expects to receive.
+type EventData struct {
+	Invitee string `json:"invitee"`
+	Inviter string `json:"inviter"`
+}
 
-	pass, salt := generateOTP()
+// handleInvitation coordinates all the actions associated with inviting a guest user.
+func handleInvitation(adminEmail string, guestEmail string) error {
+	var err error
 
-	hash := generateHash(pass, salt)
-
-	message := fmt.Sprintln("Your hash is", hash)
-
-	body, err := json.Marshal(map[string]interface{}{
-		"message": message,
-	})
+	guestHasAccess, err := checkForExistingAccess(guestEmail)
 
 	if err != nil {
-		return Response{StatusCode: 404}, err
+		return err
 	}
 
-	json.HTMLEscape(&buf, body)
+	if guestHasAccess {
+		return errors.New("guest user already has access")
+	} else {
+		// Record the invitation
+		err = saveInvite(adminEmail, guestEmail)
 
-	resp := Response{
-		StatusCode:      200,
-		IsBase64Encoded: false,
-		Body:            buf.String(),
-		Headers: map[string]string{
-			"Content-Type":           "application/json",
-			"X-MyCompany-Func-Reply": "hello-handler",
-		},
+		if err != nil {
+			return errors.New("something went wrong - saving invite failed")
+		}
+
+		// Generate credentials
+		pass, salt := generateOTP()
+		hash := generateHash(pass, salt)
+
+		err = saveCredentials(guestEmail, hash, salt)
+
+		if err == nil {
+			// TODO - send password
+			fmt.Printf("Your password is %s", pass)
+		} else {
+			return errors.New("something went wrong - credential generation failed")
+		}
 	}
 
-	return resp, nil
+	return err
+}
+
+// ProvisionHandler handles the request to grant a guest user temporary credentials. It
+// ensures that the required data is present before continuing on to:
+//  1. Register the invitation
+//  2. Provision credentials for the guest user
+//  3. Initiate the admin and guest user notifications
+func ProvisionHandler(ctx context.Context, data EventData) (Response, error) {
+	var msg string
+
+	inviter := data.Inviter
+	invitee := data.Invitee
+
+	if inviter == "" || invitee == "" {
+		return Response{StatusCode: 400}, errors.New("data missing from request")
+	}
+
+	err := handleInvitation(inviter, invitee)
+
+	if err != nil {
+		return Response{StatusCode: 500}, err
+	} else {
+		msg = "success"
+	}
+
+	return prepareResponse(msg)
 }
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(ProvisionHandler)
 }
