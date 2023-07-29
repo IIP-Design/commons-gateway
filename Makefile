@@ -7,13 +7,13 @@ DEV_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=d
 EVENT_PROVISION = ./events/provision.json
 
 build:
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/provision provision/*.go
+	cd serverless; env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/provision provision/*.go
 
 clean:
-	rm -rf ./bin ./vendor Gopkg.lock
+	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
 
 deploy: clean build
-	sls deploy --verbose
+	cd serverless; sls deploy --verbose
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d
@@ -22,4 +22,4 @@ dev-reset:
 	$(DEV_DIR)/reset/reset.sh
 
 local: build
-	sls invoke local -f provision $(DEV_ENV) -p $(EVENT_PROVISION)
+	cd serverless; sls invoke local -f provision $(DEV_ENV) -p $(EVENT_PROVISION)
