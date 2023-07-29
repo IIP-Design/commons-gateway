@@ -15,5 +15,8 @@ deploy: clean build
 dev:
 	cd $(DEV_DIR); docker-compose up -d
 
+dev-reset:
+	$(DEV_DIR)/reset/reset.sh
+
 local: build
 	sls invoke local -f provision $(DEV_DB)
