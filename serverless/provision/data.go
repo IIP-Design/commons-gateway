@@ -84,16 +84,19 @@ func saveCredentials(email string, hash string, salt string) error {
 	return err
 }
 
-// checkForExistingAccess opens a database connection and checks whether the provided
-// email (which has a unique value constraint) is present in the `otp` table. An
-// affirmative check indicates that the given user has already received a one-time password.
-func checkForExistingAccess(email string) (bool, error) {
+// checkForExistingUser opens a database connection and checks whether the provided
+// email (which is a unique value constraint in the admins and credentials tables) is
+// present in the provided table. An affirmative check indicates that the given user
+// has the access implied by their presence in the table.
+func checkForExistingUser(email string, table string) (bool, error) {
 	var err error
 	var hasAccess = false
 
 	pool := connectToDB()
 
-	rows, err := pool.Query(`SELECT "email" FROM otp;`)
+	query := fmt.Sprintf(`SELECT "email" FROM %s;`, table)
+
+	rows, err := pool.Query(query)
 	logError(err)
 
 	for rows.Next() {

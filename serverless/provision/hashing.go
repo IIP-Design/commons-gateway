@@ -8,12 +8,17 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
-// generateOTP creates a random 20 character string to be used as a password
+// generateRandString creates a random string of the provided length.
+func generateRandString(count int) string {
+	return randstr.String(count)
+}
+
+// generateCredentials creates a random 20 character string to be used as a password
 // as well as a random 10 character string to salt the password when hashing
 // it for storage in the database.
-func generateOTP() (string, string) {
-	pass := randstr.String(20)
-	salt := randstr.String(10)
+func generateCredentials() (string, string) {
+	pass := generateRandString(20)
+	salt := generateRandString(10)
 
 	return pass, salt
 }

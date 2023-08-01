@@ -25,7 +25,7 @@ type EventData struct {
 func handleInvitation(adminEmail string, guestEmail string) error {
 	var err error
 
-	guestHasAccess, err := checkForExistingAccess(guestEmail)
+	guestHasAccess, err := checkForExistingUser(guestEmail, "credentials")
 
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 		}
 
 		// Generate credentials
-		pass, salt := generateOTP()
+		pass, salt := generateCredentials()
 		hash := generateHash(pass, salt)
 
 		err = saveCredentials(guestEmail, hash, salt)
