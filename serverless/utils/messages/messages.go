@@ -1,13 +1,17 @@
-package main
+package messages
 
 import (
 	"bytes"
 	"encoding/json"
+
+	"github.com/aws/aws-lambda-go/events"
 )
+
+type Response events.APIGatewayProxyResponse
 
 // prepareResponse accepts any string as an input and sets it to the message property
 // of the the response body (unless there is an error when marshalling the JSON).
-func prepareResponse(msg string) (Response, error) {
+func PrepareResponse(msg string) (Response, error) {
 	var buf bytes.Buffer
 
 	body, err := json.Marshal(map[string]interface{}{

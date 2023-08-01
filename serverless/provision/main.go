@@ -5,15 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-lambda-go/events"
+	data "github.com/IIP-Design/commons-gateway/utils/data"
+	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-// Response is of type APIGatewayProxyResponse since we're leveraging the
-// AWS Lambda Proxy Request functionality (default behavior)
-//
-// https://serverless.com/framework/docs/providers/aws/events/apigateway/#lambda-proxy-integration
-type Response events.APIGatewayProxyResponse
 
 // EventData describes the data that the Lambda function expects to receive.
 type EventData struct {
@@ -25,7 +21,7 @@ type EventData struct {
 func handleInvitation(adminEmail string, guestEmail string) error {
 	var err error
 
-	guestHasAccess, err := checkForExistingUser(guestEmail, "credentials")
+	guestHasAccess, err := data.CheckForExistingUser(guestEmail, "credentials")
 
 	if err != nil {
 		return err
@@ -35,7 +31,7 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 		return errors.New("guest user already has access")
 	} else {
 		// Record the invitation
-		err = saveInvite(adminEmail, guestEmail)
+		err = data.SaveInvite(adminEmail, guestEmail)
 
 		if err != nil {
 			return errors.New("something went wrong - saving invite failed")
@@ -45,7 +41,7 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 		pass, salt := generateCredentials()
 		hash := generateHash(pass, salt)
 
-		err = saveCredentials(guestEmail, hash, salt)
+		err = data.SaveCredentials(guestEmail, hash, salt)
 
 		if err == nil {
 			// TODO - send password
@@ -63,25 +59,25 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 //  1. Register the invitation
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
-func ProvisionHandler(ctx context.Context, data EventData) (Response, error) {
+func ProvisionHandler(ctx context.Context, event EventData) (msgs.Response, error) {
 	var msg string
 
-	inviter := data.Inviter
-	invitee := data.Invitee
+	inviter := event.Inviter
+	invitee := event.Invitee
 
 	if inviter == "" || invitee == "" {
-		return Response{StatusCode: 400}, errors.New("data missing from request")
+		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
 	err := handleInvitation(inviter, invitee)
 
 	if err != nil {
-		return Response{StatusCode: 500}, err
+		return msgs.Response{StatusCode: 500}, err
 	} else {
 		msg = "success"
 	}
 
-	return prepareResponse(msg)
+	return msgs.PrepareResponse(msg)
 }
 
 func main() {

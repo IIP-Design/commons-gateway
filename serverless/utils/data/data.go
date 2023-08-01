@@ -1,4 +1,4 @@
-package main
+package data
 
 import (
 	"database/sql"
@@ -46,7 +46,7 @@ func connectToDB() *sql.DB {
 
 // saveInvite opens a database connection and records the association between an admin
 // user inviter and a guest user invitee along with the date of the invitation.
-func saveInvite(adminEmail string, guestEmail string) error {
+func SaveInvite(adminEmail string, guestEmail string) error {
 	var err error
 
 	pool := connectToDB()
@@ -67,7 +67,7 @@ func saveInvite(adminEmail string, guestEmail string) error {
 // to the `credentials` table. Specifically, it stores the the user email, a hash of
 // their password, and the salt with which the password was hashed, as well as the date
 // on which the password was generated.
-func saveCredentials(email string, hash string, salt string) error {
+func SaveCredentials(email string, hash string, salt string) error {
 	var err error
 
 	pool := connectToDB()
@@ -88,7 +88,7 @@ func saveCredentials(email string, hash string, salt string) error {
 // email (which is a unique value constraint in the admins and credentials tables) is
 // present in the provided table. An affirmative check indicates that the given user
 // has the access implied by their presence in the table.
-func checkForExistingUser(email string, table string) (bool, error) {
+func CheckForExistingUser(email string, table string) (bool, error) {
 	var err error
 	var hasAccess = false
 
