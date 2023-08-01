@@ -16,6 +16,14 @@ package:
     - ./bin/**
 
 functions:
+  admin-new:
+    name: adminNew
+    handler: bin/admin-new
+    description: Add an new email to the list of admin users.
+    events:
+      - httpApi:
+          path: /admin-new
+          method: post
   provision:
     name: provisionCredentials
     handler: bin/provision

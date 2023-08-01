@@ -76,3 +76,11 @@ flowchart TD
   - [ ] Receive input from Web App guest page
   - [ ] Removing user from access list
 - [ ] Lambda Function - Publish Upload to Aprimo
+- [ ] Lambda Function - Add new admin user
+  - [ ] Receive input from Web App admin page
+  - [x] Check if provided user email belongs to an existing user
+  - [x] Save user to the list of admins
+- [ ] Lambda Function - Deactivate admin user
+  - [ ] Receive input from Web App admin page
+  - [ ] Check if provided user email is indeed an admin
+  - [ ] Set the `active` status on their entry to `false`
