@@ -64,9 +64,9 @@ func saveInvite(adminEmail string, guestEmail string) error {
 }
 
 // saveCredentials opens a database connection and saves the provided user credentials
-// to the `otp` table. Specifically, it stores the the user email, a hash of their password,
-// and the salt with which the password was hashed, as well as the date on which the
-// password was generated.
+// to the `credentials` table. Specifically, it stores the the user email, a hash of
+// their password, and the salt with which the password was hashed, as well as the date
+// on which the password was generated.
 func saveCredentials(email string, hash string, salt string) error {
 	var err error
 
@@ -76,7 +76,7 @@ func saveCredentials(email string, hash string, salt string) error {
 
 	currentTime := time.Now()
 
-	insertCreds := `INSERT INTO "otp"("email", "otp_hash", "salt", "date_created" ) VALUES ($1, $2, $3, $4);`
+	insertCreds := `INSERT INTO "credentials"("email", "pass_hash", "salt", "date_created" ) VALUES ($1, $2, $3, $4);`
 	_, err = pool.Exec(insertCreds, email, hash, salt, currentTime)
 
 	logError(err)
