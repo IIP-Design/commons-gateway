@@ -1,0 +1,49 @@
+---
+import Header from '../components/Header.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/dos_seal.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header />
+    <slot />
+  </body>
+</html>
+<style is:global>
+  :root {
+    --base: #122e51;
+    --orange: #dd7533;
+
+    --baseFontSize: 16px;
+    --typeScale: 1.25;
+
+    --fontSizeSmall: calc(var(--baseFontSize) / var(--typeScale));
+    --fontSizeNormal: --baseFontSize;
+    --fontSizeMediumSmall: calc(var(--baseFontSize) * var(--typeScale));
+    --fontSizeMedium: calc(var(--fontSizeMediumSmall) * var(--typeScale));
+    --fontSizeMediumLarge: calc(var(--fontSizeMedium) * var(--typeScale));
+    --fontSizeLarge: calc(var(--fontSizeMediumLarge) * var(--typeScale));
+    --fontSizeXLarge: calc(var(--fontSizeLarge) * var(--typeScale));
+  }
+  body {
+    margin: 0;
+  }
+  html {
+    background: #ffffff;
+    font-family: 'Open Sans', sans-serif;
+  }
+</style>

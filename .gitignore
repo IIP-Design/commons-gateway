@@ -21,6 +21,23 @@ vendor
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+#----- Web App -----#
+# Build output
+dist/
+
+# Generated types
+.astro/
+
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+#----- General -----#
 # Editor Settings
 .vscode/*
 !.vscode/cspell.json

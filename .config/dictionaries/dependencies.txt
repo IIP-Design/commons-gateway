@@ -1,3 +1,5 @@
 # Dependency names that set off the spell checker
-thanhpk
+astro
 randstr
+thanhpk
+tsconfigs
