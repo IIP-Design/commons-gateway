@@ -48,27 +48,20 @@ func connectToDB() *sql.DB {
 // present in the provided table. An affirmative check indicates that the given user
 // has the access implied by their presence in the table.
 func CheckForExistingUser(email string, table string) (bool, error) {
+	var exists bool
 	var err error
-	var hasAccess = false
 
 	pool := connectToDB()
 
-	query := fmt.Sprintf(`SELECT "email" FROM %s;`, table)
+	var found string
 
-	rows, err := pool.Query(query)
-	logError(err)
+	query := fmt.Sprintf(`SELECT 1 FROM %s WHERE email = '%s';`, table, email)
+	err = pool.QueryRow(query).Scan(&found)
 
-	for rows.Next() {
-		var retrievedEmail string
-
-		err = rows.Scan(&retrievedEmail)
+	if err != nil {
 		logError(err)
-
-		if retrievedEmail == email {
-			hasAccess = true
-			break
-		}
+		return exists, err
 	}
 
-	return hasAccess, err
+	return found == "1", err
 }

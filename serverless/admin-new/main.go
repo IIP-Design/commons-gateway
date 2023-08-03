@@ -19,30 +19,23 @@ type EventData struct {
 func handleAdminCreation(adminEmail string) error {
 	var err error
 
-	isExistingAdmin, err := data.CheckForExistingUser(adminEmail, "admins")
+	isAdmin, err := data.CheckForExistingUser(adminEmail, "admin")
 
 	if err != nil {
 		return err
+	} else if isAdmin {
+		return errors.New("this user has already been added as an administrator")
 	}
 
-	if isExistingAdmin {
-		return errors.New("already an admin user")
-	} else {
-		// Record the invitation
-		err = data.CreateAdmin(adminEmail)
-
-		if err != nil {
-			return errors.New("something went wrong - admin creation failed")
-		}
-	}
+	err = data.CreateAdmin(adminEmail)
 
 	return err
 }
 
-// ProvisionHandler handles the request to create a new administrative user. It
+// NewAdminHandler handles the request to create a new administrative user. It
 // ensures that the required data is present before continuing on to recording
 // the user's email in the list of admins.
-func ProvisionHandler(ctx context.Context, event EventData) (msgs.Response, error) {
+func NewAdminHandler(ctx context.Context, event EventData) (msgs.Response, error) {
 	var msg string
 
 	adminEmail := event.Email
@@ -63,5 +56,5 @@ func ProvisionHandler(ctx context.Context, event EventData) (msgs.Response, erro
 }
 
 func main() {
-	lambda.Start(ProvisionHandler)
+	lambda.Start(NewAdminHandler)
 }

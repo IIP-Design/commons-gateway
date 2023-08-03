@@ -21,13 +21,21 @@ type EventData struct {
 func handleInvitation(adminEmail string, guestEmail string) error {
 	var err error
 
+	// Ensure inviter is an active admin user.
+	adminActive, err := data.CheckForActiveAdmin(adminEmail)
+
+	if err != nil {
+		return err
+	} else if !adminActive {
+		return errors.New("you are not authorized to invite users")
+	}
+
+	// Ensure invitee doesn't already have access.
 	guestHasAccess, err := data.CheckForExistingUser(guestEmail, "credentials")
 
 	if err != nil {
 		return err
-	}
-
-	if guestHasAccess {
+	} else if guestHasAccess {
 		return errors.New("guest user already has access")
 	} else {
 		// Record the invitation
