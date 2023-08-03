@@ -1,10 +1,11 @@
+#----- Serverless Function -----#
 # Serverless directories
 .serverless
 
-# golang output binary directory
+# Golang output binary directory
 bin
 
-# golang vendor (dependencies) directory
+# Golang vendor (dependencies) directory
 vendor
 
 # Binaries for programs and plugins
@@ -23,6 +24,7 @@ vendor
 # Editor Settings
 .vscode/*
 !.vscode/cspell.json
+!.vscode/extensions.json
 
 # User files
 .DS_Store
