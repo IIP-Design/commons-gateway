@@ -1,0 +1,41 @@
+---
+import Button from '../components/Button.astro';
+import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
+---
+
+<LoggedOutLayout title="External Partner Login">
+  <form>
+    <label>
+      Username
+      <input type="text" />
+    </label>
+    <label>
+      Password
+      <input type="password" />
+    </label>
+  </form>
+  <Button text="Sign In" type="submit" />
+</LoggedOutLayout>
+
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+  }
+
+  label {
+    color: var(--blue);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--fontSizeSmall);
+    margin: 1rem 0;
+  }
+
+  input {
+    border: 1px solid var(--greyLight);
+    margin-top: 0.5rem;
+    border-radius: 5px;
+    padding: 0.3rem 0.5rem;
+  }
+</style>
