@@ -1,19 +1,25 @@
 ---
 import Button from '../components/Button.astro';
-import Layout from '../layouts/Layout.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 ---
 
 <script>
   import { dragHandler, dropHandler } from '../utils/files';
 
+  // Handle drag-and-drop zone.
   const dropZone = document.getElementById('drop-zone');
 
   dropZone?.addEventListener('dragenter', (e) => dragHandler(e));
   dropZone?.addEventListener('dragover', (e) => dragHandler(e));
   dropZone?.addEventListener('drop', (e) => dropHandler(e));
+
+  // Handle submit button.
+  const sumbitButton = document.getElementById('upload-files-btn');
+
+  sumbitButton?.addEventListener('click', () => console.log('Clicked'));
 </script>
 
-<Layout narrow title="Submit Files">
+<PageLayout narrow title="Submit Files">
   <p class="section-header"><strong>Upload video or photo files <span>*</span></strong></p>
   <div class="drop-zone" id="drop-zone">
     <strong>drag and drop files</strong>
@@ -22,8 +28,8 @@ import Layout from '../layouts/Layout.astro';
   <p class="section-header"><strong>Description <span>*</span></strong></p>
   <p>Include a point of contact email in case questions arise.</p>
   <textarea></textarea>
-  <Button text="Submit" type="submit" />
-</Layout>
+  <Button id="upload-files-btn" text="Submit" type="submit" />
+</PageLayout>
 
 <style>
   p,
@@ -34,7 +40,7 @@ import Layout from '../layouts/Layout.astro';
     color: var(--red);
   }
   textarea {
-    border: 1px solid var(--grey);
+    border: 1px solid var(--greyLight);
     border-radius: 5px;
     padding: 1rem;
     width: calc(100% - (2rem + 2px));

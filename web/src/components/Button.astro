@@ -1,13 +1,14 @@
 ---
 interface Props {
+  id?: string;
   text: string;
   type?: 'button' | 'submit';
 }
 
-const { type, text } = Astro.props;
+const { id, type, text } = Astro.props;
 ---
 
-<button type={type ? type : 'button'}>
+<button id={id || ''} type={type || 'button'}>
   {text}
 </button>
 
@@ -15,7 +16,6 @@ const { type, text } = Astro.props;
   button {
     background-color: var(--blue);
     color: #ffffff;
-    font-weight: bold;
     border: none;
     border-radius: 5px;
     padding: 0.5rem 1rem;

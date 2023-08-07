@@ -1,0 +1,39 @@
+:root {
+  --blue: #0a2240;
+  --grey: #8c8c8c;
+  --greyLight: #dadada;
+  --greyLighter: #f5f5f5;
+  --orange: #dd7533;
+  --red: #b72929;
+
+  --baseFontSize: 16px;
+  --typeScale: 1.25;
+
+  --fontSizeSmall: calc(var(--baseFontSize) / var(--typeScale));
+  --fontSizeNormal: --baseFontSize;
+  --fontSizeMediumSmall: calc(var(--baseFontSize) * var(--typeScale));
+  --fontSizeMedium: calc(var(--fontSizeMediumSmall) * var(--typeScale));
+  --fontSizeMediumLarge: calc(var(--fontSizeMedium) * var(--typeScale));
+  --fontSizeLarge: calc(var(--fontSizeMediumLarge) * var(--typeScale));
+  --fontSizeXLarge: calc(var(--fontSizeLarge) * var(--typeScale));
+}
+
+body {
+  margin: 0;
+}
+
+html {
+  background: #ffffff;
+  font-family: 'Open Sans', sans-serif;
+}
+
+main {
+  margin: 5rem;
+}
+
+h1 {
+  color: var(--blue);
+  font-size: var(--fontSizeMediumLarge);
+  font-weight: 600;
+  line-height: 1;
+}

@@ -1,0 +1,39 @@
+---
+import Head from '../components/Head.astro';
+import Header from '../components/Header.astro';
+
+import '../styles/main.css';
+
+interface Props {
+  narrow?: boolean;
+  title: string;
+}
+
+const { narrow, title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <Head title={title} />
+  <body>
+    <Header />
+    <main>
+      <div class={narrow ? 'container narrow' : 'container'}>
+        <h1>{title}</h1>
+        <slot />
+      </div>
+    </main>
+    <style>
+      .container {
+        border: 1px solid var(--greyLight);
+        border-radius: 5px;
+        margin: 0 auto;
+        max-width: 1755px;
+        padding: 3rem;
+      }
+      .narrow {
+        max-width: 1021px;
+      }
+    </style>
+  </body>
+</html>
