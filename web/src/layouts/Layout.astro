@@ -2,10 +2,11 @@
 import Header from '../components/Header.astro';
 
 interface Props {
+  narrow?: boolean;
   title: string;
 }
 
-const { title } = Astro.props;
+const { narrow, title } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -20,13 +21,22 @@ const { title } = Astro.props;
   </head>
   <body>
     <Header />
-    <slot />
+    <main>
+      <div class={narrow ? 'container narrow' : 'container'}>
+        <h1>{title}</h1>
+        <slot />
+      </div>
+    </main>
   </body>
 </html>
 <style is:global>
   :root {
-    --base: #122e51;
+    --blue: #122e51;
+    --grey: #8c8c8c;
+    --greyLight: #dadada;
+    --greyLighter: #f5f5f5;
     --orange: #dd7533;
+    --red: #b72929;
 
     --baseFontSize: 16px;
     --typeScale: 1.25;
@@ -45,5 +55,23 @@ const { title } = Astro.props;
   html {
     background: #ffffff;
     font-family: 'Open Sans', sans-serif;
+  }
+  main {
+    margin: 5rem;
+  }
+  h1 {
+    color: var(--blue);
+    font-size: var(--fontSizeMediumLarge);
+    font-weight: 600;
+    line-height: 1;
+  }
+  .container {
+    border: 1px solid var(--grey);
+    margin: 0 auto;
+    max-width: 1755px;
+    padding: 3rem;
+  }
+  .narrow {
+    max-width: 1021px;
   }
 </style>
