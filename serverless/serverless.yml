@@ -24,6 +24,14 @@ functions:
       - httpApi:
           path: /admin-new
           method: post
+  guest-auth:
+    name: guest-auth
+    handler: bin/guest-auth
+    description: Authenticate a guest user.
+    events:
+      - httpApi:
+          path: /guest-auth
+          method: post
   get-creds:
     name: getCreds
     handler: bin/get-creds
