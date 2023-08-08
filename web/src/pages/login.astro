@@ -3,18 +3,46 @@ import Button from '../components/Button.astro';
 import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
 ---
 
+<script>
+  import { compareHashes, deriveHash } from '../utils/hashing';
+  import { fetchUserCredentials } from '../utils/api';
+
+  const submitBtn = document.getElementById('login-btn');
+  const nameInput = document.getElementById('name-input') as HTMLInputElement;
+  const passInput = document.getElementById('pass-input') as HTMLInputElement;
+
+  submitBtn?.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const name = nameInput.value;
+    const pass = passInput.value;
+
+    if (!name) {
+      return;
+    }
+
+    const { hash, salt } = await fetchUserCredentials(name);
+
+    if (hash && salt) {
+      const localHash = await deriveHash(pass, salt);
+
+      compareHashes(hash, localHash);
+    }
+  });
+</script>
+
 <LoggedOutLayout title="External Partner Login">
   <form>
     <label>
       Username
-      <input type="text" />
+      <input id="name-input" type="text" />
     </label>
     <label>
       Password
-      <input type="password" />
+      <input id="pass-input" type="password" />
     </label>
   </form>
-  <Button text="Sign In" type="submit" />
+  <Button id="login-btn" text="Sign In" type="submit" />
 </LoggedOutLayout>
 
 <style>
