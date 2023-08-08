@@ -24,6 +24,14 @@ functions:
       - httpApi:
           path: /admin-new
           method: post
+  get-creds:
+    name: getCreds
+    handler: bin/get-creds
+    description: Retrieve a users password hash and salt.
+    events:
+      - httpApi:
+          path: /get-creds
+          method: get
   provision:
     name: provisionCredentials
     handler: bin/provision

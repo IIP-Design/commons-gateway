@@ -5,6 +5,7 @@ DEV_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=d
 
 # Simulated events
 EVENT_ADMIN_NEW = ./events/admin-new.json
+EVENT_GET_CREDS = ./events/get-creds.json
 EVENT_PROVISION = ./events/provision.json
 
 build:
@@ -31,3 +32,5 @@ local-provision: build
 local-admin: build
 	cd serverless;\sls invoke local -f admin-new $(DEV_ENV) -p $(EVENT_ADMIN_NEW);
 	
+local-creds: build
+	cd serverless;\sls invoke local -f get-creds $(DEV_ENV) -p $(EVENT_GET_CREDS);
