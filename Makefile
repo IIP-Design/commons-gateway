@@ -26,7 +26,10 @@ dev:
 	cd $(DEV_DIR); docker-compose up -d
 
 dev-reset:
-	$(DEV_DIR)/reset/reset.sh
+	$(DEV_DIR)/scripts/reset.sh;
+
+dev-reseed:
+	$(DEV_DIR)/scripts/reset.sh;$(DEV_DIR)/scripts/seed.sh
 
 local-provision: build
 	cd serverless;\sls invoke local -f provision $(DEV_ENV) -p $(EVENT_PROVISION);

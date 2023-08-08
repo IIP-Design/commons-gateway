@@ -9,6 +9,7 @@
     "Dependencies"
   ],
   "words": [
-    "Aprimo"
+    "Aprimo",
+    "psql"
   ]
 }
