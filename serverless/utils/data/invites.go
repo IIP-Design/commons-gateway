@@ -8,7 +8,6 @@ func SaveInvite(adminEmail string, guestEmail string) error {
 	var err error
 
 	pool := connectToDB()
-
 	defer pool.Close()
 
 	currentTime := time.Now()
@@ -29,7 +28,6 @@ func SaveCredentials(email string, hash string, salt string) error {
 	var err error
 
 	pool := connectToDB()
-
 	defer pool.Close()
 
 	currentTime := time.Now()

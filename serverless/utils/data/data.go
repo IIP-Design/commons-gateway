@@ -52,6 +52,7 @@ func CheckForExistingUser(email string, table string) (bool, error) {
 	var rows *sql.Rows
 
 	pool := connectToDB()
+	defer pool.Close()
 
 	query := fmt.Sprintf(`SELECT 1 FROM %s WHERE email = '%s';`, table, email)
 	rows, err = pool.Query(query)

@@ -12,6 +12,7 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 	var err error
 
 	pool := connectToDB()
+	defer pool.Close()
 
 	query := fmt.Sprintf(`SELECT active FROM admins WHERE email = '%s';`, adminEmail)
 	err = pool.QueryRow(query).Scan(&active)
@@ -30,7 +31,6 @@ func CreateAdmin(adminEmail string) error {
 	var err error
 
 	pool := connectToDB()
-
 	defer pool.Close()
 
 	currentTime := time.Now()
