@@ -10,7 +10,8 @@ EVENT_PROVISION = ./events/provision.json
 build:
 	cd serverless;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/provision provision/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-new admin-new/*.go;
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-new admin-new/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/get-creds get-creds/*.go;
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
@@ -24,7 +25,9 @@ dev:
 dev-reset:
 	$(DEV_DIR)/reset/reset.sh
 
-local: build
-	cd serverless;\
-	sls invoke local -f provision $(DEV_ENV) -p $(EVENT_PROVISION);
-	# sls invoke local -f admin-new $(DEV_ENV) -p $(EVENT_ADMIN_NEW);
+local-provision: build
+	cd serverless;\sls invoke local -f provision $(DEV_ENV) -p $(EVENT_PROVISION);
+
+local-admin: build
+	cd serverless;\sls invoke local -f admin-new $(DEV_ENV) -p $(EVENT_ADMIN_NEW);
+	
