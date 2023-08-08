@@ -49,17 +49,23 @@ func connectToDB() *sql.DB {
 // has the access implied by their presence in the table.
 func CheckForExistingUser(email string, table string) (bool, error) {
 	var err error
-	var rows *sql.Rows
 
 	pool := connectToDB()
 	defer pool.Close()
 
-	query := fmt.Sprintf(`SELECT 1 FROM %s WHERE email = '%s';`, table, email)
-	rows, err = pool.Query(query)
+	var user string
+
+	query := fmt.Sprintf(`SELECT email FROM %s WHERE email = '%s';`, table, email)
+	err = pool.QueryRow(query).Scan(&user)
 
 	if err != nil {
+		// Do not return an error is no results are found.
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+
 		logError(err)
 	}
 
-	return rows == nil, err
+	return user == email, err
 }
