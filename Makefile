@@ -4,10 +4,10 @@ DEV_DIR = .gateway-dev
 DEV_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=disable -e DB_PASSWORD=gateway_dev -e DB_USER=gateway_dev -e JWT_SECRET=2fweb3m$ndj
 
 # Simulated events
-EVENT_ADMIN_NEW = ./events/admin-new.json
-EVENT_GET_CREDS = ./events/get-creds.json
-EVENT_GUEST_AUTH = ./events/guest-auth.json
-EVENT_PROVISION = ./events/provision.json
+EVENT_ADMIN_NEW = ../.gateway-dev/sim-events/admin-new.json
+EVENT_GET_CREDS = ../.gateway-dev/sim-events/get-creds.json
+EVENT_GUEST_AUTH = ../.gateway-dev/sim-events/guest-auth.json
+EVENT_PROVISION = ../.gateway-dev/sim-events/provision.json
 
 build:
 	cd serverless;\
