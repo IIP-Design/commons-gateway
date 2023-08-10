@@ -1,6 +1,10 @@
 package data
 
-import "time"
+import (
+	"time"
+
+	logs "github.com/IIP-Design/commons-gateway/utils/logs"
+)
 
 // saveInvite opens a database connection and records the association between an admin
 // user inviter and a guest user invitee along with the date of the invitation.
@@ -15,7 +19,7 @@ func SaveInvite(adminEmail string, guestEmail string) error {
 	insertInvite := `INSERT INTO "invites"("invitee", "inviter", "date_invited") VALUES ($1, $2, $3);`
 	_, err = pool.Exec(insertInvite, adminEmail, guestEmail, currentTime)
 
-	logError(err)
+	logs.LogError(err, "Save Invite Query Error")
 
 	return err
 }
@@ -35,7 +39,7 @@ func SaveCredentials(email string, hash string, salt string) error {
 	insertCreds := `INSERT INTO "credentials"("email", "pass_hash", "salt", "date_created" ) VALUES ($1, $2, $3, $4);`
 	_, err = pool.Exec(insertCreds, email, hash, salt, currentTime)
 
-	logError(err)
+	logs.LogError(err, "Save Credentials Query Error")
 
 	return err
 }

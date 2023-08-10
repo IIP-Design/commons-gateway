@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -42,6 +43,7 @@ func GetCredsHandler(ctx context.Context, event EventData) (msgs.Response, error
 	user := event.Username
 
 	if user == "" {
+		logs.LogError(nil, "Username not provided in request.")
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 

@@ -2,6 +2,8 @@ package data
 
 import (
 	"fmt"
+
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
 type CredentialsData struct {
@@ -23,13 +25,8 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 	err = pool.QueryRow(query).Scan(&pass_hash, &salt)
 
 	if err != nil {
-		logError(err)
+		logs.LogError(err, "Retrieve Credentials Query Error")
 	}
-
-	// creds := map[string]interface{}{
-	// 	"hash": pass_hash,
-	// 	"salt": salt,
-	// }
 
 	creds := CredentialsData{
 		Hash: pass_hash,

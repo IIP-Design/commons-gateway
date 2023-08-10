@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	_ "github.com/lib/pq"
 )
 
@@ -14,12 +15,6 @@ const (
 	db_password = "DB_PASSWORD"
 	db_user     = "DB_USER"
 )
-
-func logError(err error) {
-	if err != nil {
-		fmt.Println(err)
-	}
-}
 
 // connectToDB opens a pool connection to a Postgres database using
 // credentials derived from the environment.
@@ -38,7 +33,10 @@ func connectToDB() *sql.DB {
 	)
 
 	pool, err := sql.Open("postgres", connStr)
-	logError(err)
+
+	if err != nil {
+		logs.LogError(err, "DB Connection Error")
+	}
 
 	return pool
 }
@@ -64,7 +62,7 @@ func CheckForExistingUser(email string, table string) (bool, error) {
 			return false, nil
 		}
 
-		logError(err)
+		logs.LogError(err, "Existing User Query Error")
 	}
 
 	return user == email, err

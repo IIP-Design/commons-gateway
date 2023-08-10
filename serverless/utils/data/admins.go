@@ -3,6 +3,8 @@ package data
 import (
 	"fmt"
 	"time"
+
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
 // CheckForActiveAdmin opens a database connection and checks whether the provided
@@ -18,7 +20,7 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 	err = pool.QueryRow(query).Scan(&active)
 
 	if err != nil {
-		logError(err)
+		logs.LogError(err, "Existing Admin Query Error")
 		return active, err
 	}
 
@@ -38,7 +40,7 @@ func CreateAdmin(adminEmail string) error {
 	insertAdmin := `INSERT INTO "admins"("email", "active", "date_created") VALUES ($1, $2, $3);`
 	_, err = pool.Exec(insertAdmin, adminEmail, true, currentTime)
 
-	logError(err)
+	logs.LogError(err, "Create Admin Query Error")
 
 	return err
 }
