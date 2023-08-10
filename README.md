@@ -4,6 +4,19 @@ Serverless functions to grant temporary upload ability to Aprimo.
 
 ## Functions
 
+### Create Admin User
+
+```mermaid
+flowchart TD
+  A[Receive new admin email address]
+  B[Check if user is already an admin]
+  A --> B
+  C[NO: Add user to the list of admins]
+  D[YES: Inform the user they are already an admin]
+  B --> C
+  B --> D
+```
+
 ### Provision Credentials
 
 ```mermaid
@@ -25,7 +38,7 @@ flowchart TD
   E --> F
 ```
 
-### Grant Access
+### Retrieve Credentials
 
 ```mermaid
 flowchart TD

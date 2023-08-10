@@ -7,9 +7,6 @@ provider:
   runtime: go1.x
   stage: dev
 
-# you can overwrite defaults here
-#  region: us-east-1
-
 package:
   patterns:
     - '!./**'
@@ -17,7 +14,7 @@ package:
 
 functions:
   admin-new:
-    name: adminNew
+    name: gateway-create-admin
     handler: bin/admin-new
     description: Add an new email to the list of admin users.
     events:
@@ -25,7 +22,7 @@ functions:
           path: /admin-new
           method: post
   guest-auth:
-    name: guest-auth
+    name: gateway-guest-auth
     handler: bin/guest-auth
     description: Authenticate a guest user.
     events:
@@ -33,15 +30,15 @@ functions:
           path: /guest-auth
           method: post
   get-creds:
-    name: getCreds
+    name: gateway-retrieve-creds
     handler: bin/get-creds
     description: Retrieve a users password hash and salt.
     events:
       - httpApi:
           path: /get-creds
-          method: get
+          method: post
   provision:
-    name: provisionCredentials
+    name: gateway-provision-creds
     handler: bin/provision
     description: Records a guest user invitation and generates credentials for this user.
     events:
