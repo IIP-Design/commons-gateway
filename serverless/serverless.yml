@@ -6,6 +6,8 @@ provider:
   name: aws
   runtime: go1.x
   stage: dev
+  httpApi:
+    cors: true
 
 package:
   patterns:
@@ -13,14 +15,16 @@ package:
     - ./bin/**
 
 functions:
-  admin-new:
+  admin-create:
     name: gateway-create-admin
-    handler: bin/admin-new
+    handler: bin/admin-create
     description: Add an new email to the list of admin users.
     events:
-      - httpApi:
-          path: /admin-new
+      - http:
+          path: /admin/create
           method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   guest-auth:
     name: gateway-guest-auth
     handler: bin/guest-auth
@@ -29,19 +33,21 @@ functions:
       - httpApi:
           path: /guest-auth
           method: post
-  get-creds:
+  creds-salt:
     name: gateway-retrieve-creds
-    handler: bin/get-creds
+    handler: bin/creds-salt
     description: Retrieve a users password hash and salt.
     events:
-      - httpApi:
-          path: /get-creds
+      - http:
+          path: /creds/salt
           method: post
-  provision:
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  creds-provision:
     name: gateway-provision-creds
-    handler: bin/provision
+    handler: bin/creds-provision
     description: Records a guest user invitation and generates credentials for this user.
     events:
       - httpApi:
-          path: /provision
+          path: /creds/provision
           method: post
