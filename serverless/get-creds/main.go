@@ -52,7 +52,7 @@ func GetCredsHandler(ctx context.Context, event EventData) (msgs.Response, error
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
 	} else {
-		msg, err = json.Marshal(creds)
+		msg, err = json.Marshal(creds.Salt)
 
 		if err != nil {
 			return msgs.Response{StatusCode: 500}, err
