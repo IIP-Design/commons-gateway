@@ -8,14 +8,9 @@ import (
 	data "github.com/IIP-Design/commons-gateway/utils/data"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-// EventData describes the data that the Lambda function expects to receive.
-type EventData struct {
-	Invitee string `json:"invitee"`
-	Inviter string `json:"inviter"`
-}
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
 func handleInvitation(adminEmail string, guestEmail string) error {
@@ -67,17 +62,21 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 //  1. Register the invitation
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
-func ProvisionHandler(ctx context.Context, event EventData) (msgs.Response, error) {
+func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	var msg string
 
-	inviter := event.Inviter
-	invitee := event.Invitee
+	parsed, err := data.ParseBodyData(event.Body)
 
-	if inviter == "" || invitee == "" {
+	inviter := parsed.Inviter
+	invitee := parsed.Invitee
+
+	if err != nil {
+		return msgs.Response{StatusCode: 500}, err
+	} else if inviter == "" || invitee == "" {
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	err := handleInvitation(inviter, invitee)
+	err = handleInvitation(inviter, invitee)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err

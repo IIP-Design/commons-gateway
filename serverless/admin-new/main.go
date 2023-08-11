@@ -7,13 +7,9 @@ import (
 	data "github.com/IIP-Design/commons-gateway/utils/data"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-// EventData describes the data that the Lambda function expects to receive.
-type EventData struct {
-	Email string `json:"email"`
-}
 
 // handleAdminCreation coordinates all the actions associated with creating a new user.
 func handleAdminCreation(adminEmail string) error {
@@ -35,16 +31,20 @@ func handleAdminCreation(adminEmail string) error {
 // NewAdminHandler handles the request to create a new administrative user. It
 // ensures that the required data is present before continuing on to recording
 // the user's email in the list of admins.
-func NewAdminHandler(ctx context.Context, event EventData) (msgs.Response, error) {
+func NewAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	var msg string
 
-	adminEmail := event.Email
+	parsed, err := data.ParseBodyData(event.Body)
 
-	if adminEmail == "" {
+	adminEmail := parsed.Email
+
+	if err != nil {
+		return msgs.Response{StatusCode: 500}, err
+	} else if adminEmail == "" {
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	err := handleAdminCreation(adminEmail)
+	err = handleAdminCreation(adminEmail)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err

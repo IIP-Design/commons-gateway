@@ -1,5 +1,3 @@
 {
-  "action": "create",
-  "hash": "i82y9CY9olYWVDP3BPwdK1lVhBv60FEo3UtIbSJO8zQ=",
-  "username": "test1@gmail.com"
+  "body": "\"action\": \"create\",\"hash\": \"i82y9CY9olYWVDP3BPwdK1lVhBv60FEo3UtIbSJO8zQ=\",\"username\":\"test1@gmail.com\""
 }

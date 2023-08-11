@@ -1,4 +1,3 @@
 {
-  "inviter": "test@gmail.com",
-  "invitee": "test1@gmail.com"
+  "body": "\"inviter\": \"test@gmail.com\", \"invitee\": \"test1@gmail.com\""
 }

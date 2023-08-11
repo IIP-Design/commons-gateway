@@ -9,13 +9,9 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-// EventData describes the data that the Lambda function expects to receive.
-type EventData struct {
-	Username string `json:"username"`
-}
 
 // handleCredentialRequest coordinates all the actions associated with retrieving user credentials.
 func handleCredentialRequest(username string) (data.CredentialsData, error) {
@@ -35,14 +31,17 @@ func handleCredentialRequest(username string) (data.CredentialsData, error) {
 	return creds, err
 }
 
-// GetCredsHandler handles the request to retrieve the password hash and salt associated
-// with a user based on the user name.
-func GetCredsHandler(ctx context.Context, event EventData) (msgs.Response, error) {
+// GetSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
+func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	var msg []byte
 
-	user := event.Username
+	parsed, err := data.ParseBodyData(event.Body)
 
-	if user == "" {
+	user := parsed.Username
+
+	if err != nil {
+		return msgs.Response{StatusCode: 500}, err
+	} else if user == "" {
 		logs.LogError(nil, "Username not provided in request.")
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
@@ -63,5 +62,5 @@ func GetCredsHandler(ctx context.Context, event EventData) (msgs.Response, error
 }
 
 func main() {
-	lambda.Start(GetCredsHandler)
+	lambda.Start(GetSaltHandler)
 }

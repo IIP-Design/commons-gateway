@@ -1,20 +1,14 @@
 package main
 
 import (
-	"context"
 	"errors"
 
 	data "github.com/IIP-Design/commons-gateway/utils/data"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-type EventData struct {
-	Action   string `json:"action"`
-	Hash     string `json:"hash"`
-	Username string `json:"username"`
-}
 
 // handleGrantAccess ensures that a user hash provided a password has matching their
 // username and if so, generates a JWT to grant them guest access.
@@ -44,10 +38,16 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 
 // AuthenticationHandler manages guest user authentication by either generating a JSON web
 // token for new authentication sessions or verifying an existing token for an ongoing session.
-func AuthenticationHandler(ctx context.Context, event EventData) (msgs.Response, error) {
-	action := event.Action
-	clientHash := event.Hash
-	username := event.Username
+func AuthenticationHandler(ctx events.APIGatewayProxyRequestContext, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	parsed, err := data.ParseBodyData(event.Body)
+
+	if err != nil {
+		return msgs.Response{StatusCode: 500}, err
+	}
+
+	action := parsed.Action
+	clientHash := parsed.Hash
+	username := parsed.Username
 
 	if action == "create" {
 		return handleGrantAccess(username, clientHash)
