@@ -1,3 +1,8 @@
+/**
+ * Converts a string password into a CryptoKey.
+ * @param password The password provided by the user.
+ * @returns A CryptoKey based on the provided password string.
+ */
 const generateKey = (password: string) => {
   const enc = new TextEncoder();
 
@@ -7,9 +12,15 @@ const generateKey = (password: string) => {
     "PBKDF2",
     false,
     ["deriveBits", "deriveKey"]
-  )
+  );
 }
 
+/**
+ * Uses PBKDF2 to hash the user provided password.
+ * @param password The password provided by the user.
+ * @param salt A random salt value to add to the hash.
+ * @returns The hashed password and salt combination.
+ */
 export const deriveHash = async (password: string, salt: string) => {
   const enc = new TextEncoder();
 
@@ -24,15 +35,7 @@ export const deriveHash = async (password: string, salt: string) => {
     },
     keyMaterial,
     256
-  )
+  );
 
-  const decoded = btoa(String.fromCharCode(...new Uint8Array(dk)));
-
-  return decoded;
-}
-
-export const compareHashes = (hash1: string, hash2: string) => {
-  if ( hash1 === hash2 ) {
-    console.log('MATCH')
-  }
+  return btoa(String.fromCharCode(...new Uint8Array(dk)));
 }

@@ -4,8 +4,8 @@ import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
 ---
 
 <script>
-  import { compareHashes, deriveHash } from '../utils/hashing';
-  import { fetchUserCredentials } from '../utils/api';
+  import { deriveHash } from '../utils/hashing';
+  import { passTheSalt, submitHash } from '../utils/api';
 
   const submitBtn = document.getElementById('login-btn');
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
@@ -21,12 +21,12 @@ import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
       return;
     }
 
-    const { hash, salt } = await fetchUserCredentials(name);
+    const salt = await passTheSalt(name);
 
-    if (hash && salt) {
+    if (salt) {
       const localHash = await deriveHash(pass, salt);
 
-      compareHashes(hash, localHash);
+      submitHash('create', localHash, name);
     }
   });
 </script>

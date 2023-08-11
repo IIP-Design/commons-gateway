@@ -25,6 +25,9 @@ vendor
 # Build output
 dist/
 
+# Environmental variables
+.env
+
 # Generated types
 .astro/
 
