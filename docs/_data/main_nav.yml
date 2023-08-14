@@ -1,0 +1,12 @@
+nav_list:
+  - title: Client Application
+    url: web
+
+  - title: Serverless Functions
+    url: serverless
+    subitems:
+      - title: Function Reference
+        url: serverless/functions
+
+  - title: Todo List
+    url: todo

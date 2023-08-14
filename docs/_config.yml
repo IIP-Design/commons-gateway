@@ -1,0 +1,17 @@
+remote_theme: IIP-Design/lab-notes
+
+title: Commons Gateway
+author: Bureau of Global Public Affairs (GPA) Digital Lab Team
+author_homepage: https://github.com/IIP-Design
+repository: IIP-Design/commons-gateway
+description: Development and build tooling for the U.S. Department of State's, Global Public Affairs Digital Lab.
+show_downloads: false
+show_nav: true
+future: true
+
+markdown: kramdown
+kramdown:
+  syntax_highlighter_opts:
+    disable: true
+
+port: 4042

@@ -46,5 +46,11 @@ pnpm-debug.log*
 !.vscode/cspell.json
 !.vscode/extensions.json
 
+# Integreated Doc Site
+docs/_site
+docs/Gemfile.lock
+docs/.bundle/
+docs/vendor
+
 # User files
 .DS_Store
