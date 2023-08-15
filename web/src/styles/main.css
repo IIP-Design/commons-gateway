@@ -5,6 +5,8 @@
   --greyLighter: #f5f5f5;
   --orange: #dd7533;
   --red: #b72929;
+  --redBright: #f70707;
+  --greenBright: #30d60f;
 
   --baseFontSize: 16px;
   --typeScale: 1.25;
@@ -18,17 +20,24 @@
   --fontSizeXLarge: calc(var(--fontSizeLarge) * var(--typeScale));
 }
 
-body {
-  margin: 0;
+* {
+  box-sizing: border-box;
 }
 
-html {
+* + * {
+  margin: 0;
+  padding: 0;
+}
+
+body {
   background: #ffffff;
   font-family: 'Open Sans', sans-serif;
+  color: var(--blue);
 }
 
 main {
   margin: 5rem;
+  height: calc(100% - calc(70px + 12rem));
 }
 
 h1 {
@@ -36,4 +45,8 @@ h1 {
   font-size: var(--fontSizeMediumLarge);
   font-weight: 600;
   line-height: 1;
+}
+
+button {
+  cursor: pointer;
 }

@@ -19,20 +19,40 @@ const { narrow, title } = Astro.props;
     <Header />
     <main>
       <div class={narrow ? 'container narrow' : 'container'}>
-        <h1>{title}</h1>
-        <slot />
+        <div class="content">
+          <h1>{title}</h1>
+          <slot />
+        </div>
+        <p class="support">
+          For assistance, please contact <a href="mailto:commonssupport@state.gov"
+            >commonssupport@state.gov</a
+          >
+        </p>
       </div>
     </main>
-    <style>
+    <style lang="scss">
       .container {
         border: 1px solid var(--greyLight);
         border-radius: 5px;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        position: relative;
+        justify-content: space-between;
         margin: 0 auto;
         max-width: 1755px;
-        padding: 3rem;
+        min-height: 100%;
+        padding: 3rem 3rem 2rem;
       }
       .narrow {
         max-width: 1021px;
+      }
+      .support {
+        text-align: center;
+        color: var(--grey);
+
+        > a {
+          color: var(--blue);
+        }
       }
     </style>
   </body>
