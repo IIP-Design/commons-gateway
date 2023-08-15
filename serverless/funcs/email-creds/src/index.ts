@@ -5,10 +5,6 @@ import { Handler, SQSEvent } from 'aws-lambda';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-if( "development" === process.env["NODE_ENV"] ) {
-  await import( 'dotenv/config' );
-}
-
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
