@@ -5,7 +5,6 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: go1.x
-  stage: dev
   httpApi:
     cors: true
 
@@ -53,7 +52,8 @@ functions:
           method: post
   email-creds:
     name: gateway-email-creds
-    handler: index.handler
+    handler: funcs/email-creds/dist/index.handler
     description: Email an invitee their temporary credentials.
+    runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-creds
