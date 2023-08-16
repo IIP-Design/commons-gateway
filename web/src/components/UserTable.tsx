@@ -47,6 +47,23 @@ const renderCountWidget = (userCount: number, viewCount: number, viewOffset: num
   return `${start}${end} out of ${userCount}`
 }
 
+/**
+ * Calculates how many pages of results the table has.
+ * @param total The total number of users.
+ * @param show The number of items shown at any one time.
+ */
+const setIntermediatePagination = (total: number, show: number) => {
+  const divisions = Math.floor(total/show);
+
+  const pages = [];
+
+  for (let i = 0; i < divisions; i++) {
+    pages.push(i + 1);
+  }
+
+  return pages;
+}
+
 const UserTable: FC<IUserTableProps> = ({users, teams}) => {
   // Set the high and low ends of the view toggle.
   const LOW_VIEW = 30;
@@ -70,6 +87,14 @@ const UserTable: FC<IUserTableProps> = ({users, teams}) => {
    */
   const turnPage = (dir: 1 | -1) => {
     setViewOffset(viewOffset + dir);
+  }
+
+  /**
+   * Advance the table scroll to a give page of results.
+   * @param page The page to navigate to.
+   */
+  const goToPage = (page: number) => {
+    setViewOffset(page - 1) // Adjustment since offsets start at zero.
   }
 
   /**
@@ -143,6 +168,20 @@ const UserTable: FC<IUserTableProps> = ({users, teams}) => {
           >
             {`< Prev`}
           </button>
+          { setIntermediatePagination(userCount, viewCount).length > 3 && (
+            <span className={style['pagination-intermediate']}>
+              {setIntermediatePagination(userCount, viewCount).map(page => (
+                <button
+                  key={page}
+                  className={style['pagination-btn']}
+                  disabled={viewOffset + 1 === page}
+                  onClick={() => goToPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+            </span>
+          )}
           <button
             className={style['pagination-btn']}
             type="button"

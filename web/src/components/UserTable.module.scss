@@ -59,15 +59,20 @@
 .pagination {
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
 
   &-btn {
     border: none;
     background-color: transparent;
     font-size: var(--fontSizeNormal);
+    padding: 0 0.5rem;
 
     &:disabled {
       cursor: default;
     }
+  }
+
+  &-intermediate {
+    margin: 0 0.5rem;
   }
 }

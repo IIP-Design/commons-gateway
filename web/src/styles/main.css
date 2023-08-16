@@ -37,7 +37,7 @@ body {
 
 main {
   margin: 5rem;
-  height: calc(100% - calc(70px + 12rem));
+  height: calc(100% - calc(70px + 12rem)); /* Make sure main fills the page, adjusted for header */
 }
 
 h1 {
