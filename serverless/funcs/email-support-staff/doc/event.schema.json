@@ -1,0 +1,74 @@
+{
+    "$id": "event.schema.json",
+    "title": "Event Body Format for Support Staff Request Email",
+    "description": "Minimum data required to send an email based on a support staff request event",
+    "type": "object",
+    "properties": {
+        "contentCommonsUser": { "$ref": "#/$defs/user" },
+        "externalTeamLead": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "minLength": 6,
+                    "maxLength": 127
+                },
+                "givenName": {
+                    "description": "The given (first) name of the user",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "familyName": {
+                    "description": "The family (last) name of the user",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "teamName": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "teamId": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "required": [ "email", "givenName", "familyName" ],
+            "additionalProperties": false
+        },
+        "supportStaff": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/user" },
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true
+        }
+    },
+    "required": [ "contentCommonsUser", "externalTeamLead", "supportStaff" ],
+    "additionalProperties": false,
+    "$defs": {
+        "user": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "minLength": 6,
+                    "maxLength": 127
+                },
+                "givenName": {
+                    "description": "The given (first) name of the user",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "familyName": {
+                    "description": "The family (last) name of the user",
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "required": [ "email", "givenName", "familyName" ],
+            "additionalProperties": false
+        }
+    }
+}
