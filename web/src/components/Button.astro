@@ -1,14 +1,19 @@
 ---
 interface Props {
+  class?: string;
   id?: string;
   text: string;
   type?: 'button' | 'submit';
 }
 
-const { id, type, text } = Astro.props;
+const { class: classes, id, type, text } = Astro.props;
 ---
 
-<button id={id || ''} type={type || 'button'}>
+<button
+  class:list={[classes]}
+  id={id || ''}
+  type={type || 'button'}
+>
   {text}
 </button>
 

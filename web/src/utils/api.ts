@@ -17,23 +17,23 @@ interface IFetchBody {
  * @param body The data to be sent to the API.
  * @param method The HTTP request method.
  */
-const buildQuery = async (endpoint: string, body: IFetchBody, method?: TMethods) => ( 
-  fetch(`${API_ENDPOINT}/${endpoint}`, {
-    body: JSON.stringify(body),
+const buildQuery = async ( endpoint: string, body: IFetchBody, method?: TMethods ) => (
+  fetch( `${API_ENDPOINT}/${endpoint}`, {
+    body: JSON.stringify( body ),
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     method: method || 'POST',
-  })
-)
+  } )
+);
 
 /**
  * Retrieves the salt value used to hash the user's password.
  * @param username The name of the user to look up.
  * @returns The salt value (if the user exits).
  */
-export const passTheSalt = async (username: string) => {
-  const response = await buildQuery('creds', { username });
+export const passTheSalt = async ( username: string ) => {
+  const response = await buildQuery( 'creds', { username } );
 
   const { salt } = await response.json();
 
@@ -46,14 +46,14 @@ export const passTheSalt = async (username: string) => {
  * @param hash The locally generated password hash.
  * @param username The email of the user attempting to log in.
  */
-export const submitHash = async (action: TActions, hash: string, username: string) => {
-  const response = await buildQuery('creds', { 
+export const submitHash = async ( action: TActions, hash: string, username: string ) => {
+  const response = await buildQuery( 'creds', {
     action,
     hash,
     username,
-  });
+  } );
 
   const res = await response.json();
 
-  console.log(res);
-}
+  console.log( res );
+};
