@@ -7,8 +7,8 @@ import { createMockTeams } from './teams';
  * @param teamCount The number of teams to generate.
  */
 export const mockSomeData = ( userCount: number, teamCount: number ) => {
-  const teams = createMockTeams(teamCount);
-  const users = createMockUsers(userCount, teamCount);
+  const teams = createMockTeams( teamCount );
+  const users = createMockUsers( userCount, teamCount );
 
-  return {teams, users};
-}
+  return { teams, users };
+};

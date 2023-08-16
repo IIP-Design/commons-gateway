@@ -4,21 +4,21 @@
    *
    * @param e The dragenter/dragover event.
    */
-export const dragHandler = (e: DragEvent) => {
+export const dragHandler = ( e: DragEvent ) => {
   e.stopPropagation();
   e.preventDefault();
 };
 
-const addToUploadList = (file: string) => {
-  const list = document.getElementById("file-list");
-  const listItem = document.createElement("li");
-  
-  listItem.innerHTML = file;
-  list?.appendChild(listItem);
-}
+const addToUploadList = ( file: string ) => {
+  const list = document.getElementById( 'file-list' );
+  const listItem = document.createElement( 'li' );
 
-const handleFiles = (files: FileList) => {
-  [...files].forEach(file => addToUploadList(file.name));
+  listItem.innerHTML = file;
+  list?.appendChild( listItem );
+};
+
+const handleFiles = ( files: FileList ) => {
+  [...files].forEach( file => addToUploadList( file.name ) );
 };
 
 /**
@@ -26,13 +26,13 @@ const handleFiles = (files: FileList) => {
  *
  * @param e The drop event.
  */
-export const dropHandler = (e: DragEvent) => {
+export const dropHandler = ( e: DragEvent ) => {
   e.stopPropagation();
   e.preventDefault();
 
   const files = e?.dataTransfer?.files;
 
-  if (files) {
-    handleFiles(files);
+  if ( files ) {
+    handleFiles( files );
   }
 };

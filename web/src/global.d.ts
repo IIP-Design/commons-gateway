@@ -1,3 +1,5 @@
+declare module '*.scss';
+
 interface ITeam {
   id: string
   teamName: string

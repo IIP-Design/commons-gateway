@@ -1,0 +1,84 @@
+{
+  "extends": [
+    "@gpa-lab/eslint-config",
+    "@gpa-lab/eslint-config/react",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:astro/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".tsx"
+        ]
+      }
+    ],
+    "import/extensions": [
+      "warn",
+      "always",
+      {
+        "js": "never",
+        "jsx": "never",
+        "tsx": "never",
+        "ts": "never"
+      }
+    ],
+    "node/file-extension-in-import": [
+      "error",
+      "always",
+      {
+        ".js": "never",
+        ".jsx": "never",
+        ".ts": "never",
+        ".tsx": "never"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.d.ts"
+      ],
+      "rules": {
+        "spaced-comment": [
+          "error",
+          "always",
+          {
+            "markers": [
+              "/"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "*.astro"
+      ],
+      "parser": "astro-eslint-parser",
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser",
+        "extraFileExtensions": [
+          ".astro"
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [
+          ".d.ts",
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      }
+    }
+  }
+}
