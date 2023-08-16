@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
-import { getTeamName } from '../utils/team';
-import { selectSlice } from '../utils/arrays';
+import { getTeamName } from '../../utils/team';
+import { selectSlice } from '../../utils/arrays';
 
 import style from './UserTable.module.scss';
 
@@ -54,10 +54,12 @@ const renderCountWidget = ( userCount: number, viewCount: number, viewOffset: nu
  */
 const setIntermediatePagination = ( total: number, show: number ) => {
   const divisions = Math.floor( total / show );
+  const remainder = total % show;
+  const segments = remainder > 0 ? divisions + 1 : divisions;
 
   const pages = [];
 
-  for ( let i = 0; i < divisions; i++ ) {
+  for ( let i = 0; i < segments; i++ ) {
     pages.push( i + 1 );
   }
 
@@ -151,9 +153,7 @@ const UserTable: FC<IUserTableProps> = ( { users, teams } ) => {
             { userList && ( userList.map( user => (
               <tr key={ user.email }>
                 <td>
-                  { user.firstName }
-                  { ' ' }
-                  { user.lastName }
+                  { `${user.firstName} ${user.lastName}` }
                 </td>
                 <td>{ user.email }</td>
                 <td>{ getTeamName( user.team, teams ) }</td>

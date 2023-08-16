@@ -14,7 +14,7 @@ export const generateName = ( length: number ) => {
   let str = '';
 
   for ( let i = 0; i < length; i++ ) {
-    str += chars.charAt( Math.floor( Math.random() * chars.length ) );
+    str += chars.charAt( randomInt( chars.length ) );
   }
 
   return str.charAt( 0 ).toUpperCase() + str.slice( 1 );
