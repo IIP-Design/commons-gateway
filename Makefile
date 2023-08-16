@@ -3,10 +3,14 @@
 DEV_DIR = .gateway-dev
 DEV_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=disable -e DB_PASSWORD=gateway_dev -e DB_USER=gateway_dev -e JWT_SECRET=2fweb3m$ndj
 
+# Add SERVERLESS_STAGE=<stage> to make command to deploy to different stage
+SERVERLESS_STAGE=dev
+
 # Simulated events
 EVENT_ADMIN_CREATE = ./serverless/config/sim-events/admin-create.json
 EVENT_CREDS_SALT = ./serverless/config/sim-events/creds-salt.json
 EVENT_CREDS_PROVISION = ./serverless/config/sim-events/creds-provision.json
+EVENT_EMAIL_CREDS = ./serverless/config/sim-events/email-creds.json
 EVENT_GUEST_AUTH = ./serverless/config/sim-events/guest-auth.json
 
 build:
@@ -14,13 +18,15 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
+
+	cd email-creds && npm run zip
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
 
 deploy: clean build
-	cd serverless; sls deploy --verbose
+	cd serverless; sls deploy --stage $(SERVERLESS_STAGE) --verbose
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d
@@ -42,3 +48,6 @@ local-admin: build
 	
 local-salt: build
 	cd serverless;\sls invoke local -f creds-salt $(DEV_ENV) -p $(EVENT_CREDS_SALT);
+	
+local-email-creds: build
+	cd serverless;\sls invoke local -f email-creds $(DEV_ENV) -p $(EVENT_EMAIL_CREDS);

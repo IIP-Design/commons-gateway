@@ -8,10 +8,15 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-interface IEmailEventBody {
+interface IUser {
   email: string,
   givenName: string,
   familyName: string,
+}
+
+interface IEmailEventBody {
+  invitee: IUser,
+  inviter: IUser,
   tmpPassword: string,
   url: string,
 }
@@ -31,14 +36,15 @@ const ses = new SESClient( { region: AWS_SES_REGION || '' } );
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-function formatEmailBody( recvData: IEmailEventBody ) {
+function formatEmailBody( { invitee, inviter, url, tmpPassword }: IEmailEventBody ) {
   return `\
-<p>Hello ${recvData.givenName} ${recvData.familyName},</p>
+<p>Hello ${invitee.givenName} ${invitee.familyName},</p>
 
-<p>A new account has been created for you in the Content Commons system.  Your temporary login information is as follows:</p>
+<p>A new account has been created for you in the Content Commons system by ${inviter.givenName} ${inviter.familyName}.
+  Your temporary login information is as follows:</p>
 <ul>
-  <li>URL: ${recvData.url}</li>
-  <li>Password: ${recvData.tmpPassword}</li>
+  <li>URL: ${url}</li>
+  <li>Password: ${tmpPassword}</li>
 </ul>
 <p>Please login at your convenience to complete your workflow.</p>
 <p>Thank you,<br>The Content Commons Team</p>
@@ -48,7 +54,7 @@ function formatEmailBody( recvData: IEmailEventBody ) {
 function formatEmail( recvData: IEmailEventBody ) {
   return new SendEmailCommand( {
     Destination: {
-      ToAddresses: [recvData.email],
+      ToAddresses: [recvData.invitee.email],
     },
     Message: {
       Body: {

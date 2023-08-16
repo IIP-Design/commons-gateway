@@ -1,0 +1,7 @@
+{
+    "Records": [
+        {
+            "body": "{\"invitee\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\"},\"invitee\": {\"email\": \"pidge.hold@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\"},\"tmpPassword\": \"ABCDEFG\",\"url\":\"https://contentcommons.test/test\"}"
+        }
+    ]
+}
