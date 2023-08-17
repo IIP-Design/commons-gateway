@@ -1,0 +1,7 @@
+{
+    "Records": [
+        {
+            "body": "{\"externalTeamLead\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\",\"teamName\":\"Blue Team\"},\"contentCommonsUser\": {\"email\": \"pidge.holt@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\"},\"supportStaff\":[{\"email\": \"john.q.public@public.com\",\"givenName\": \"John\", \"familyName\": \"Public\"}]}"
+        }
+    ]
+}

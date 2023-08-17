@@ -33,7 +33,7 @@
                     "minLength": 1
                 }
             },
-            "required": [ "email", "givenName", "familyName" ],
+            "required": [ "email", "givenName", "familyName", "teamName", "teamId" ],
             "additionalProperties": false
         },
         "supportStaff": {

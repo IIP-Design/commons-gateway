@@ -36,7 +36,7 @@ const {
   SOURCE_EMAIL_ADDRESS,
 } = process.env;
 
-const logger = new Logger( { serviceName: AWS_SERVICE_NAME || 'email-creds' } );
+const logger = new Logger( { serviceName: AWS_SERVICE_NAME || 'email-support-staff' } );
 const ses = new SESClient( { region: AWS_SES_REGION || '' } );
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ function formatEmail( recvData: ISupportStaffEventBody ) {
         },
       },
       Subject: {
-        Data: 'Content Commons Account Created',
+        Data: `Content Commons Support Staff Request - ${recvData.externalTeamLead.teamName}`,
       },
     },
     Source: SOURCE_EMAIL_ADDRESS,
