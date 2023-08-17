@@ -29,7 +29,7 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 
 // CreateAdmin opens a database connection and records the association between an admin
 // user inviter and a guest user invitee along with the date of the invitation.
-func CreateAdmin(adminEmail string) error {
+func CreateAdmin(adminData User) error {
 	var err error
 
 	pool := connectToDB()
@@ -37,10 +37,14 @@ func CreateAdmin(adminEmail string) error {
 
 	currentTime := time.Now()
 
-	insertAdmin := `INSERT INTO "admins"("email", "active", "date_created") VALUES ($1, $2, $3);`
-	_, err = pool.Exec(insertAdmin, adminEmail, true, currentTime)
+	insertAdmin :=
+		`INSERT INTO "admins"("email", "first_name", "last_name", "team", "active", "date_created")
+		 VALUES ($1, $2, $3, $4, $5, $6);`
+	_, err = pool.Exec(insertAdmin, adminData.Email, adminData.NameFirst, adminData.NameLast, adminData.Team, true, currentTime)
 
-	logs.LogError(err, "Create Admin Query Error")
+	if err != nil {
+		logs.LogError(err, "Create Admin Query Error")
+	}
 
 	return err
 }
