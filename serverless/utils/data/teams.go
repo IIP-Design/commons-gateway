@@ -1,14 +1,12 @@
 package data
 
 import (
-	"encoding/json"
-
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
 // RetrieveTeams opens a database connection and retrieves the full list of teams.
-func RetrieveTeams() ([]string, error) {
-	var teams []string
+func RetrieveTeams() ([]map[string]string, error) {
+	var teams []map[string]string
 	var err error
 
 	pool := connectToDB()
@@ -30,14 +28,12 @@ func RetrieveTeams() ([]string, error) {
 			return teams, err
 		}
 
-		bytes, err := json.Marshal(team)
-
-		if err != nil {
-			logs.LogError(err, "Failed to Marshal Team User Data.")
-			return teams, err
+		teamData := map[string]string{
+			"id":   team.Id,
+			"name": team.Name,
 		}
 
-		teams = append(teams, string(bytes[:]))
+		teams = append(teams, teamData)
 	}
 
 	if err = rows.Err(); err != nil {

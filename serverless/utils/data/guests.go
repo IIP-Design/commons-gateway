@@ -1,15 +1,14 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
 // RetrieveGuests opens a database connection and retrieves the full list of admin users.
-func RetrieveGuests(team string) ([]string, error) {
-	var guests []string
+func RetrieveGuests(team string) ([]map[string]string, error) {
+	var guests []map[string]string
 	var err error
 	var query string
 
@@ -41,14 +40,15 @@ func RetrieveGuests(team string) ([]string, error) {
 			return guests, err
 		}
 
-		bytes, err := json.Marshal(guest)
-
-		if err != nil {
-			logs.LogError(err, "Failed to Marshal Guest User Data.")
-			return guests, err
+		guestData := map[string]string{
+			"email":      guest.Email,
+			"givenName":  guest.NameFirst,
+			"familyName": guest.NameLast,
+			"team":       guest.Team,
+			"expiration": guest.Expires,
 		}
 
-		guests = append(guests, string(bytes[:]))
+		guests = append(guests, guestData)
 	}
 
 	if err = rows.Err(); err != nil {

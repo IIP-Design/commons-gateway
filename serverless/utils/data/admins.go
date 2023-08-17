@@ -1,7 +1,6 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -51,8 +50,8 @@ func CreateAdmin(adminData User) error {
 }
 
 // RetrieveAdmins opens a database connection and retrieves the full list of admin users.
-func RetrieveAdmins() ([]string, error) {
-	var admins []string
+func RetrieveAdmins() ([]map[string]any, error) {
+	var admins []map[string]any
 	var err error
 
 	pool := connectToDB()
@@ -74,14 +73,15 @@ func RetrieveAdmins() ([]string, error) {
 			return admins, err
 		}
 
-		bytes, err := json.Marshal(admin)
-
-		if err != nil {
-			logs.LogError(err, "Failed to Marshal Admin User Data.")
-			return admins, err
+		adminData := map[string]any{
+			"email":      admin.Email,
+			"givenName":  admin.NameFirst,
+			"familyName": admin.NameLast,
+			"team":       admin.Team,
+			"active":     admin.Active,
 		}
 
-		admins = append(admins, string(bytes[:]))
+		admins = append(admins, adminData)
 	}
 
 	if err = rows.Err(); err != nil {

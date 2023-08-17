@@ -10,9 +10,11 @@ import (
 type Response events.APIGatewayProxyResponse
 
 // MarshalBody accepts any value and converts it into a stringified data object.
-// TODO: properly marshall arrays of objects.
 func MarshalBody(data any) ([]byte, error) {
-	body, err := json.Marshal(map[string]interface{}{
+	var body []byte
+	var err error
+
+	body, err = json.Marshal(map[string]any{
 		"data": data,
 	})
 

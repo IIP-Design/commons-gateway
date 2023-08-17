@@ -28,19 +28,19 @@ type RequestBodyOptions struct {
 
 // User represents the properties required to record a user.
 type User struct {
-	Email     string `json:"email"`
-	NameFirst string `json:"givenName"`
-	NameLast  string `json:"familyName"`
-	Team      string `json:"team"`
+	Email     string
+	NameFirst string
+	NameLast  string
+	Team      string
 }
 
 type AdminUser struct {
-	Active bool `json:"active"`
+	Active bool
 	User
 }
 
 type GuestUser struct {
-	Expires string `json:"expiration"`
+	Expires string
 	User
 }
 
