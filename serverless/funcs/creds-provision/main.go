@@ -13,11 +13,11 @@ import (
 )
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
-func handleInvitation(adminEmail string, guestEmail string) error {
+func handleInvitation(invite data.Invite) error {
 	var err error
 
 	// Ensure inviter is an active admin user.
-	adminActive, err := data.CheckForActiveAdmin(adminEmail)
+	adminActive, err := data.CheckForActiveAdmin(invite.Inviter)
 
 	if err != nil {
 		return err
@@ -26,34 +26,33 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 	}
 
 	// Ensure invitee doesn't already have access.
-	guestHasAccess, err := data.CheckForExistingUser(guestEmail, "guests")
+	guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
 
 	if err != nil {
 		return err
 	} else if guestHasAccess {
 		return errors.New("guest user already has access")
-	} else {
-		// Record the invitation
-		err = data.SaveInvite(adminEmail, guestEmail)
-
-		if err != nil {
-			return errors.New("something went wrong - saving invite failed")
-		}
-
-		// Generate credentials
-		pass, salt := generateCredentials()
-		hash := generateHash(pass, salt)
-
-		err = data.SaveCredentials(guestEmail, hash, salt)
-
-		if err == nil {
-			// TODO - send password
-			fmt.Printf("Your password is %s", pass)
-		} else {
-			return errors.New("something went wrong - credential generation failed")
-		}
 	}
 
+	// Generate credentials
+	pass, salt := generateCredentials()
+	hash := generateHash(pass, salt)
+
+	err = data.SaveCredentials(invite.Invitee, hash, salt)
+
+	if err != nil {
+		return errors.New("something went wrong - credential generation failed")
+	}
+
+	// Record the invitation - has to follow cred generation due to foreign key constraint
+	err = data.SaveInvite(invite.Inviter, invite.Invitee.Email)
+
+	if err != nil {
+		return errors.New("something went wrong - saving invite failed")
+	}
+
+	// TODO - email password
+	fmt.Printf("Your password is %s", pass)
 	return err
 }
 
@@ -65,18 +64,13 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	var msg string
 
-	parsed, err := data.ParseBodyData(event.Body)
-
-	inviter := parsed.Inviter
-	invitee := parsed.Invitee
+	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
-	} else if inviter == "" || invitee == "" {
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	err = handleInvitation(inviter, invitee)
+	err = handleInvitation(invite)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err

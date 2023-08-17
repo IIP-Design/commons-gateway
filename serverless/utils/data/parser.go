@@ -10,10 +10,15 @@ import (
 // RequestBodyOptions represents the possible properties on the body
 // JSON object sent to the serverless functions by the API Gateway.
 type RequestBodyOptions struct {
-	Action    string `json:"action"`
-	Email     string `json:"email"`
-	Hash      string `json:"hash"`
-	Invitee   string `json:"invitee"`
+	Action  string `json:"action"`
+	Email   string `json:"email"`
+	Hash    string `json:"hash"`
+	Invitee struct {
+		Email     string `json:"email"`
+		NameFirst string `json:"givenName"`
+		NameLast  string `json:"familyName"`
+		Team      string `json:"team"`
+	} `json:"invitee"`
 	Inviter   string `json:"inviter"`
 	NameFirst string `json:"givenName"`
 	NameLast  string `json:"familyName"`
@@ -27,6 +32,12 @@ type User struct {
 	NameFirst string
 	NameLast  string
 	Team      string
+}
+
+// User represents the properties required to record an invite.
+type Invite struct {
+	Invitee User
+	Inviter string
 }
 
 // ParseBodyData converts the serialized JSON string provided in the body
@@ -68,4 +79,32 @@ func ExtractUser(body string) (User, error) {
 	admin.Team = team
 
 	return admin, err
+}
+
+// ExtractInvite parses an API Gateway request body returning the data
+// need to create a guest user invitation.
+func ExtractInvite(body string) (Invite, error) {
+	var invite Invite
+
+	parsed, err := ParseBodyData(body)
+
+	admin := parsed.Inviter
+	guest := parsed.Invitee.Email
+	firstName := parsed.Invitee.NameFirst
+	lastName := parsed.Invitee.NameLast
+	team := parsed.Invitee.Team
+
+	if err != nil {
+		return invite, err
+	} else if admin == "" || guest == "" || lastName == "" || firstName == "" || team == "" {
+		return invite, errors.New("data missing from request")
+	}
+
+	invite.Inviter = admin
+	invite.Invitee.Email = guest
+	invite.Invitee.NameFirst = firstName
+	invite.Invitee.NameLast = lastName
+	invite.Invitee.Team = team
+
+	return invite, err
 }
