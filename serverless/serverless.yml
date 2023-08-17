@@ -57,3 +57,10 @@ functions:
     runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-creds
+  email-support-staff:
+    name: gateway-email-support-staff
+    handler: index.handler
+    description: Email a Content Commons user an update on requested support staff.
+    runtime: nodejs18.x
+    events:
+      - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-support-staff

@@ -1,23 +1,15 @@
 {
     "$id": "event.schema.json",
-    "title": "Event Body Format for Account Email",
-    "description": "Minimum data required to send an email based on an account creation event",
+    "title": "Event Body Format for Support Staff Request Email",
+    "description": "Minimum data required to send an email based on a support staff request event",
     "type": "object",
     "properties": {
-        "invitee": { "$ref": "#/$defs/user" },
-        "inviter": { "$ref": "#/$defs/user" },
-        "tmpPassword": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 256
-        },
-        "url": {
-            "type": "string",
-            "minLength": 12,
-            "maxLength": 1000
-        }
+        "contentCommonsUser": { "$ref": "#/$defs/user" },
+        "externalTeamLead": { "$ref": "#/$defs/user" },
+        "supportStaffuser": { "$ref": "#/$defs/user" },
+        "url": { "type": "string", "minLength": 11 }
     },
-    "required": [ "invitee", "url" ],
+    "required": [ "contentCommonsUser", "externalTeamLead", "supportStaffuser" ],
     "additionalProperties": false,
     "$defs": {
         "user": {

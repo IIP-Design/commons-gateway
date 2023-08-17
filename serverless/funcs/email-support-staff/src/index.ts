@@ -14,10 +14,10 @@ interface IUser {
   familyName: string,
 }
 
-interface IEmailEventBody {
-  invitee: IUser,
-  inviter?: IUser,
-  tmpPassword?: string,
+interface ISupportStaffEventBody {
+  contentCommonsUser: IUser,
+  externalTeamLead: IUser,
+  supportStaffUser: IUser,
   url: string,
 }
 
@@ -30,26 +30,27 @@ const {
   SOURCE_EMAIL_ADDRESS,
 } = process.env;
 
-const logger = new Logger( { serviceName: AWS_SERVICE_NAME || 'email-creds' } );
+const logger = new Logger( { serviceName: AWS_SERVICE_NAME || 'email-support-staff' } );
 const ses = new SESClient( { region: AWS_SES_REGION || 'us-east-1' } );
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-function formatEmailBody( { invitee, url }: IEmailEventBody ) {
+function formatEmailBody( { contentCommonsUser, externalTeamLead, supportStaffUser, url }: ISupportStaffEventBody ) {
   return `\
-<p>${invitee.givenName} ${invitee.familyName},</p>
+<p>${contentCommonsUser.givenName} ${contentCommonsUser.familyName},</p>
 
-<p>Your content upload account has been successfully created.  Please access the link below to finish provisioning your account.</p>
-<a href="${url}">${url}</a>
+<p>${externalTeamLead.givenName} ${externalTeamLead.familyName} has submitted a ticket for adding
+ ${supportStaffUser.givenName} ${supportStaffUser.familyName} for your approval.
+  Please follow <a href="${url}">this link</a> to approve or deny this request.</p>
 <p>This email was generated automatically. Please do not reply to this email.</p>
 `;
 }
 
-function formatEmail( recvData: IEmailEventBody ) {
+function formatEmail( recvData: ISupportStaffEventBody ) {
   return new SendEmailCommand( {
     Destination: {
-      ToAddresses: [recvData.invitee.email],
+      ToAddresses: [recvData.contentCommonsUser.email],
     },
     Message: {
       Body: {
@@ -59,7 +60,7 @@ function formatEmail( recvData: IEmailEventBody ) {
         },
       },
       Subject: {
-        Data: 'Content Commons Account Created',
+        Data: `Content Commons Support Staff Request`,
       },
     },
     Source: SOURCE_EMAIL_ADDRESS,
@@ -73,7 +74,7 @@ export const handler: Handler = async ( { Records: records }: SQSEvent ) => {
   const promises = records.map( async ( { messageId: eventMessageId, body } ) => {
     logger.debug( `Processing event with message ID ${eventMessageId}` );
 
-    const recvData: IEmailEventBody = JSON.parse( body );
+    const recvData: ISupportStaffEventBody = JSON.parse( body );
     const email = formatEmail( recvData );
 
     const { MessageId: emailMessageId } = await ses.send( email );

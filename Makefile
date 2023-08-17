@@ -12,6 +12,7 @@ EVENT_ADMIN_CREATE = ./config/sim-events/admin-create.json
 EVENT_CREDS_SALT = ./config/sim-events/creds-salt.json
 EVENT_CREDS_PROVISION = ./config/sim-events/creds-provision.json
 EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
+EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
 EVENT_GUEST_AUTH = ./config/sim-events/guest-auth.json
 
 build:
@@ -20,8 +21,9 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
-
-	cd serverless/funcs/email-creds && npm run zip
+	cd funcs;\
+	cd email-creds && npm run zip && cd ../;\
+	cd email-support-staff && npm run zip && cd ../;
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
@@ -52,3 +54,6 @@ local-salt: build
 	
 local-email-creds: build
 	cd serverless;\sls invoke local -f email-creds $(DEV_AWS_ENV) -p $(EVENT_EMAIL_CREDS);
+
+local-email-support-staff: build
+	cd serverless;\sls invoke local -f email-support-staff $(DEV_ENV) -p $(EVENT_EMAIL_SUPPORT_STAFF);
