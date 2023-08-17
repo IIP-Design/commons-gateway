@@ -37,7 +37,7 @@ const {
 } = process.env;
 
 const logger = new Logger( { serviceName: AWS_SERVICE_NAME || 'email-support-staff' } );
-const ses = new SESClient( { region: AWS_SES_REGION || '' } );
+const ses = new SESClient( { region: AWS_SES_REGION || 'us-east-1' } );
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
@@ -47,8 +47,8 @@ function formatEmailBody( { contentCommonsUser, externalTeamLead, supportStaff }
 <p>Hello ${contentCommonsUser.givenName} ${contentCommonsUser.familyName},</p>
 
 <p>${externalTeamLead.givenName} ${externalTeamLead.familyName} from team ${externalTeamLead.teamName}
- has requested ${supportStaff.length} support staff be authorized to their team.
-  Please review the list below and approve ordeny access at your convenience.</p>
+ has requested ${supportStaff.length} support staff member${supportStaff.length > 1 ? 's' : ''} be authorized to their team.
+  Please review the list below and approve or deny access at your convenience.</p>
 <ul>
   ${
   supportStaff.map( user => `<li>${user.givenName} ${user.familyName} (${user.email})</li>` ).join( '' )
@@ -99,7 +99,7 @@ export const handler: Handler = async ( { Records: records }: SQSEvent ) => {
     if ( result.status === 'fulfilled' ) {
       const { value: { emailMessageId, eventMessageId } } = result;
 
-      logger.info( `Send email with ID ${emailMessageId} for event ${eventMessageId}` );
+      logger.info( `Sent email with ID ${emailMessageId} for event ${eventMessageId}` );
     } else {
       logger.error( result.reason );
     }

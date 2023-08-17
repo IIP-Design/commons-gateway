@@ -31,7 +31,7 @@ const {
 } = process.env;
 
 const logger = new Logger( { serviceName: AWS_SERVICE_NAME || 'email-creds' } );
-const ses = new SESClient( { region: AWS_SES_REGION || '' } );
+const ses = new SESClient( { region: AWS_SES_REGION || 'us-east-1' } );
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
@@ -92,7 +92,7 @@ export const handler: Handler = async ( { Records: records }: SQSEvent ) => {
     if ( result.status === 'fulfilled' ) {
       const { value: { emailMessageId, eventMessageId } } = result;
 
-      logger.info( `Send email with ID ${emailMessageId} for event ${eventMessageId}` );
+      logger.info( `Sent email with ID ${emailMessageId} for event ${eventMessageId}` );
     } else {
       logger.error( result.reason );
     }

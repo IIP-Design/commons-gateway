@@ -1,7 +1,7 @@
 {
     "Records": [
         {
-            "body": "{\"externalTeamLead\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\",\"teamName\":\"Blue Team\"},\"contentCommonsUser\": {\"email\": \"pidge.holt@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\"},\"supportStaff\":[{\"email\": \"john.q.public@public.com\",\"givenName\": \"John\", \"familyName\": \"Public\"}]}"
+            "body": "{\"contentCommonsUser\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\"},\"externalTeamLead\": {\"email\": \"pidge.holt@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\",\"teamName\":\"Blue Team\"},\"supportStaff\":[{\"email\": \"john.q.public@public.com\",\"givenName\": \"John\", \"familyName\": \"Public\"}]}"
         }
     ]
 }
