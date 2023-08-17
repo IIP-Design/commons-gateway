@@ -14,17 +14,11 @@ interface IUser {
   familyName: string,
 }
 
-interface ITeam {
-  teamName: string,
-  teamId: string,
-}
-
-type WithTeam<T> = T & ITeam
-
 interface ISupportStaffEventBody {
   contentCommonsUser: IUser,
-  externalTeamLead: WithTeam<IUser>,
-  supportStaff: IUser[],
+  externalTeamLead: IUser,
+  supportStaffUser: IUser,
+  url: string,
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -42,19 +36,14 @@ const ses = new SESClient( { region: AWS_SES_REGION || 'us-east-1' } );
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-function formatEmailBody( { contentCommonsUser, externalTeamLead, supportStaff }: ISupportStaffEventBody ) {
+function formatEmailBody( { contentCommonsUser, externalTeamLead, supportStaffUser, url }: ISupportStaffEventBody ) {
   return `\
-<p>Hello ${contentCommonsUser.givenName} ${contentCommonsUser.familyName},</p>
+<p>${contentCommonsUser.givenName} ${contentCommonsUser.familyName},</p>
 
-<p>${externalTeamLead.givenName} ${externalTeamLead.familyName} from team ${externalTeamLead.teamName}
- has requested ${supportStaff.length} support staff member${supportStaff.length > 1 ? 's' : ''} be authorized to their team.
-  Please review the list below and approve or deny access at your convenience.</p>
-<ul>
-  ${
-  supportStaff.map( user => `<li>${user.givenName} ${user.familyName} (${user.email})</li>` ).join( '' )
-}
-</ul>
-<p>Thank you,<br>The Content Commons Team</p>
+<p>${externalTeamLead.givenName} ${externalTeamLead.familyName} has submitted a ticket for adding
+ ${supportStaffUser.givenName} ${supportStaffUser.familyName} for your approval.
+  Please follow <a href="${url}">this link</a> to approve or deny this request.</p>
+<p>This email was generated automatically. Please do not reply to this email.</p>
 `;
 }
 
@@ -71,7 +60,7 @@ function formatEmail( recvData: ISupportStaffEventBody ) {
         },
       },
       Subject: {
-        Data: `Content Commons Support Staff Request - ${recvData.externalTeamLead.teamName}`,
+        Data: `Content Commons Support Staff Request`,
       },
     },
     Source: SOURCE_EMAIL_ADDRESS,

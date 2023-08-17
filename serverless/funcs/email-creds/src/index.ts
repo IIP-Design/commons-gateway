@@ -16,8 +16,8 @@ interface IUser {
 
 interface IEmailEventBody {
   invitee: IUser,
-  inviter: IUser,
-  tmpPassword: string,
+  inviter?: IUser,
+  tmpPassword?: string,
   url: string,
 }
 
@@ -36,18 +36,13 @@ const ses = new SESClient( { region: AWS_SES_REGION || 'us-east-1' } );
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-function formatEmailBody( { invitee, inviter, url, tmpPassword }: IEmailEventBody ) {
+function formatEmailBody( { invitee, url }: IEmailEventBody ) {
   return `\
-<p>Hello ${invitee.givenName} ${invitee.familyName},</p>
+<p>${invitee.givenName} ${invitee.familyName},</p>
 
-<p>A new account has been created for you in the Content Commons system by ${inviter.givenName} ${inviter.familyName}.
-  Your temporary login information is as follows:</p>
-<ul>
-  <li>URL: ${url}</li>
-  <li>Password: ${tmpPassword}</li>
-</ul>
-<p>Please login at your convenience to complete your workflow.</p>
-<p>Thank you,<br>The Content Commons Team</p>
+<p>Your content upload account has been successfully created.  Please access the link below to finish provisioning your account.</p>
+<a href="${url}">${url}</a>
+<p>This email was generated automatically. Please do not reply to this email.</p>
 `;
 }
 

@@ -17,7 +17,7 @@
             "maxLength": 1000
         }
     },
-    "required": [ "email", "givenName", "familyName", "tmpPassword", "url" ],
+    "required": [ "invitee", "url" ],
     "additionalProperties": false,
     "$defs": {
         "user": {

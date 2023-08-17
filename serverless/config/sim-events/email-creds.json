@@ -1,7 +1,7 @@
 {
     "Records": [
         {
-            "body": "{\"invitee\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\"},\"inviter\": {\"email\": \"pidge.holt@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\"},\"tmpPassword\": \"ABCDEFG\",\"url\":\"https://contentcommons.test/test\"}"
+            "body": "{\"invitee\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\"},\"inviter\": {\"email\": \"pidge.holt@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\"},\"url\":\"https://contentcommons.test/test\"}"
         }
     ]
 }
