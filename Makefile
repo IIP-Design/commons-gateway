@@ -19,6 +19,7 @@ EVENT_GUEST_AUTH = ./config/sim-events/guest-auth.json
 build:
 	cd serverless;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
@@ -50,7 +51,10 @@ local-auth: build
 
 local-admin: build
 	cd serverless;\sls invoke local -f admin-create $(DEV_DB_ENV) -p $(EVENT_ADMIN_CREATE);
-	
+
+local-admins: build
+	cd serverless;\sls invoke local -f admins-get $(DEV_DB_ENV);
+
 local-salt: build
 	cd serverless;\sls invoke local -f creds-salt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
 	

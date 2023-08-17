@@ -1,6 +1,6 @@
 service: commons-gateway
 
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -10,7 +10,7 @@ provider:
 
 package:
   patterns:
-    - '!./**'
+    - "!./**"
     - ./bin/**
 
 functions:
@@ -22,6 +22,16 @@ functions:
       - http:
           path: /admin/create
           method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  admins-get:
+    name: gateway-get-admins
+    handler: bin/admins-get
+    description: Retrieve the list of admin users.
+    events:
+      - http:
+          path: /admins/get
+          method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   guest-auth:

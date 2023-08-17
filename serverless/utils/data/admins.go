@@ -49,3 +49,45 @@ func CreateAdmin(adminData User) error {
 
 	return err
 }
+
+// RetrieveAdmins opens a database connection and retrieves the full list of admin users.
+func RetrieveAdmins() ([]string, error) {
+	var admins []string
+	var err error
+
+	pool := connectToDB()
+	defer pool.Close()
+
+	rows, err := pool.Query(`SELECT email, first_name, last_name, team, active FROM admins`)
+
+	if err != nil {
+		logs.LogError(err, "Get Admins Query Error")
+		return admins, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var admin User
+		if err := rows.Scan(&admin.Email, &admin.NameFirst, &admin.NameLast, &admin.Team, &admin.Active); err != nil {
+			logs.LogError(err, "Get Admins Query Error")
+			return admins, err
+		}
+
+		bytes, err := json.Marshal(admin)
+
+		if err != nil {
+			logs.LogError(err, "Failed to Marshal Admin User Data.")
+			return admins, err
+		}
+
+		admins = append(admins, string(bytes[:]))
+	}
+
+	if err = rows.Err(); err != nil {
+		logs.LogError(err, "Get Admins Query Error")
+		return admins, err
+	}
+
+	return admins, err
+}

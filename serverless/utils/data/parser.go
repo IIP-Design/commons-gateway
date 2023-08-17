@@ -28,10 +28,11 @@ type RequestBodyOptions struct {
 
 // User represents the properties required to record a user.
 type User struct {
-	Email     string
-	NameFirst string
-	NameLast  string
-	Team      string
+	Email     string `json:"email"`
+	NameFirst string `json:"givenName"`
+	NameLast  string `json:"familyName"`
+	Team      string `json:"team"`
+	Active    bool   `json:"active"`
 }
 
 // User represents the properties required to record an invite.
