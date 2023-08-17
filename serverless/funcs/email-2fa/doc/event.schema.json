@@ -1,0 +1,41 @@
+{
+    "$id": "event.schema.json",
+    "title": "Event Body Format for Account Email",
+    "description": "Minimum data required to send an email based on an account creation event",
+    "type": "object",
+    "properties": {
+        "user": { "$ref": "#/$defs/user" },
+        "verificationCode": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 256
+        }
+    },
+    "required": [ "user", "verificationCode" ],
+    "additionalProperties": false,
+    "$defs": {
+        "user": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "minLength": 6,
+                    "maxLength": 127
+                },
+                "givenName": {
+                    "description": "The given (first) name of the user",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "familyName": {
+                    "description": "The family (last) name of the user",
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "required": [ "email", "givenName", "familyName" ],
+            "additionalProperties": false
+        }
+    }
+}
