@@ -9,18 +9,20 @@ import (
 
 type Response events.APIGatewayProxyResponse
 
-// prepareResponse accepts any string as an input and sets it to the message property
-// of the the response body (unless there is an error when marshalling the JSON).
-func PrepareResponse(msg string) (Response, error) {
-	var buf bytes.Buffer
-
+// MarshalBody accepts any value and converts it into a stringified data object.
+// TODO: properly marshall arrays of objects.
+func MarshalBody(data any) ([]byte, error) {
 	body, err := json.Marshal(map[string]interface{}{
-		"message": msg,
+		"data": data,
 	})
 
-	if err != nil {
-		return Response{StatusCode: 404}, err
-	}
+	return body, err
+}
+
+// PrepareResponse accepts any string as an input and sets it to the message property
+// of the the response body (unless there is an error when marshalling the JSON).
+func PrepareResponse(body []byte) (Response, error) {
+	var buf bytes.Buffer
 
 	json.HTMLEscape(&buf, body)
 

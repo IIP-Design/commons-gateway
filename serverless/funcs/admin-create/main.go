@@ -32,7 +32,6 @@ func handleAdminCreation(adminData data.User) error {
 // ensures that the required data is present before continuing on to recording
 // the user's email in the list of admins.
 func NewAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	var msg string
 	var err error
 
 	admin, err := data.ExtractUser(event.Body)
@@ -45,11 +44,9 @@ func NewAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
-	} else {
-		msg = "success"
 	}
 
-	return msgs.PrepareResponse(msg)
+	return msgs.PrepareResponse([]byte("success"))
 }
 
 func main() {

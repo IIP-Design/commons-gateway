@@ -33,7 +33,13 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.Response{StatusCode: 500}, err
 	}
 
-	return msgs.PrepareResponse(jwt)
+	body, err := msgs.MarshalBody(jwt)
+
+	if err != nil {
+		return msgs.Response{StatusCode: 500}, err
+	}
+
+	return msgs.PrepareResponse(body)
 }
 
 // AuthenticationHandler manages guest user authentication by either generating a JSON web

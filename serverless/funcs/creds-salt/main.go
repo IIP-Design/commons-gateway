@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
 	data "github.com/IIP-Design/commons-gateway/utils/data"
@@ -33,8 +32,6 @@ func handleCredentialRequest(username string) (data.CredentialsData, error) {
 
 // GetSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
 func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	var msg []byte
-
 	parsed, err := data.ParseBodyData(event.Body)
 
 	user := parsed.Username
@@ -50,15 +47,15 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
-	} else {
-		msg, err = json.Marshal(creds.Salt)
-
-		if err != nil {
-			return msgs.Response{StatusCode: 500}, err
-		}
 	}
 
-	return msgs.PrepareResponse(string(msg))
+	body, err := msgs.MarshalBody(creds.Salt)
+
+	if err != nil {
+		return msgs.Response{StatusCode: 500}, err
+	}
+
+	return msgs.PrepareResponse(body)
 }
 
 func main() {

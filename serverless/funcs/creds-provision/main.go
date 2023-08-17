@@ -62,8 +62,6 @@ func handleInvitation(invite data.Invite) error {
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
 func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	var msg string
-
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {
@@ -74,11 +72,9 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
-	} else {
-		msg = "success"
 	}
 
-	return msgs.PrepareResponse(msg)
+	return msgs.PrepareResponse([]byte("success"))
 }
 
 func main() {
