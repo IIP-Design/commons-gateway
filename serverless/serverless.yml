@@ -34,6 +34,24 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  guest-auth:
+    name: gateway-guest-auth
+    handler: bin/guest-auth
+    description: Authenticate a guest user.
+    events:
+      - httpApi:
+          path: /guest-auth
+          method: post
+  guests-get:
+    name: gateway-guests-get
+    handler: bin/guests-get
+    description: Retrieve a list of guest users.
+    events:
+      - http:
+          path: /guests/get
+          method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   teams-get:
     name: gateway-get-teams
     handler: bin/teams-get
@@ -44,14 +62,6 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  guest-auth:
-    name: gateway-guest-auth
-    handler: bin/guest-auth
-    description: Authenticate a guest user.
-    events:
-      - httpApi:
-          path: /guest-auth
-          method: post
   creds-salt:
     name: gateway-retrieve-creds
     handler: bin/creds-salt

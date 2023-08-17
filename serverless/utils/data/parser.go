@@ -32,7 +32,16 @@ type User struct {
 	NameFirst string `json:"givenName"`
 	NameLast  string `json:"familyName"`
 	Team      string `json:"team"`
-	Active    bool   `json:"active"`
+}
+
+type AdminUser struct {
+	Active bool `json:"active"`
+	User
+}
+
+type GuestUser struct {
+	Expires string `json:"expiration"`
+	User
 }
 
 type Team struct {

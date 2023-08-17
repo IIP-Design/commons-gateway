@@ -68,7 +68,7 @@ func RetrieveAdmins() ([]string, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var admin User
+		var admin AdminUser
 		if err := rows.Scan(&admin.Email, &admin.NameFirst, &admin.NameLast, &admin.Team, &admin.Active); err != nil {
 			logs.LogError(err, "Get Admins Query Error")
 			return admins, err
