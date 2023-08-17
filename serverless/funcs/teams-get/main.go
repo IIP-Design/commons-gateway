@@ -16,13 +16,13 @@ func GetTeamsHandler(ctx context.Context) (msgs.Response, error) {
 	teams, err := data.RetrieveTeams()
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	body, err := msgs.MarshalBody(teams)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse(body)

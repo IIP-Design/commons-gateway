@@ -16,13 +16,13 @@ func GetAdminsHandler(ctx context.Context) (msgs.Response, error) {
 	admins, err := data.RetrieveAdmins()
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	body, err := msgs.MarshalBody(admins)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse(body)

@@ -37,13 +37,13 @@ func NewAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 	admin, err := data.ExtractUser(event.Body)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	err = handleAdminCreation(admin)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse([]byte("success"))

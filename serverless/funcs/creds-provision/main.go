@@ -65,13 +65,13 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	err = handleInvitation(invite)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse([]byte("success"))

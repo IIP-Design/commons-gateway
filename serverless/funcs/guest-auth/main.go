@@ -20,7 +20,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 	creds, err := data.RetrieveCredentials(username)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	if creds.Hash != clientHash {
@@ -30,13 +30,13 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 	jwt, err := generateJWT(username, "guest")
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	body, err := msgs.MarshalBody(jwt)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse(body)
@@ -48,7 +48,7 @@ func AuthenticationHandler(ctx events.APIGatewayProxyRequestContext, event event
 	parsed, err := data.ParseBodyData(event.Body)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	action := parsed.Action

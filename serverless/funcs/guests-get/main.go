@@ -21,19 +21,19 @@ func GetGuestsHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 	team := parsed.Team
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	guests, err := data.RetrieveGuests(team)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	body, err := msgs.MarshalBody(guests)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse(body)

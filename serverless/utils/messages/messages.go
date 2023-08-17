@@ -37,3 +37,9 @@ func PrepareResponse(body []byte) (Response, error) {
 
 	return resp, nil
 }
+
+// SendServerError accepts an error and returns it as an API Gateway response with
+// a status code of 500.
+func SendServerError(err error) (Response, error) {
+	return Response{StatusCode: 500}, err
+}

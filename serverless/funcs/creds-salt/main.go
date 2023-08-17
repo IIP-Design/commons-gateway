@@ -37,7 +37,7 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	user := parsed.Username
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	} else if user == "" {
 		logs.LogError(nil, "Username not provided in request.")
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
@@ -46,13 +46,13 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	creds, err := handleCredentialRequest(user)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	body, err := msgs.MarshalBody(creds.Salt)
 
 	if err != nil {
-		return msgs.Response{StatusCode: 500}, err
+		return msgs.SendServerError(err)
 	}
 
 	return msgs.PrepareResponse(body)
