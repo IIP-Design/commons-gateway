@@ -50,6 +50,13 @@ functions:
       - httpApi:
           path: /creds/provision
           method: post
+  email-2fa:
+    name: gateway-email-2fa
+    handler: funcs/email-2fa/dist/index.handler
+    description: Email an invitee their temporary verification code.
+    runtime: nodejs18.x
+    events:
+      - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-2fa
   email-creds:
     name: gateway-email-creds
     handler: funcs/email-creds/dist/index.handler
@@ -59,7 +66,7 @@ functions:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-creds
   email-support-staff:
     name: gateway-email-support-staff
-    handler: index.handler
+    handler: funcs/email-support-staff/index.handler
     description: Email a Content Commons user an update on requested support staff.
     runtime: nodejs18.x
     events:

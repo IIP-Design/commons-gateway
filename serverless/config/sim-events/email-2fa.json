@@ -1,0 +1,7 @@
+{
+    "Records": [
+        {
+            "body": "{\"user\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\"},\"verificationCode\":\"DEADBEEF\"}"
+        }
+    ]
+}
