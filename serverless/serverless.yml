@@ -34,6 +34,16 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  teams-get:
+    name: gateway-get-teams
+    handler: bin/teams-get
+    description: Retrieve the list of teams.
+    events:
+      - http:
+          path: /teams/get
+          method: get
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   guest-auth:
     name: gateway-guest-auth
     handler: bin/guest-auth

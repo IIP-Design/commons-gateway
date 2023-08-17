@@ -35,6 +35,11 @@ type User struct {
 	Active    bool   `json:"active"`
 }
 
+type Team struct {
+	Id   string
+	Name string
+}
+
 // User represents the properties required to record an invite.
 type Invite struct {
 	Invitee User

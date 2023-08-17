@@ -9,17 +9,17 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// GetAdminsHandler handles the request to retrieve a list of all admin users.
-func GetAdminsHandler(ctx context.Context) (msgs.Response, error) {
+// GetTeamsHandler handles the request to retrieve a list of all the teams.
+func GetTeamsHandler(ctx context.Context) (msgs.Response, error) {
 	var err error
 
-	admins, err := data.RetrieveAdmins()
+	teams, err := data.RetrieveTeams()
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
 	}
 
-	body, err := msgs.MarshalBody(admins)
+	body, err := msgs.MarshalBody(teams)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
@@ -29,5 +29,5 @@ func GetAdminsHandler(ctx context.Context) (msgs.Response, error) {
 }
 
 func main() {
-	lambda.Start(GetAdminsHandler)
+	lambda.Start(GetTeamsHandler)
 }

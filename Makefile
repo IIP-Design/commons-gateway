@@ -23,6 +23,7 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\
 	cd email-creds && npm run zip && cd ../;\
@@ -57,10 +58,13 @@ local-admins: build
 
 local-salt: build
 	cd serverless;\sls invoke local -f creds-salt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
-	
+
+local-teams: build
+	cd serverless;\sls invoke local -f teams-get $(DEV_DB_ENV);
+
 local-email-2fa: build
 	cd serverless;\sls invoke local -f email-2fa $(DEV_AWS_ENV) -p $(EVENT_EMAIL_2FA);
-	
+
 local-email-creds: build
 	cd serverless;\sls invoke local -f email-creds $(DEV_AWS_ENV) -p $(EVENT_EMAIL_CREDS);
 
