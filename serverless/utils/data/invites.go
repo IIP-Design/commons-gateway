@@ -36,7 +36,9 @@ func SaveCredentials(email string, hash string, salt string) error {
 
 	currentTime := time.Now()
 
-	insertCreds := `INSERT INTO "credentials"("email", "pass_hash", "salt", "date_created" ) VALUES ($1, $2, $3, $4);`
+	insertCreds :=
+		`INSERT INTO "guests"("email", "pass_hash", "salt", "date_created" )
+		 VALUES ($1, $2, $3, $4);`
 	_, err = pool.Exec(insertCreds, email, hash, salt, currentTime)
 
 	logs.LogError(err, "Save Credentials Query Error")

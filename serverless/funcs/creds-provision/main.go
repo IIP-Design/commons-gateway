@@ -26,7 +26,7 @@ func handleInvitation(adminEmail string, guestEmail string) error {
 	}
 
 	// Ensure invitee doesn't already have access.
-	guestHasAccess, err := data.CheckForExistingUser(guestEmail, "credentials")
+	guestHasAccess, err := data.CheckForExistingUser(guestEmail, "guests")
 
 	if err != nil {
 		return err

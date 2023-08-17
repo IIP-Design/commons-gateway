@@ -6,7 +6,7 @@ database=gateway_dev
 user=gateway_dev
 
 # Query to delete all the dev data.
-truncate_query='TRUNCATE admins, credentials, invites;'
+truncate_query='TRUNCATE admins, guests, invites, teams;'
 
 # Run the queries.
 echo "\nResetting the database..."
