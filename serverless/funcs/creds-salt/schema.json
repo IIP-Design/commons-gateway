@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Request User Salt Schema",
+  "required": ["username"],
+  "properties": {
+    "username": {
+      "type": "string",
+      "title": "The user's email address which doubles as their username."
+    }
+  }
+}

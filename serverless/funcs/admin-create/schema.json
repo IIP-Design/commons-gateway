@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "event.schema.json",
+  "title": "Event Body Format for Admin Create",
+  "description": "Data required to create a new admin user",
+  "type": "object",
+  "properties": {
+    "email": { "$ref": "#/$defs/user" },
+    "givenName": { "$ref": "#/$defs/user" },
+    "familyName": { "$ref": "#/$defs/user" },
+    "team": { "$ref": "#/$defs/user" }
+  },
+  "required": ["email", "givenName", "familyName", "team"],
+  "additionalProperties": false,
+  "$defs": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 6,
+          "maxLength": 127
+        },
+        "givenName": {
+          "description": "The given (first) name of the user",
+          "type": "string",
+          "minLength": 1
+        },
+        "familyName": {
+          "description": "The family (last) name of the user",
+          "type": "string",
+          "minLength": 1
+        },
+        "team": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["email", "givenName", "familyName", "team"],
+      "additionalProperties": false
+    }
+  }
+}

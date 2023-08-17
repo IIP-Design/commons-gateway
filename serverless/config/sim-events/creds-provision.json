@@ -1,3 +1,3 @@
 {
-  "body": "\"inviter\": \"test@gmail.com\", \"invitee\": \"test1@gmail.com\""
+  "body": "{\"inviter\": \"alice@testmail.com\", \"invitee\": {\"email\": \"daisy@testmail.com\", \"givenName\": \"Daisy\", \"familyName\": \"Durian\", \"team\": \"1\" } }"
 }

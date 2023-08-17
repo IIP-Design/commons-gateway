@@ -12,10 +12,10 @@ import (
 )
 
 // handleAdminCreation coordinates all the actions associated with creating a new user.
-func handleAdminCreation(adminEmail string) error {
+func handleAdminCreation(adminData data.User) error {
 	var err error
 
-	isAdmin, err := data.CheckForExistingUser(adminEmail, "admin")
+	isAdmin, err := data.CheckForExistingUser(adminData.Email, "admins")
 
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func handleAdminCreation(adminEmail string) error {
 		return errors.New("this user has already been added as an administrator")
 	}
 
-	err = data.CreateAdmin(adminEmail)
+	err = data.CreateAdmin(adminData)
 
 	return err
 }
@@ -33,18 +33,15 @@ func handleAdminCreation(adminEmail string) error {
 // the user's email in the list of admins.
 func NewAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	var msg string
+	var err error
 
-	parsed, err := data.ParseBodyData(event.Body)
-
-	adminEmail := parsed.Email
+	admin, err := data.ExtractUser(event.Body)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err
-	} else if adminEmail == "" {
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	err = handleAdminCreation(adminEmail)
+	err = handleAdminCreation(admin)
 
 	if err != nil {
 		return msgs.Response{StatusCode: 500}, err

@@ -21,7 +21,7 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 	var pass_hash string
 	var salt string
 
-	query := fmt.Sprintf(`SELECT pass_hash, salt FROM credentials WHERE email = '%s';`, email)
+	query := fmt.Sprintf(`SELECT pass_hash, salt FROM guests WHERE email = '%s';`, email)
 	err = pool.QueryRow(query).Scan(&pass_hash, &salt)
 
 	if err != nil {
