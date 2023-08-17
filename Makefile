@@ -8,12 +8,12 @@ DEV_DB_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmod
 SERVERLESS_STAGE=dev
 
 # Simulated events
-EVENT_ADMIN_CREATE = ./serverless/config/sim-events/admin-create.json
-EVENT_CREDS_SALT = ./serverless/config/sim-events/creds-salt.json
-EVENT_CREDS_PROVISION = ./serverless/config/sim-events/creds-provision.json
+EVENT_ADMIN_CREATE = ./config/sim-events/admin-create.json
+EVENT_CREDS_SALT = ./config/sim-events/creds-salt.json
+EVENT_CREDS_PROVISION = ./config/sim-events/creds-provision.json
 EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
-EVENT_EMAIL_SUPPORT_STAFF = ./serverless/config/sim-events/email-support-staff.json
-EVENT_GUEST_AUTH = ./serverless/config/sim-events/guest-auth.json
+EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
+EVENT_GUEST_AUTH = ./config/sim-events/guest-auth.json
 
 build:
 	cd serverless;\
@@ -21,10 +21,9 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
-
-	cd funcs;
-	cd email-creds && npm run zip && cd ../
-	cd email-support-staff && npm run zip && cd ../
+	cd funcs;\
+	cd email-creds && npm run zip && cd ../;\
+	cd email-support-staff && npm run zip && cd ../;
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
