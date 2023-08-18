@@ -41,8 +41,8 @@ func connectToDB() *sql.DB {
 	return pool
 }
 
-// checkForExistingUser opens a database connection and checks whether the provided
-// email (which is a unique value constraint in the admins and credentials tables) is
+// CheckForExistingUser opens a database connection and checks whether the provided
+// email (which is a unique value constraint in the admins and guests tables) is
 // present in the provided table. An affirmative check indicates that the given user
 // has the access implied by their presence in the table.
 func CheckForExistingUser(email string, table string) (bool, error) {
@@ -57,7 +57,7 @@ func CheckForExistingUser(email string, table string) (bool, error) {
 	err = pool.QueryRow(query).Scan(&user)
 
 	if err != nil {
-		// Do not return an error is no results are found.
+		// Do not return an error if no results are found.
 		if err == sql.ErrNoRows {
 			return false, nil
 		}

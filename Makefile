@@ -16,6 +16,7 @@ EVENT_GUESTS_GET = ./config/sim-events/guests-get.json
 EVENT_EMAIL_2FA = ./config/sim-events/email-2fa.json
 EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
 EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
+EVENT_TEAM_CREATE = ./config/sim-events/team-create.json
 
 build:
 	cd serverless;\
@@ -25,6 +26,7 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\
@@ -63,6 +65,9 @@ local-guests: build
 
 local-salt: build
 	cd serverless;\sls invoke local -f creds-salt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
+
+local-team: build
+	cd serverless;\sls invoke local -f team-create $(DEV_DB_ENV) -p $(EVENT_TEAM_CREATE);
 
 local-teams: build
 	cd serverless;\sls invoke local -f teams-get $(DEV_DB_ENV);
