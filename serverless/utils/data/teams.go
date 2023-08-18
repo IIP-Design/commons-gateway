@@ -5,14 +5,14 @@ import (
 )
 
 // RetrieveTeams opens a database connection and retrieves the full list of teams.
-func RetrieveTeams() ([]map[string]string, error) {
-	var teams []map[string]string
+func RetrieveTeams() ([]map[string]any, error) {
+	var teams []map[string]any
 	var err error
 
 	pool := connectToDB()
 	defer pool.Close()
 
-	rows, err := pool.Query(`SELECT id, team_name FROM teams`)
+	rows, err := pool.Query(`SELECT id, team_name, active FROM teams`)
 
 	if err != nil {
 		logs.LogError(err, "Get Teams Query Error")
@@ -23,14 +23,15 @@ func RetrieveTeams() ([]map[string]string, error) {
 
 	for rows.Next() {
 		var team Team
-		if err := rows.Scan(&team.Id, &team.Name); err != nil {
+		if err := rows.Scan(&team.Id, &team.Name, &team.Active); err != nil {
 			logs.LogError(err, "Get Teams Query Error")
 			return teams, err
 		}
 
-		teamData := map[string]string{
-			"id":   team.Id,
-			"name": team.Name,
+		teamData := map[string]any{
+			"id":     team.Id,
+			"name":   team.Name,
+			"active": team.Active,
 		}
 
 		teams = append(teams, teamData)
