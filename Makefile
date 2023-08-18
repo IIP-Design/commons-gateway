@@ -11,17 +11,21 @@ SERVERLESS_STAGE=dev
 EVENT_ADMIN_CREATE = ./config/sim-events/admin-create.json
 EVENT_CREDS_SALT = ./config/sim-events/creds-salt.json
 EVENT_CREDS_PROVISION = ./config/sim-events/creds-provision.json
+EVENT_GUEST_AUTH = ./config/sim-events/guest-auth.json
+EVENT_GUESTS_GET = ./config/sim-events/guests-get.json
 EVENT_EMAIL_2FA = ./config/sim-events/email-2fa.json
 EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
 EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
-EVENT_GUEST_AUTH = ./config/sim-events/guest-auth.json
 
 build:
 	cd serverless;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\
 	cd email-creds && npm run zip && cd ../;\
@@ -50,13 +54,22 @@ local-auth: build
 
 local-admin: build
 	cd serverless;\sls invoke local -f admin-create $(DEV_DB_ENV) -p $(EVENT_ADMIN_CREATE);
-	
+
+local-admins: build
+	cd serverless;\sls invoke local -f admins-get $(DEV_DB_ENV);
+
+local-guests: build
+	cd serverless;\sls invoke local -f guests-get $(DEV_DB_ENV) -p $(EVENT_GUESTS_GET);
+
 local-salt: build
 	cd serverless;\sls invoke local -f creds-salt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
-	
+
+local-teams: build
+	cd serverless;\sls invoke local -f teams-get $(DEV_DB_ENV);
+
 local-email-2fa: build
 	cd serverless;\sls invoke local -f email-2fa $(DEV_AWS_ENV) -p $(EVENT_EMAIL_2FA);
-	
+
 local-email-creds: build
 	cd serverless;\sls invoke local -f email-creds $(DEV_AWS_ENV) -p $(EVENT_EMAIL_CREDS);
 

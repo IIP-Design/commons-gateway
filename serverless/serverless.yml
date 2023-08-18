@@ -1,6 +1,6 @@
 service: commons-gateway
 
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -10,7 +10,7 @@ provider:
 
 package:
   patterns:
-    - '!./**'
+    - "!./**"
     - ./bin/**
 
 functions:
@@ -24,6 +24,16 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  admins-get:
+    name: gateway-get-admins
+    handler: bin/admins-get
+    description: Retrieve the list of admin users.
+    events:
+      - http:
+          path: /admins/get
+          method: get
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   guest-auth:
     name: gateway-guest-auth
     handler: bin/guest-auth
@@ -32,6 +42,26 @@ functions:
       - httpApi:
           path: /guest-auth
           method: post
+  guests-get:
+    name: gateway-guests-get
+    handler: bin/guests-get
+    description: Retrieve a list of guest users.
+    events:
+      - http:
+          path: /guests/get
+          method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  teams-get:
+    name: gateway-get-teams
+    handler: bin/teams-get
+    description: Retrieve the list of teams.
+    events:
+      - http:
+          path: /teams/get
+          method: get
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   creds-salt:
     name: gateway-retrieve-creds
     handler: bin/creds-salt

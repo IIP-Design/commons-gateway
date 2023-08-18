@@ -34,6 +34,21 @@ type User struct {
 	Team      string
 }
 
+type AdminUser struct {
+	Active bool
+	User
+}
+
+type GuestUser struct {
+	Expires string
+	User
+}
+
+type Team struct {
+	Id   string
+	Name string
+}
+
 // User represents the properties required to record an invite.
 type Invite struct {
 	Invitee User
