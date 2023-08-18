@@ -76,3 +76,13 @@ export const submitHash = async ( action: TActions, hash: string, username: stri
 
   console.log( res );
 };
+
+export const submitFiles = async ( endpoint: string, body: FormData ) => (
+  fetch( `${API_ENDPOINT}/${endpoint}`, {
+    body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    method: 'POST',
+  } )
+);
