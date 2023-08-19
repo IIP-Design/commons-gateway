@@ -1,38 +1,16 @@
 ---
-import Button from '../components/Button.astro';
-import PageLayout from '../layouts/PageLayout.astro';
-import UserTable from '../components/UserTable/UserTable';
+import TablePageLayout from '../layouts/TablePageLayout.astro';
+import UserTable from '../components/UserTable';
 
 import { mockSomeData } from '../../mocks';
 
 const { teams, users } = mockSomeData(100, 5);
+
+const description = `The users listed on this page are the team leads of Content Commons external partners. These
+    team leads help manage the external partner(s) who help provide content to be utilized by
+    Department of State PD personnel.`;
 ---
 
-<PageLayout title="External Partner Team Leads">
-  <Button class="add-user" text="+ New User" />
-  <p class="description">
-    The users listed on this page are the team leads of Content Commons external partners. These
-    team leads help manage the external partner(s) who help provide content to be utilized by
-    Department of State PD personnel.
-  </p>
-  <div class="table">
-    <UserTable client:load teams={teams} users={users} />
-  </div>
-</PageLayout>
-
-<style>
-  .description {
-    margin-bottom: 4rem;
-  }
-  .add-user {
-    transform: translateY(-3.2rem);
-    position: absolute;
-    right: 0;
-    margin-right: 3rem;
-  }
-  .table {
-    display: grid;
-    grid-template-rows: 1fr;
-    height: calc(100% - 11rem);
-  }
-</style>
+<TablePageLayout btnText="+ New User" desc={description} title="External Partner Team Leads">
+  <UserTable client:load teams={teams} users={users} />
+</TablePageLayout>

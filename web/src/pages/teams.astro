@@ -1,0 +1,12 @@
+---
+import TablePageLayout from '../layouts/TablePageLayout.astro';
+import TeamTable from '../components/TeamTable';
+
+import { mockSomeData } from '../../mocks';
+
+const { teams } = mockSomeData(1, 50);
+---
+
+<TablePageLayout btnText="+ New Team" narrow title="Teams">
+  <TeamTable client:load teams={teams} />
+</TablePageLayout>
