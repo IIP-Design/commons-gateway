@@ -1,0 +1,14 @@
+{
+  "name": "serverless",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "sls": "serverless"
+  },
+  "author": "U.S. Department of State, Bureau of Global Public Affairs Digital Lab <gpa-lab-devs@fan.gov>",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^3.34.0"
+  }
+}

@@ -37,7 +37,7 @@ clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
 
 deploy: clean build
-	cd serverless; sls deploy --stage $(SERVERLESS_STAGE) --verbose
+	cd serverless; npm run sls -- deploy --stage $(SERVERLESS_STAGE) --verbose
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d
@@ -49,34 +49,45 @@ dev-reseed:
 	$(DEV_DIR)/scripts/reset.sh;$(DEV_DIR)/scripts/seed.sh
 
 local-provision: build
-	cd serverless;\sls invoke local -f creds-provision $(DEV_DB_ENV) -p $(EVENT_CREDS_PROVISION);
+	cd serverless;\
+	npm run sls -- invoke local -f credsProvision $(DEV_DB_ENV) -p $(EVENT_CREDS_PROVISION);
 
 local-auth: build
-	cd serverless;\sls invoke local -f guest-auth $(DEV_DB_ENV) -p $(EVENT_GUEST_AUTH);
+	cd serverless;\
+	npm run sls -- invoke local -f guestAuth $(DEV_DB_ENV) -p $(EVENT_GUEST_AUTH);
 
 local-admin: build
-	cd serverless;\sls invoke local -f admin-create $(DEV_DB_ENV) -p $(EVENT_ADMIN_CREATE);
+	cd serverless;\
+	npm run sls -- invoke local -f adminCreate $(DEV_DB_ENV) -p $(EVENT_ADMIN_CREATE);
 
 local-admins: build
-	cd serverless;\sls invoke local -f admins-get $(DEV_DB_ENV);
+	cd serverless;\
+	npm run sls -- invoke local -f adminsGet $(DEV_DB_ENV);
 
 local-guests: build
-	cd serverless;\sls invoke local -f guests-get $(DEV_DB_ENV) -p $(EVENT_GUESTS_GET);
+	cd serverless;\
+	npm run sls -- invoke local -f guestsGet $(DEV_DB_ENV) -p $(EVENT_GUESTS_GET);
 
 local-salt: build
-	cd serverless;\sls invoke local -f creds-salt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
+	cd serverless;\
+	npm run sls -- invoke local -f credsSalt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
 
 local-team: build
-	cd serverless;\sls invoke local -f team-create $(DEV_DB_ENV) -p $(EVENT_TEAM_CREATE);
+	cd serverless;\
+	npm run sls -- invoke local -f teamCreate $(DEV_DB_ENV) -p $(EVENT_TEAM_CREATE);
 
 local-teams: build
-	cd serverless;\sls invoke local -f teams-get $(DEV_DB_ENV);
+	cd serverless;\
+	npm run sls -- invoke local -f teamsGet $(DEV_DB_ENV);
 
 local-email-2fa: build
-	cd serverless;\sls invoke local -f email-2fa $(DEV_AWS_ENV) -p $(EVENT_EMAIL_2FA);
+	cd serverless;\
+	npm run sls -- invoke local -f email2fa $(DEV_AWS_ENV) -p $(EVENT_EMAIL_2FA);
 
 local-email-creds: build
-	cd serverless;\sls invoke local -f email-creds $(DEV_AWS_ENV) -p $(EVENT_EMAIL_CREDS);
+	cd serverless;\
+	npm run sls -- invoke local -f emailCreds $(DEV_AWS_ENV) -p $(EVENT_EMAIL_CREDS);
 
 local-email-support-staff: build
-	cd serverless;\sls invoke local -f email-support-staff $(DEV_ENV) -p $(EVENT_EMAIL_SUPPORT_STAFF);
+	cd serverless;\
+	npm run sls -- invoke local -f emailSupportStaff $(DEV_ENV) -p $(EVENT_EMAIL_SUPPORT_STAFF);
