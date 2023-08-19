@@ -9,6 +9,7 @@
   "author": "U.S. Department of State, Bureau of Global Public Affairs Digital Lab <gpa-lab-devs@fan.gov>",
   "license": "MIT",
   "devDependencies": {
-    "serverless": "^3.34.0"
+    "serverless": "^3.34.0",
+    "serverless-deployment-bucket": "^1.6.0"
   }
 }

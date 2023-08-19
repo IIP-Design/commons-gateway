@@ -2,8 +2,13 @@ service: commons-gateway
 
 frameworkVersion: "3"
 
+plugins:
+  - serverless-deployment-bucket
+
 provider:
   name: aws
+  deploymentBucket:
+    name: commons-gateway-deployments
 
 package:
   individually: true
