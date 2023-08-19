@@ -11,7 +11,7 @@ package:
     - ./bin/**
 
 functions:
-  admin-create:
+  adminCreate:
     name: gateway-admin-create
     handler: bin/admin-create
     description: Add an new email to the list of admin users.
@@ -22,7 +22,7 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  admins-get:
+  adminsGet:
     name: gateway-admins-get
     handler: bin/admins-get
     description: Retrieve the list of admin users.
@@ -33,7 +33,7 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  guest-auth:
+  guestAuth:
     name: gateway-guest-auth
     handler: bin/guest-auth
     description: Authenticate a guest user.
@@ -44,7 +44,7 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  guests-get:
+  guestsGet:
     name: gateway-guests-get
     handler: bin/guests-get
     description: Retrieve a list of guest users.
@@ -55,7 +55,7 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  team-create:
+  teamCreate:
     name: gateway-team-create
     handler: bin/team-create
     description: Create a new team.
@@ -66,7 +66,7 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  teams-get:
+  teamsGet:
     name: gateway-teams-get
     handler: bin/teams-get
     description: Retrieve the list of teams.
@@ -77,7 +77,7 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  creds-salt:
+  credsSalt:
     name: gateway-creds-retrieve
     handler: bin/creds-salt
     description: Retrieve a users hashing salt.
@@ -88,7 +88,7 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  creds-provision:
+  credsProvision:
     name: gateway-creds-provision
     handler: bin/creds-provision
     description: Records a guest user invitation and generates credentials for this user.
@@ -99,21 +99,21 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
-  email-2fa:
+  email2fa:
     name: gateway-email-2fa
     handler: funcs/email-2fa/dist/index.handler
     description: Email an invitee their temporary verification code.
     runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-2fa
-  email-creds:
+  emailCreds:
     name: gateway-email-creds
     handler: funcs/email-creds/dist/index.handler
     description: Email an invitee their temporary credentials.
     runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-creds
-  email-support-staff:
+  emailSupportStaff:
     name: gateway-email-support-staff
     handler: funcs/email-support-staff/index.handler
     description: Email a Content Commons user an update on requested support staff.
