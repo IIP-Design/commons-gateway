@@ -6,9 +6,9 @@ provider:
   name: aws
 
 package:
+  individually: true
   patterns:
     - "!./**"
-    - ./bin/**
 
 functions:
   adminCreate:
@@ -22,6 +22,9 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/admin-create"
   adminsGet:
     name: gateway-admins-get
     handler: bin/admins-get
@@ -33,6 +36,9 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/admins-get"
   guestAuth:
     name: gateway-guest-auth
     handler: bin/guest-auth
@@ -44,6 +50,9 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/guest-auth"
   guestsGet:
     name: gateway-guests-get
     handler: bin/guests-get
@@ -55,6 +64,9 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/guests-get"
   teamCreate:
     name: gateway-team-create
     handler: bin/team-create
@@ -66,6 +78,9 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/team-create"
   teamsGet:
     name: gateway-teams-get
     handler: bin/teams-get
@@ -77,6 +92,9 @@ functions:
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/teams-get"
   credsSalt:
     name: gateway-creds-retrieve
     handler: bin/creds-salt
@@ -88,6 +106,9 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/creds-salt"
   credsProvision:
     name: gateway-creds-provision
     handler: bin/creds-provision
@@ -99,6 +120,9 @@ functions:
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+    package:
+      patterns:
+        - "./bin/creds-provision"
   email2fa:
     name: gateway-email-2fa
     handler: funcs/email-2fa/dist/index.handler
@@ -106,6 +130,9 @@ functions:
     runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-2fa
+    package:
+      patterns:
+        - "funcs/email-2fa/dist/index.cjs"
   emailCreds:
     name: gateway-email-creds
     handler: funcs/email-creds/dist/index.handler
@@ -113,6 +140,9 @@ functions:
     runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-creds
+    package:
+      patterns:
+        - "funcs/email-creds/dist/index.cjs"
   emailSupportStaff:
     name: gateway-email-support-staff
     handler: funcs/email-support-staff/index.handler
@@ -120,3 +150,6 @@ functions:
     runtime: nodejs18.x
     events:
       - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-support-staff
+    package:
+      patterns:
+        - "funcs/email-support-staff/dist/index.cjs"
