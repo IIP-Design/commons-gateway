@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -13,7 +13,7 @@ import (
 func GetAdminsHandler(ctx context.Context) (msgs.Response, error) {
 	var err error
 
-	admins, err := data.RetrieveAdmins()
+	admins, err := admins.RetrieveAdmins()
 
 	if err != nil {
 		return msgs.SendServerError(err)

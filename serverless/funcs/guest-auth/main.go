@@ -3,7 +3,8 @@ package main
 import (
 	"errors"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/creds"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,7 +18,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	creds, err := data.RetrieveCredentials(username)
+	creds, err := creds.RetrieveCredentials(username)
 
 	if err != nil {
 		return msgs.SendServerError(err)

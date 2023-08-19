@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/guests"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -24,7 +25,7 @@ func GetGuestsHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 		return msgs.SendServerError(err)
 	}
 
-	guests, err := data.RetrieveGuests(team)
+	guests, err := guests.RetrieveGuests(team)
 
 	if err != nil {
 		return msgs.SendServerError(err)

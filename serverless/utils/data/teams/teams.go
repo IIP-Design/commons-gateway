@@ -1,10 +1,11 @@
-package data
+package teams
 
 import (
 	"database/sql"
 	"fmt"
 	"time"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 
 	"github.com/rs/xid"
@@ -16,7 +17,7 @@ import (
 func CheckForExistingTeam(teamName string) (bool, error) {
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	var team string
@@ -40,7 +41,7 @@ func CheckForExistingTeam(teamName string) (bool, error) {
 func CreateTeam(teamName string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	guid := xid.New()
@@ -63,7 +64,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 	var teams []map[string]any
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	rows, err := pool.Query(`SELECT id, team_name, active FROM teams`)
@@ -76,7 +77,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var team Team
+		var team data.Team
 		if err := rows.Scan(&team.Id, &team.Name, &team.Active); err != nil {
 			logs.LogError(err, "Get Teams Query Error")
 			return teams, err

@@ -1,9 +1,10 @@
-package data
+package admins
 
 import (
 	"fmt"
 	"time"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -13,7 +14,7 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 	var active bool
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	query := fmt.Sprintf(`SELECT active FROM admins WHERE email = '%s';`, adminEmail)
@@ -28,10 +29,10 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 }
 
 // CreateAdmin opens a database connection and saves a new administrative user record.
-func CreateAdmin(adminData User) error {
+func CreateAdmin(adminData data.User) error {
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	currentTime := time.Now()
@@ -53,7 +54,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 	var admins []map[string]any
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	rows, err := pool.Query(`SELECT email, first_name, last_name, team, active FROM admins`)
@@ -66,7 +67,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var admin AdminUser
+		var admin data.AdminUser
 		if err := rows.Scan(&admin.Email, &admin.NameFirst, &admin.NameLast, &admin.Team, &admin.Active); err != nil {
 			logs.LogError(err, "Get Admins Query Error")
 			return admins, err

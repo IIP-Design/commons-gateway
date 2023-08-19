@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/teams"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -16,7 +17,7 @@ import (
 func handleTeamCreation(teamName string) error {
 	var err error
 
-	exists, err := data.CheckForExistingTeam(teamName)
+	exists, err := teams.CheckForExistingTeam(teamName)
 
 	if err != nil {
 		return err
@@ -24,7 +25,7 @@ func handleTeamCreation(teamName string) error {
 		return errors.New("a team with this name already exists")
 	}
 
-	err = data.CreateTeam(teamName)
+	err = teams.CreateTeam(teamName)
 
 	return err
 }

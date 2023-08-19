@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/teams"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -13,7 +13,7 @@ import (
 func GetTeamsHandler(ctx context.Context) (msgs.Response, error) {
 	var err error
 
-	teams, err := data.RetrieveTeams()
+	teams, err := teams.RetrieveTeams()
 
 	if err != nil {
 		return msgs.SendServerError(err)
