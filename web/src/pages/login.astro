@@ -1,11 +1,14 @@
 ---
 import Button from '../components/Button.astro';
 import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
+
+import '../styles/form.css';
 ---
 
 <script>
   import { deriveHash } from '../utils/hashing';
   import { passTheSalt, submitHash } from '../utils/api';
+  import { showError } from '../utils/alert';
 
   const submitBtn = document.getElementById('login-btn');
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
@@ -18,6 +21,7 @@ import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
     const pass = passInput.value;
 
     if (!name) {
+      showError("Please input a username");
       return;
     }
 
@@ -44,26 +48,3 @@ import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
   </form>
   <Button id="login-btn" text="Sign In" type="submit" />
 </LoggedOutLayout>
-
-<style>
-  form {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 2rem;
-  }
-
-  label {
-    color: var(--blue);
-    display: flex;
-    flex-direction: column;
-    font-size: var(--fontSizeSmall);
-    margin: 1rem 0;
-  }
-
-  input {
-    border: 1px solid var(--greyLight);
-    margin-top: 0.5rem;
-    border-radius: 5px;
-    padding: 0.3rem 0.5rem;
-  }
-</style>
