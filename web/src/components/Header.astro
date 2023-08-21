@@ -1,9 +1,15 @@
+---
+
+import Hamburger from '../components/Hamburger.astro';
+import Navigation from '../components/Navigation.astro';
+
+---
 <header>
-  <img src="/dos_seal.svg" height="70px" />
-  <span>Commons External Partners</span>
+  <img src="/dos_seal.svg" height="70px" alt="Official seal of the U.S. Department of State"/>
+  <span>Commons External Partners <Hamburger /><Navigation /></span>
 </header>
 
-<style>
+<style lang="scss">
   header {
     background-color: var(--blue);
     display: flex;

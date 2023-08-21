@@ -1,0 +1,56 @@
+---
+---
+<div class="nav-links">
+  <!-- TODO: Replace with filtered list from user role -->
+  <a href="/">Home</a>
+  <a href="/upload/">Upload</a>
+</div>
+
+<style lang="scss">
+    .nav-links {
+    width: 100%;
+    top: 5rem;
+    left: 48px;
+    background-color: var(--iron);
+    display: none;
+    margin: 0;
+  }
+
+  .nav-links a {
+    display: block;
+    text-align: center;
+    padding: 10px 0;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--iron);
+  }
+
+  .nav-links a:visited {
+    color: var(--hot-toddy);
+  }
+  
+  .nav-links a:hover, a:focus {
+    background-color: var(--azure);
+  }
+  
+  .expanded {
+    display: unset;
+  }
+  
+  @media screen and (min-width: 636px) {
+    .nav-links {
+      margin-left: 5em;
+      display: block;
+      position: static;
+      width: auto;
+      background: none;
+    }
+  
+    .nav-links a {
+      display: inline-block;
+      padding: 15px 20px;
+    }
+  }
+</style>
