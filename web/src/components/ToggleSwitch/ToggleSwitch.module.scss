@@ -1,0 +1,56 @@
+.toggle {
+  display: flex;
+  align-items: center;
+
+  > input[type=checkbox]{
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+
+    &:not([disabled]):active + .toggle-slider,
+    &:not([disabled]):focus + .toggle-slider {
+      box-shadow: 0px 0px 0px 3px var(--blueLight);
+    }
+  }
+
+  > input:checked + .toggle-slider {
+    background-color: var(--blue);
+  }
+
+  > input:checked + .toggle-slider:after {
+    left: calc(100% - 0.125rem);
+    transform: translateX(-100%);
+  }
+
+  .toggle-slider:active:after {
+    width: 2.5rem;
+  }
+
+  &-slider {
+    cursor: pointer;
+    text-indent: -9999px;
+    display: block;
+    border-radius: 2rem;
+    width: 4rem;
+    height: 2rem;
+    background-color: var(--greyLight);
+    border: 1px solid transparent;
+    position: relative;
+
+    &::after {
+      content: '';
+      background-color: white;
+      border-radius: 1.75rem;
+      position: absolute;
+      top: 0.125rem;
+      left: 0.125rem;
+      height: calc(1.75rem - 2px);
+      width: calc(1.75rem - 2px);
+      transition: 0.3s;
+    }
+  }
+}

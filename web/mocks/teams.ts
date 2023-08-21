@@ -1,4 +1,4 @@
-import { generateName } from './utils';
+import { generateName, randomInt } from './utils';
 
 /**
  * Creates a mock team by creating a random name and
@@ -8,6 +8,7 @@ import { generateName } from './utils';
 const createTeam = ( id: number ): ITeam => ( {
   id: id.toString(),
   teamName: `Team ${generateName( 5 )}`,
+  active: randomInt( 2 ) === 0,
 } );
 
 /**

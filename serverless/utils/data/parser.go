@@ -45,8 +45,9 @@ type GuestUser struct {
 }
 
 type Team struct {
-	Id   string
-	Name string
+	Id     string
+	Name   string
+	Active bool
 }
 
 // User represents the properties required to record an invite.

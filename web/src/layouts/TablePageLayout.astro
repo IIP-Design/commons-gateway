@@ -1,0 +1,29 @@
+---
+import Button from '../components/Button.astro';
+import PageLayout from '../layouts/PageLayout.astro';
+
+const { btnText, desc, narrow, title } = Astro.props;
+---
+
+<PageLayout narrow={narrow} title={title}>
+  <Button class="add-btn" text={btnText} />
+  {desc && <p class="description">{desc}</p>}
+  <div class="table">
+    <slot />
+  </div>
+</PageLayout>
+
+<style>
+  .add-btn {
+    transform: translateY(-3.2rem);
+    position: absolute;
+    right: 0;
+    margin-right: 3rem;
+  }
+  .table {
+    display: grid;
+    grid-template-rows: 1fr;
+    height: calc(100% - 11rem);
+    margin-top: 4rem;
+  }
+</style>

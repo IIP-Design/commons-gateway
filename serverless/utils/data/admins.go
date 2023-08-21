@@ -27,8 +27,7 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 	return active, err
 }
 
-// CreateAdmin opens a database connection and records the association between an admin
-// user inviter and a guest user invitee along with the date of the invitation.
+// CreateAdmin opens a database connection and saves a new administrative user record.
 func CreateAdmin(adminData User) error {
 	var err error
 

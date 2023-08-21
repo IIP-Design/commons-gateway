@@ -7,5 +7,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/lib/pq v1.10.9
 	github.com/thanhpk/randstr v1.0.6
-	golang.org/x/crypto v0.11.0
+	golang.org/x/crypto v0.12.0
 )
+
+require github.com/rs/xid v1.5.0

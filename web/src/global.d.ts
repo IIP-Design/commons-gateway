@@ -3,6 +3,7 @@ declare module '*.scss';
 interface ITeam {
   id: string
   teamName: string
+  active: boolean
 }
 
 interface IUser {

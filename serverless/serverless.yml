@@ -4,9 +4,6 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: go1.x
-  httpApi:
-    cors: true
 
 package:
   patterns:
@@ -15,9 +12,10 @@ package:
 
 functions:
   admin-create:
-    name: gateway-create-admin
+    name: gateway-admin-create
     handler: bin/admin-create
     description: Add an new email to the list of admin users.
+    runtime: go1.x
     events:
       - http:
           path: /admin/create
@@ -25,12 +23,13 @@ functions:
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   admins-get:
-    name: gateway-get-admins
+    name: gateway-admins-get
     handler: bin/admins-get
     description: Retrieve the list of admin users.
+    runtime: go1.x
     events:
       - http:
-          path: /admins/get
+          path: /admins
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
@@ -38,34 +37,51 @@ functions:
     name: gateway-guest-auth
     handler: bin/guest-auth
     description: Authenticate a guest user.
+    runtime: go1.x
     events:
-      - httpApi:
-          path: /guest-auth
+      - http:
+          path: /guest/auth
           method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   guests-get:
     name: gateway-guests-get
     handler: bin/guests-get
     description: Retrieve a list of guest users.
+    runtime: go1.x
     events:
       - http:
-          path: /guests/get
+          path: /guests
+          method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+  team-create:
+    name: gateway-team-create
+    handler: bin/team-create
+    description: Create a new team.
+    runtime: go1.x
+    events:
+      - http:
+          path: /team/create
           method: post
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   teams-get:
-    name: gateway-get-teams
+    name: gateway-teams-get
     handler: bin/teams-get
     description: Retrieve the list of teams.
+    runtime: go1.x
     events:
       - http:
-          path: /teams/get
+          path: /teams
           method: get
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   creds-salt:
-    name: gateway-retrieve-creds
+    name: gateway-creds-retrieve
     handler: bin/creds-salt
-    description: Retrieve a users password hash and salt.
+    description: Retrieve a users hashing salt.
+    runtime: go1.x
     events:
       - http:
           path: /creds/salt
@@ -73,13 +89,16 @@ functions:
           cors:
             origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   creds-provision:
-    name: gateway-provision-creds
+    name: gateway-creds-provision
     handler: bin/creds-provision
     description: Records a guest user invitation and generates credentials for this user.
+    runtime: go1.x
     events:
-      - httpApi:
+      - http:
           path: /creds/provision
           method: post
+          cors:
+            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
   email-2fa:
     name: gateway-email-2fa
     handler: funcs/email-2fa/dist/index.handler

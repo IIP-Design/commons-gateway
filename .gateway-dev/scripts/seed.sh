@@ -15,7 +15,7 @@ guest=("bob@testmail.com" "Bob" "Banana" "1")
 creds=("i82y9CY9olYWVDP3BPwdK1lVhBv60FEo3UtIbSJO8zQ=" "kaW6PfO3MHZto2MlNQMV" "Aez71qglib")
 
 # Formulate the seeding queries.
-teams_query="INSERT INTO teams (id, team_name) VALUES ('1', 'Team Number One');"
+teams_query="INSERT INTO teams (id, team_name, active,  date_created) VALUES ('1', 'Team Number One', true, '$current_time');"
 admins_query="INSERT INTO admins (email, first_name, last_name, team, active, date_created) VALUES ('${admin[0]}', '${admin[1]}', '${admin[2]}', '${admin[3]}', '${admin[4]}', '$current_time');"
 guest_query="INSERT INTO guests (email, first_name, last_name, team, pass_hash, salt, expiration, date_created) VALUES ('${guest[0]}', '${guest[1]}', '${guest[2]}', '${guest[3]}', '${creds[0]}', '${creds[2]}', '$expiration', '$current_time');"
 invites_query="INSERT INTO invites (invitee, inviter, date_invited) VALUES ('${guest[0]}', '${admin[0]}', '$current_time');"
