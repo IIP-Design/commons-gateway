@@ -1,23 +1,54 @@
+---
+import Hamburger from '../components/Hamburger.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
 <header>
-  <img src="/dos_seal.svg" height="70px" />
-  <span>Commons External Partners</span>
+  <div>
+    <img src="/dos_seal.svg" height="70px" alt="Official seal of the U.S. Department of State" />
+    <span>Commons External Partners</span>
+    <Hamburger />
+  </div>
+  <Navigation />
 </header>
 
-<style>
-  header {
+<style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
+  div {
     background-color: var(--blue);
     display: flex;
     align-items: center;
     text-transform: uppercase;
+    padding: 0.5rem;
   }
+
   img {
-    margin: 1rem 2rem;
+    display: none;
+    margin: 1rem 1.5rem 1rem 1rem;
+
+    @include breakpoint('tablet') {
+      display: block;
+    }
   }
+
   span {
     border-left: 4px solid var(--orange);
     color: white;
-    font-size: var(--fontSizeXLarge);
+    font-size: var(--fontSizeMediumSmall);
     font-weight: 300;
     padding: 0 2rem;
+  }
+
+  @include breakpoint('tablet') {
+    span {
+      font-size: var(--fontSizeMedium);
+    }
+  }
+
+  @include breakpoint('desktop') {
+    span {
+      font-size: var(--fontSizeXLarge);
+    }
   }
 </style>

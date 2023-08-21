@@ -1,0 +1,69 @@
+---
+const { pathname } = new URL(Astro.request.url);
+const currentPath = pathname.replaceAll('/', '');
+---
+
+<div class="nav-links">
+  <!-- TODO: Replace with filtered list from user role -->
+  <a class={currentPath === '' ? 'active' : ''} href="/">Home</a>
+  <a class={currentPath === 'teams' ? 'active' : ''} href="/teams">Teams</a>
+  <a class={currentPath === 'upload' ? 'active' : ''} href="/upload/">Upload</a>
+</div>
+
+<style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
+  .nav-links {
+    width: 100%;
+    top: 5rem;
+    left: 48px;
+    background-color: var(--iron);
+    display: none;
+    margin: 0;
+
+    a {
+      padding: 10px 0;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: var(--blue);
+      marign: 0.5rem 0;
+      border-bottom: solid 3px transparent;
+    }
+
+    a.active {
+      border-bottom: solid 3px var(--hot-toddy);
+    }
+
+    a:hover,
+    a:focus {
+      border-bottom: solid 3px var(--blue);
+    }
+  }
+
+  .expanded {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  @include breakpoint('tablet') {
+    .nav-links {
+      margin-left: 5rem; // To line up with content container
+      display: block;
+      position: static;
+      width: auto;
+      background: none;
+    }
+
+    .nav-links a {
+      display: inline-block;
+      padding: 1rem 0 0.5rem;
+
+      &:not(:last-of-type) {
+        margin-right: 2rem;
+      }
+    }
+  }
+</style>
