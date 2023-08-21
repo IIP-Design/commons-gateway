@@ -1,38 +1,41 @@
 ---
 ---
-<div class="hamburger">
+
+<div class="hamburger" id="hamburger">
   <span class="line"></span>
   <span class="line"></span>
   <span class="line"></span>
 </div>
 
 <style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
   .hamburger {
-  padding-right: 20px;
-  cursor: pointer;
-}
-
-.hamburger .line {
-  display: block;
-  width: 40px;
-  height: 5px;
-  margin-bottom: 10px;
-  background-color: var(--gray-chateau);
-}
-
-.expanded {
-  display: unset;
-}
-
-@media screen and (min-width: 636px) {
-  .hamburger {
-    display: none;
+    padding-right: 20px;
+    cursor: pointer;
   }
-}
+
+  .hamburger .line {
+    display: block;
+    width: 35px;
+    height: 5px;
+    margin-bottom: 6px;
+    background-color: var(--gray-chateau);
+  }
+
+  .expanded {
+    display: unset;
+  }
+
+  @include breakpoint('tablet') {
+    .hamburger {
+      display: none;
+    }
+  }
 </style>
 
 <script>
-  document.querySelector('.hamburger')?.addEventListener('click', () => {
+  document.getElementById('hamburger')?.addEventListener('click', () => {
     document.querySelector('.nav-links')?.classList.toggle('expanded');
   });
 </script>
