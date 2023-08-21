@@ -7,7 +7,7 @@ import type { FC, FormEvent } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { isAfter, isBefore, addDays } from 'date-fns';
+import { isAfter, isBefore, addDays, parse } from 'date-fns';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -35,7 +35,7 @@ interface INewUserData {
   familyName: string;
   email: string;
   team: number;
-  accessEndDate?: Date;
+  accessEndDate?: string;
 }
 
 interface ITeamElementProps {
@@ -67,9 +67,9 @@ const TeamElement: FC<ITeamElementProps> = ( { teams, setData } ) => {
   }
 }
 
-const dateSelectionIsValid = ( date?: Date | null ) => {
+const dateSelectionIsValid = ( dateStr?: string ) => {
   const now = new Date();
-  console.log( isBefore( date as Date, addDays( now, MAX_ACCESS_GRANT_DAYS ) ) );
+  const date = parse( dateStr || "", "yyyy-MM-dd", new Date() );
   return date && isAfter( date, now ) && isBefore( date, addDays( now, MAX_ACCESS_GRANT_DAYS ) );
 }
 
@@ -78,11 +78,10 @@ const dateSelectionIsValid = ( date?: Date | null ) => {
 // ////////////////////////////////////////////////////////////////////////////
 const NewUser: FC<INewUserProps> = ( props ) => {
   const [ teams ] = useState( props.teams );
-  const [ endDate, setEndDate ] = useState<Date>();
   const [ userData, setUserData ] = useState<Partial<INewUserData>>( {} );
 
   useEffect( () => {
-    clear( [ 'given-name-input', 'family-name-input', 'email-input' ] );
+    clear( [ 'given-name-input', 'family-name-input', 'email-input', 'date-input' ] );
   }, [] );
 
   const clear = ( ids: string[] ) => {
@@ -107,9 +106,6 @@ const NewUser: FC<INewUserProps> = ( props ) => {
 
   const handleSubmit = async ( e: FormEvent<HTMLFormElement> ) => {
     e.preventDefault();
-
-    // TODO: Find a date picker that works with Astro/Vite
-    handleUpdate( 'accessEndDate', endDate );
 
     if( !validateSubmission() ) {
       return;
@@ -136,6 +132,10 @@ const NewUser: FC<INewUserProps> = ( props ) => {
       <label>
         Team
         <TeamElement teams={teams} setData={val => handleUpdate('team', val)} />
+      </label>
+      <label>
+        Access End Date
+        <input id="date-input" type="date" onChange={e => handleUpdate('accessEndDate', e.target.value)} />
       </label>
       <button id="login-btn" type="submit">Invite User</button>
     </form>
