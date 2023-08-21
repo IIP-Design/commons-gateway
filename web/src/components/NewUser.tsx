@@ -5,16 +5,23 @@ import { useEffect, useState } from 'react';
 import type { FC, FormEvent } from 'react';
 
 // ////////////////////////////////////////////////////////////////////////////
+// 3PP Imports
+// ////////////////////////////////////////////////////////////////////////////
+import { isAfter, isBefore, addDays } from 'date-fns';
+
+// ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
+import BackButton from './BackButton';
 import { showError } from '../utils/alert';
+import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
+
 import '../styles/form.css';
-import '../styles/button.module.scss'
-import BackButton from './BackButton';
+import '../styles/button.scss'
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
@@ -28,8 +35,7 @@ interface INewUserData {
   familyName: string;
   email: string;
   team: number;
-  accessGrantDate: Date;
-  accessEndDate: Date;
+  accessEndDate?: Date;
 }
 
 interface ITeamElementProps {
@@ -61,11 +67,18 @@ const TeamElement: FC<ITeamElementProps> = ( { teams, setData } ) => {
   }
 }
 
+const dateSelectionIsValid = ( date?: Date | null ) => {
+  const now = new Date();
+  console.log( isBefore( date as Date, addDays( now, MAX_ACCESS_GRANT_DAYS ) ) );
+  return date && isAfter( date, now ) && isBefore( date, addDays( now, MAX_ACCESS_GRANT_DAYS ) );
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
 // ////////////////////////////////////////////////////////////////////////////
 const NewUser: FC<INewUserProps> = ( props ) => {
   const [ teams ] = useState( props.teams );
+  const [ endDate, setEndDate ] = useState<Date>();
   const [ userData, setUserData ] = useState<Partial<INewUserData>>( {} );
 
   useEffect( () => {
@@ -76,13 +89,16 @@ const NewUser: FC<INewUserProps> = ( props ) => {
     ids.forEach( id => (document.getElementById( id ) as HTMLInputElement).value = '' );
   } 
 
-  const handleUpdate = ( key: keyof INewUserData, value: string ) => {
+  const handleUpdate = ( key: keyof INewUserData, value?: string|Date ) => {
     setUserData( { ...userData, [key]: value } );
   };
 
   const validateSubmission = () => {
     if( !userData['email']?.match( /^.+@.+$/ ) ) {
       showError("Email address is not valid");
+      return false;
+    } else if( !dateSelectionIsValid( userData['accessEndDate'] ) ) {
+      showError(`Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future`);
       return false;
     }
 
@@ -91,6 +107,10 @@ const NewUser: FC<INewUserProps> = ( props ) => {
 
   const handleSubmit = async ( e: FormEvent<HTMLFormElement> ) => {
     e.preventDefault();
+
+    // TODO: Find a date picker that works with Astro/Vite
+    handleUpdate( 'accessEndDate', endDate );
+
     if( !validateSubmission() ) {
       return;
     }

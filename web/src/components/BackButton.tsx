@@ -11,7 +11,7 @@ import { showConfirm } from '../utils/alert';
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import styles from '../styles/button.module.scss'
+import '../styles/button.scss'
 
 interface IBackButtonProps {
     id?: string;
@@ -30,7 +30,7 @@ const BackButton: FC<IBackButtonProps> = ( { id, showConfirmDialog }: IBackButto
         }
     }
 
-    return <button id={ id || "back-btn"} type="button" onClick={goBack} className={styles["back-btn"]}>Back</button>
+    return <button id={ id || "back-btn"} type="button" onClick={goBack} className="back-btn">Back</button>
 }
 
 export default BackButton;
