@@ -1,8 +1,9 @@
-package data
+package creds
 
 import (
 	"fmt"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -15,7 +16,7 @@ type CredentialsData struct {
 func RetrieveCredentials(email string) (CredentialsData, error) {
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	var pass_hash string

@@ -16,9 +16,9 @@ const (
 	db_user     = "DB_USER"
 )
 
-// connectToDB opens a pool connection to a Postgres database using
+// ConnectToDB opens a pool connection to a Postgres database using
 // credentials derived from the environment.
-func connectToDB() *sql.DB {
+func ConnectToDB() *sql.DB {
 	host := os.Getenv(db_host)
 	name := os.Getenv(db_name)
 	password := os.Getenv(db_password)
@@ -48,7 +48,7 @@ func connectToDB() *sql.DB {
 func CheckForExistingUser(email string, table string) (bool, error) {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDB()
 	defer pool.Close()
 
 	var user string

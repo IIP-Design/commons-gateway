@@ -8,6 +8,5 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/thanhpk/randstr v1.0.6
 	golang.org/x/crypto v0.12.0
+	github.com/rs/xid v1.5.0
 )
-
-require github.com/rs/xid v1.5.0

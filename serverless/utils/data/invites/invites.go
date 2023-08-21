@@ -1,9 +1,10 @@
-package data
+package invites
 
 import (
 	"time"
 
-	logs "github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
 // saveInvite opens a database connection and records the association between an admin
@@ -11,7 +12,7 @@ import (
 func SaveInvite(adminEmail string, guestEmail string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	currentTime := time.Now()
@@ -30,10 +31,10 @@ func SaveInvite(adminEmail string, guestEmail string) error {
 // to the `credentials` table. Specifically, it stores the the user email, a hash of
 // their password, and the salt with which the password was hashed, as well as the date
 // on which the password was generated.
-func SaveCredentials(guest User, hash string, salt string) error {
+func SaveCredentials(guest data.User, hash string, salt string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	currentTime := time.Now()

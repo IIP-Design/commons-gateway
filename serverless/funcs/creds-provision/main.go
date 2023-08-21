@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/admins"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,7 +19,7 @@ func handleInvitation(invite data.Invite) error {
 	var err error
 
 	// Ensure inviter is an active admin user.
-	adminActive, err := data.CheckForActiveAdmin(invite.Inviter)
+	adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
 
 	if err != nil {
 		return err
@@ -38,14 +40,14 @@ func handleInvitation(invite data.Invite) error {
 	pass, salt := generateCredentials()
 	hash := generateHash(pass, salt)
 
-	err = data.SaveCredentials(invite.Invitee, hash, salt)
+	err = invites.SaveCredentials(invite.Invitee, hash, salt)
 
 	if err != nil {
 		return errors.New("something went wrong - credential generation failed")
 	}
 
 	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = data.SaveInvite(invite.Inviter, invite.Invitee.Email)
+	err = invites.SaveInvite(invite.Inviter, invite.Invitee.Email)
 
 	if err != nil {
 		return errors.New("something went wrong - saving invite failed")

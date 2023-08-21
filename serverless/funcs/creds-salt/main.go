@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/creds"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -13,21 +14,21 @@ import (
 )
 
 // handleCredentialRequest coordinates all the actions associated with retrieving user credentials.
-func handleCredentialRequest(username string) (data.CredentialsData, error) {
+func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	var err error
-	var creds data.CredentialsData
+	var credentials creds.CredentialsData
 
 	exists, err := data.CheckForExistingUser(username, "guests")
 
 	if err != nil {
-		return creds, err
+		return credentials, err
 	} else if !exists {
-		return creds, errors.New("user not found")
+		return credentials, errors.New("user not found")
 	}
 
-	creds, err = data.RetrieveCredentials(username)
+	credentials, err = creds.RetrieveCredentials(username)
 
-	return creds, err
+	return credentials, err
 }
 
 // GetSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
@@ -43,13 +44,13 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	creds, err := handleCredentialRequest(user)
+	credentials, err := handleCredentialRequest(user)
 
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
-	body, err := msgs.MarshalBody(creds.Salt)
+	body, err := msgs.MarshalBody(credentials.Salt)
 
 	if err != nil {
 		return msgs.SendServerError(err)

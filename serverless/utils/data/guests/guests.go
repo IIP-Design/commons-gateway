@@ -1,8 +1,9 @@
-package data
+package guests
 
 import (
 	"fmt"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -12,7 +13,7 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 	var err error
 	var query string
 
-	pool := connectToDB()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	if team == "" {
@@ -34,7 +35,7 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var guest GuestUser
+		var guest data.GuestUser
 		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Team, &guest.Expires); err != nil {
 			logs.LogError(err, "Get Guests Query Error")
 			return guests, err

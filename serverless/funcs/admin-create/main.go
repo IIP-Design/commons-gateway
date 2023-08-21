@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	data "github.com/IIP-Design/commons-gateway/utils/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/admins"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -23,7 +24,7 @@ func handleAdminCreation(adminData data.User) error {
 		return errors.New("this user has already been added as an administrator")
 	}
 
-	err = data.CreateAdmin(adminData)
+	err = admins.CreateAdmin(adminData)
 
 	return err
 }
