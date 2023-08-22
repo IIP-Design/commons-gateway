@@ -1,11 +1,13 @@
 .PHONY: build clean deploy
 
+# Sets the envrionmental variables needed to test functions locally
 DEV_DIR = .gateway-dev
 DEV_AWS_ENV = -e AWS_SES_REGION=us-east-1 -e SOURCE_EMAIL_ADDRESS=contentcommons@state.gov
 DEV_DB_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=disable -e DB_PASSWORD=gateway_dev -e DB_USER=gateway_dev -e JWT_SECRET=2fweb3m$ndj
 
-# Add SERVERLESS_STAGE=<stage> to make command to deploy to different stage
-SERVERLESS_STAGE=dev
+# Sets the stage for the serverless deployment.
+# Can be overridden in the CLI as so: `make target STAGE=mystage`
+STAGE=dev
 
 # Simulated events
 EVENT_ADMIN_CREATE = ./config/sim-events/admin-create.json
@@ -19,6 +21,7 @@ EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
 EVENT_TEAM_CREATE = ./config/sim-events/team-create.json
 
 build:
+	cd web; npm run build;
 	cd serverless;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
@@ -34,10 +37,12 @@ build:
 	cd email-support-staff && npm run zip && cd ../;
 
 clean:
-	cd serverless; rm -rf ./bin ./vendor Gopkg.lock
+	cd serverless; rm -rf ./bin ./vendor Gopkg.lock;\
+	cd ../web; rm -rf dist;
 
 deploy: clean build
-	cd serverless; npm run sls -- deploy --stage $(SERVERLESS_STAGE) --verbose
+	aws s3 cp ./web/dist s3://$(STAGE).gateway.gpalab.digital/ --recursive;\
+	cd serverless; npm run sls -- deploy --stage $(STAGE) --verbose;
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d
