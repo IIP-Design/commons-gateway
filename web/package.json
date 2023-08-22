@@ -15,9 +15,11 @@
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "astro": "^2.9.6",
+    "date-fns": "^2.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sass": "^1.65.1"
+    "sass": "^1.65.1",
+    "sweetalert2": "^11.7.27"
   },
   "devDependencies": {
     "@gpa-lab/eslint-config": "^1.6.1",

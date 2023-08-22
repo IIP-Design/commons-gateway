@@ -1,4 +1,6 @@
 ---
+import '../styles/button.scss'
+
 interface Props {
   class?: string;
   id?: string;
@@ -16,13 +18,3 @@ const { class: classes, id, type, text } = Astro.props;
 >
   {text}
 </button>
-
-<style>
-  button {
-    background-color: var(--blue);
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    padding: 0.5rem 1rem;
-  }
-</style>

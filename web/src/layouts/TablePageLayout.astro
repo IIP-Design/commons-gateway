@@ -6,7 +6,7 @@ const { btnText, desc, narrow, title } = Astro.props;
 ---
 
 <PageLayout narrow={narrow} title={title}>
-  <Button class="add-btn" text={btnText} />
+  <a href="newuser"><Button class="add-btn" text={btnText} /></a>
   {desc && <p class="description">{desc}</p>}
   <div class="table">
     <slot />
