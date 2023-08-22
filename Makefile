@@ -8,6 +8,7 @@ DEV_DB_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmod
 # Sets the stage for the serverless deployment.
 # Can be overridden in the CLI as so: `make target STAGE=mystage`
 STAGE=dev
+DEPLOYMENT_TYPE=dev
 
 # Simulated events
 EVENT_ADMIN_CREATE = ./config/sim-events/admin-create.json
@@ -42,7 +43,7 @@ clean:
 
 deploy: clean build
 	aws s3 cp ./web/dist s3://$(STAGE).gateway.gpalab.digital/ --recursive;\
-	cd serverless; npm run sls -- deploy --stage $(STAGE) --verbose;
+	cd serverless; npm run sls -- deploy -e $(DEPLOYMENT_TYPE) --stage $(STAGE) --verbose;
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d

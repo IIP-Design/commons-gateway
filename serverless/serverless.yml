@@ -8,7 +8,7 @@ plugins:
 provider:
   name: aws
   deploymentBucket:
-    name: commons-gateway-deployments
+    name: gpalab-automatic-deployments-${env:DEPLOYMENT_TYPE}
 
 package:
   individually: true
@@ -26,7 +26,7 @@ functions:
           path: /admin/create
           method: post
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/admin-create"
@@ -40,7 +40,7 @@ functions:
           path: /admins
           method: get
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/admins-get"
@@ -54,7 +54,7 @@ functions:
           path: /guest/auth
           method: post
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/guest-auth"
@@ -68,7 +68,7 @@ functions:
           path: /guests
           method: post
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/guests-get"
@@ -82,7 +82,7 @@ functions:
           path: /team/create
           method: post
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/team-create"
@@ -96,7 +96,7 @@ functions:
           path: /teams
           method: get
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/teams-get"
@@ -110,7 +110,7 @@ functions:
           path: /creds/salt
           method: post
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/creds-salt"
@@ -124,7 +124,7 @@ functions:
           path: /creds/provision
           method: post
           cors:
-            origin: ${file(./config/${opt:stage, 'dev'}.json):cors.allowedOrigins}
+            origin: ${file(./config/${env:DEPLOYMENT_TYPE}.json):cors.allowedOrigins}
     package:
       patterns:
         - "./bin/creds-provision"
