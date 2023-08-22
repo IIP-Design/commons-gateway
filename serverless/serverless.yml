@@ -17,7 +17,7 @@ package:
 
 functions:
   adminCreate:
-    name: gateway-admin-create
+    name: gateway-${opt:stage}-admin-create
     handler: bin/admin-create
     description: Add an new email to the list of admin users.
     runtime: go1.x
@@ -31,7 +31,7 @@ functions:
       patterns:
         - "./bin/admin-create"
   adminsGet:
-    name: gateway-admins-get
+    name: gateway-${opt:stage}-admins-get
     handler: bin/admins-get
     description: Retrieve the list of admin users.
     runtime: go1.x
@@ -45,7 +45,7 @@ functions:
       patterns:
         - "./bin/admins-get"
   guestAuth:
-    name: gateway-guest-auth
+    name: gateway-${opt:stage}-guest-auth
     handler: bin/guest-auth
     description: Authenticate a guest user.
     runtime: go1.x
@@ -59,7 +59,7 @@ functions:
       patterns:
         - "./bin/guest-auth"
   guestsGet:
-    name: gateway-guests-get
+    name: gateway-${opt:stage}-guests-get
     handler: bin/guests-get
     description: Retrieve a list of guest users.
     runtime: go1.x
@@ -73,7 +73,7 @@ functions:
       patterns:
         - "./bin/guests-get"
   teamCreate:
-    name: gateway-team-create
+    name: gateway-${opt:stage}-team-create
     handler: bin/team-create
     description: Create a new team.
     runtime: go1.x
@@ -87,7 +87,7 @@ functions:
       patterns:
         - "./bin/team-create"
   teamsGet:
-    name: gateway-teams-get
+    name: gateway-${opt:stage}-teams-get
     handler: bin/teams-get
     description: Retrieve the list of teams.
     runtime: go1.x
@@ -101,7 +101,7 @@ functions:
       patterns:
         - "./bin/teams-get"
   credsSalt:
-    name: gateway-creds-retrieve
+    name: gateway-${opt:stage}-creds-retrieve
     handler: bin/creds-salt
     description: Retrieve a users hashing salt.
     runtime: go1.x
@@ -115,7 +115,7 @@ functions:
       patterns:
         - "./bin/creds-salt"
   credsProvision:
-    name: gateway-creds-provision
+    name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision
     description: Records a guest user invitation and generates credentials for this user.
     runtime: go1.x
@@ -129,7 +129,7 @@ functions:
       patterns:
         - "./bin/creds-provision"
   email2fa:
-    name: gateway-email-2fa
+    name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler
     description: Email an invitee their temporary verification code.
     runtime: nodejs18.x
@@ -139,7 +139,7 @@ functions:
       patterns:
         - "funcs/email-2fa/dist/index.cjs"
   emailCreds:
-    name: gateway-email-creds
+    name: gateway-${opt:stage}-email-creds
     handler: funcs/email-creds/dist/index.handler
     description: Email an invitee their temporary credentials.
     runtime: nodejs18.x
@@ -149,7 +149,7 @@ functions:
       patterns:
         - "funcs/email-creds/dist/index.cjs"
   emailSupportStaff:
-    name: gateway-email-support-staff
+    name: gateway-${opt:stage}-email-support-staff
     handler: funcs/email-support-staff/index.handler
     description: Email a Content Commons user an update on requested support staff.
     runtime: nodejs18.x
