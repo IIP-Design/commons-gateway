@@ -1,4 +1,4 @@
-button {
+.btn {
   background-color: var(--blue);
   color: #ffffff;
   border: none;
@@ -8,4 +8,8 @@ button {
 
 .back-btn {
   background-color: var(--alizarin-crimson);
+}
+
+.spaced-btn {
+  margin: 0.3125em;
 }

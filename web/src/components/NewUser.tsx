@@ -21,7 +21,7 @@ import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 // ////////////////////////////////////////////////////////////////////////////
 
 import '../styles/form.css';
-import '../styles/button.scss'
+import styles from '../styles/button.module.scss'
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
@@ -137,7 +137,7 @@ const NewUser: FC<INewUserProps> = ( props ) => {
         Access End Date
         <input id="date-input" type="date" onChange={e => handleUpdate('accessEndDate', e.target.value)} />
       </label>
-      <button id="login-btn" type="submit">Invite User</button>
+      <button id="login-btn" type="submit" className={styles.btn}>Invite User</button>
     </form>
     <BackButton showConfirmDialog />
   </>;

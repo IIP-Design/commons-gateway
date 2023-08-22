@@ -1,5 +1,5 @@
 ---
-import '../styles/button.scss'
+import styles from '../styles/button.module.scss'
 
 interface Props {
   class?: string;
@@ -12,7 +12,7 @@ const { class: classes, id, type, text } = Astro.props;
 ---
 
 <button
-  class:list={[classes]}
+  class:list={[classes, styles.btn]}
   id={id || ''}
   type={type || 'button'}
 >
