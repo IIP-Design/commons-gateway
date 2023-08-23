@@ -21,7 +21,7 @@ import '../styles/form.css';
     const pass = passInput.value;
 
     if (!name) {
-      showError("Please input a username");
+      showError('Please input a username');
       return;
     }
 
@@ -46,5 +46,5 @@ import '../styles/form.css';
       <input id="pass-input" type="password" />
     </label>
   </form>
-  <Button id="login-btn" text="Sign In" type="submit" />
+  <Button id="login-btn" type="submit">Sign In</Button>
 </LoggedOutLayout>
