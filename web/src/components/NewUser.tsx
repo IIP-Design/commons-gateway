@@ -21,7 +21,7 @@ import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 // ////////////////////////////////////////////////////////////////////////////
 
 import '../styles/form.css';
-import styles from '../styles/button.module.scss'
+import styles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
@@ -40,107 +40,120 @@ interface INewUserData {
 
 interface ITeamElementProps {
   readonly teams: ITeam[];
-  setData: ( val: string ) => void;
+  readonly setData: ( val: string ) => void;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
 const sortTeams = ( a: ITeam, b: ITeam ) => {
-  if( a.teamName > b.teamName ) {
+  if ( a.teamName > b.teamName ) {
     return 1;
-  } else if( b.teamName > a.teamName ) {
+  } if ( b.teamName > a.teamName ) {
     return -1;
-  } else {
-    return 0;
   }
-}
+
+  return 0;
+};
 
 const TeamElement: FC<ITeamElementProps> = ( { teams, setData } ) => {
-  if (1 === teams.length ) {
-    return <input id="family-name-input" type="text" disabled value={teams[0].teamName}/>;
-  } else {
-    const sorted = teams.sort(sortTeams);
-    return <select id="team-input" onChange={e => setData( e.target.value )}>
-      { sorted.map( ( { id, teamName } ) => <option key={id} value={id}>{teamName}</option>) }
-    </select>
+  if ( teams.length === 1 ) {
+    return <input id="family-name-input" type="text" disabled value={ teams[0].teamName } />;
   }
-}
+  const sorted = teams.sort( sortTeams );
+
+  return (
+    <select id="team-input" onChange={ e => setData( e.target.value ) }>
+      { sorted.map( ( { id, teamName } ) => <option key={ id } value={ id }>{ teamName }</option> ) }
+    </select>
+  );
+};
 
 const dateSelectionIsValid = ( dateStr?: string ) => {
   const now = new Date();
-  const date = parse( dateStr || "", "yyyy-MM-dd", new Date() );
+  const date = parse( dateStr || '', 'yyyy-MM-dd', new Date() );
+
   return date && isAfter( date, now ) && isBefore( date, addDays( now, MAX_ACCESS_GRANT_DAYS ) );
-}
+};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
 // ////////////////////////////////////////////////////////////////////////////
-const NewUser: FC<INewUserProps> = ( props ) => {
-  const [ teams ] = useState( props.teams );
-  const [ userData, setUserData ] = useState<Partial<INewUserData>>( {} );
-
-  useEffect( () => {
-    clear( [ 'given-name-input', 'family-name-input', 'email-input', 'date-input' ] );
-  }, [] );
+const NewUser: FC<INewUserProps> = ( { teams } ) => {
+  const [teamList, setTeamList] = useState( teams ); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [userData, setUserData] = useState<Partial<INewUserData>>( {} );
 
   const clear = ( ids: string[] ) => {
-    ids.forEach( id => (document.getElementById( id ) as HTMLInputElement).value = '' );
-  } 
+    ids.forEach( id => {
+      const el = document.getElementById( id ) as HTMLInputElement;
+
+      el.value = '';
+    } );
+  };
+
+  useEffect( () => {
+    clear( [
+      'given-name-input', 'family-name-input', 'email-input', 'date-input',
+    ] );
+  }, [] );
 
   const handleUpdate = ( key: keyof INewUserData, value?: string|Date ) => {
     setUserData( { ...userData, [key]: value } );
   };
 
   const validateSubmission = () => {
-    if( !userData['email']?.match( /^.+@.+$/ ) ) {
-      showError("Email address is not valid");
+    if ( !userData.email?.match( /^.+@.+$/ ) ) {
+      showError( 'Email address is not valid' );
+
       return false;
-    } else if( !dateSelectionIsValid( userData['accessEndDate'] ) ) {
-      showError(`Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future`);
+    } if ( !dateSelectionIsValid( userData.accessEndDate ) ) {
+      showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
+
       return false;
     }
 
     return true;
-  }
+  };
 
   const handleSubmit = async ( e: FormEvent<HTMLFormElement> ) => {
     e.preventDefault();
 
-    if( !validateSubmission() ) {
+    if ( !validateSubmission() ) {
       return;
     }
 
     // TODO: Submit user data --> Does this need to vary b/w Bob and Sue types?
     console.log( userData );
-  }
+  };
 
-  return <>
-    <form onSubmit={handleSubmit}>
+  return (
+    <form onSubmit={ handleSubmit }>
       <label>
-        Given (First) Name
-        <input id="given-name-input" type="text" required onChange={e => handleUpdate('givenName', e.target.value)} />
+        <span>Given (First) Name</span>
+        <input id="given-name-input" type="text" required onChange={ e => handleUpdate( 'givenName', e.target.value ) } />
       </label>
       <label>
-        Family (Last) Name
-        <input id="family-name-input" type="text" required onChange={e => handleUpdate('familyName', e.target.value)} />
+        <span>Family (Last) Name</span>
+        <input id="family-name-input" type="text" required onChange={ e => handleUpdate( 'familyName', e.target.value ) } />
       </label>
       <label>
-        Email
-        <input id="email-input" type="text" required onChange={e => handleUpdate('email', e.target.value)} />
+        <span>Email</span>
+        <input id="email-input" type="text" required onChange={ e => handleUpdate( 'email', e.target.value ) } />
       </label>
       <label>
-        Team
-        <TeamElement teams={teams} setData={val => handleUpdate('team', val)} />
+        <span>Team</span>
+        <TeamElement teams={ teamList } setData={ val => handleUpdate( 'team', val ) } />
       </label>
       <label>
-        Access End Date
-        <input id="date-input" type="date" onChange={e => handleUpdate('accessEndDate', e.target.value)} />
+        <span>Access End Date</span>
+        <input id="date-input" type="date" onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) } />
       </label>
-      <button id="login-btn" type="submit" className={styles.btn}>Invite User</button>
+      <div>
+        <button id="login-btn" type="submit" className={ styles.btn }>Invite User</button>
+        <BackButton showConfirmDialog />
+      </div>
     </form>
-    <BackButton showConfirmDialog />
-  </>;
-}
+  );
+};
 
 export default NewUser;
