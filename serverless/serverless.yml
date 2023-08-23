@@ -1,6 +1,6 @@
 service: commons-gateway
 
-frameworkVersion: "3"
+frameworkVersion: '3'
 
 plugins:
   - serverless-deployment-bucket
@@ -23,7 +23,7 @@ provider:
       name: CommonsGatewayLambdaRole-${opt:stage}
       statements:
         - Effect: Allow
-          Action: "rds-db:connect"
+          Action: 'rds-db:connect'
           Resource: !GetAtt RDSProxy.DBProxyArn
   vpc:
     securityGroupIds:
@@ -58,7 +58,7 @@ resources:
 package:
   individually: true
   patterns:
-    - "!./**"
+    - '!./**'
 
 functions:
   adminCreate:
@@ -74,7 +74,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/admin-create"
+        - './bin/admin-create'
   adminsGet:
     name: gateway-${opt:stage}-admins-get
     handler: bin/admins-get
@@ -88,7 +88,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/admins-get"
+        - './bin/admins-get'
   guestAuth:
     name: gateway-${opt:stage}-guest-auth
     handler: bin/guest-auth
@@ -102,7 +102,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/guest-auth"
+        - './bin/guest-auth'
   guestsGet:
     name: gateway-${opt:stage}-guests-get
     handler: bin/guests-get
@@ -116,7 +116,15 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/guests-get"
+        - './bin/guests-get'
+  initDB:
+    name: gateway-${opt:stage}-init-db
+    handler: bin/init-db
+    description: Initialize the application database with the necessary tables.
+    runtime: go1.x
+    package:
+      patterns:
+        - './bin/init-db'
   teamCreate:
     name: gateway-${opt:stage}-team-create
     handler: bin/team-create
@@ -130,7 +138,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/team-create"
+        - './bin/team-create'
   teamsGet:
     name: gateway-${opt:stage}-teams-get
     handler: bin/teams-get
@@ -144,7 +152,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/teams-get"
+        - './bin/teams-get'
   credsSalt:
     name: gateway-${opt:stage}-creds-retrieve
     handler: bin/creds-salt
@@ -158,7 +166,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/creds-salt"
+        - './bin/creds-salt'
   credsProvision:
     name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision
@@ -172,7 +180,7 @@ functions:
             origin: ${file(./config/${param:deployment}.json):cors.allowedOrigins}
     package:
       patterns:
-        - "./bin/creds-provision"
+        - './bin/creds-provision'
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler
@@ -182,7 +190,7 @@ functions:
       - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-2fa
     package:
       patterns:
-        - "funcs/email-2fa/dist/index.cjs"
+        - 'funcs/email-2fa/dist/index.cjs'
   emailCreds:
     name: gateway-${opt:stage}-email-creds
     handler: funcs/email-creds/dist/index.handler
@@ -192,7 +200,7 @@ functions:
       - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-creds
     package:
       patterns:
-        - "funcs/email-creds/dist/index.cjs"
+        - 'funcs/email-creds/dist/index.cjs'
   emailSupportStaff:
     name: gateway-${opt:stage}-email-support-staff
     handler: funcs/email-support-staff/index.handler
@@ -202,4 +210,4 @@ functions:
       - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-support-staff
     package:
       patterns:
-        - "funcs/email-support-staff/dist/index.cjs"
+        - 'funcs/email-support-staff/dist/index.cjs'

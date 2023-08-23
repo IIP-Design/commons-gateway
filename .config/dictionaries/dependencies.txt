@@ -1,5 +1,6 @@
 # Dependency names that set off the spell checker
 astro
+initdb
 randstr
 thanhpk
 tsconfigs

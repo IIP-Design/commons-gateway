@@ -27,6 +27,7 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
@@ -52,6 +53,10 @@ dev-reset:
 
 dev-reseed:
 	$(DEV_DIR)/scripts/reset.sh;$(DEV_DIR)/scripts/seed.sh
+
+init-db:
+	cd serverless;\
+	npm run sls -- invoke -f initDB --stage $(STAGE)
 
 local-provision: build
 	cd serverless;\
