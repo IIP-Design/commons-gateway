@@ -3,11 +3,11 @@ import AnchorButton from '../components/AnchorButton.astro';
 
 import PageLayout from '../layouts/PageLayout.astro';
 
-const { btnText, desc, narrow, title } = Astro.props;
+const { btnHref, btnText, desc, narrow, title } = Astro.props;
 ---
 
 <PageLayout narrow={narrow} title={title}>
-  <AnchorButton class="add-btn" text={btnText} href="newuser" />
+  <AnchorButton class="add-btn" text={btnText} href={btnHref} />
   {desc && <p class="description">{desc}</p>}
   <div class="table">
     <slot />

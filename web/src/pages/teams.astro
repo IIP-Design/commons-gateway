@@ -7,6 +7,6 @@ import { mockSomeData } from '../../mocks';
 const { teams } = mockSomeData(1, 50);
 ---
 
-<TablePageLayout btnText="+ New Team" narrow title="Teams">
+<TablePageLayout btnText="+ New Team" btnHref="newteam" narrow title="Teams">
   <TeamTable client:load teams={teams} />
 </TablePageLayout>
