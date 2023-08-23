@@ -17,10 +17,44 @@ params:
 
 provider:
   name: aws
+  region: us-east-1
+  iam:
+    role:
+      name: CommonsGatewayLambdaRole-${opt:stage}
+      statements:
+        - Effect: Allow
+          Action: "rds-db:connect"
+          Resource: !GetAtt RDSProxy.DBProxyArn
+  vpc:
+    securityGroupIds:
+      - !Ref LambdaSecurityGroup
+    subnetIds:
+      - !Ref SubnetA
+      - !Ref SubnetB
+  environment:
+    DB_HOST: ${self:custom.PROXY_ENDPOINT}
+    DB_NAME: ${self:custom.DB_NAME}
+    DB_PORT: ${self:custom.DB_PORT}
+    DB_USER: ${self:custom.DB_USER}
   deploymentBucket:
     name: gpalab-automatic-deployments-${param:deployment}
   disableRollback: ${param:rollback}
 
+custom:
+  DB_NAME: gateway_${opt:stage}
+  DB_USER: gateway${opt:stage}
+  DB_PORT: !GetAtt RDSInstance.Endpoint.Port
+  PROXY_NAME: commons-gateway-proxy-${opt:stage}
+  PROXY_ENDPOINT: !GetAtt RDSProxy.Endpoint
+
+resources:
+  - ${file(./config/resources/vpc.yml)}
+  - ${file(./config/resources/rds.yml)}
+  - ${file(./config/resources/proxy.yml)}
+
+# Defines how the functions are deployed. To reduce the functions
+# size for each Lambda, we package them independently. This requires
+# us to set the package pattern individually per function.
 package:
   individually: true
   patterns:
@@ -145,7 +179,7 @@ functions:
     description: Email an invitee their temporary verification code.
     runtime: nodejs18.x
     events:
-      - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-2fa
+      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-2fa
     package:
       patterns:
         - "funcs/email-2fa/dist/index.cjs"
@@ -155,7 +189,7 @@ functions:
     description: Email an invitee their temporary credentials.
     runtime: nodejs18.x
     events:
-      - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-creds
+      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-creds
     package:
       patterns:
         - "funcs/email-creds/dist/index.cjs"
@@ -165,7 +199,7 @@ functions:
     description: Email a Content Commons user an update on requested support staff.
     runtime: nodejs18.x
     events:
-      - sqs: arn:aws:sqs:us-east-1:601587284985:contentCommons-email-support-staff
+      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-support-staff
     package:
       patterns:
         - "funcs/email-support-staff/dist/index.cjs"

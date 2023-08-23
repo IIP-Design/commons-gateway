@@ -1,5 +1,9 @@
 {
   "cors": {
     "allowedOrigins": "*"
+  },
+  "rds": {
+    "allocatedStorage": "20",
+    "instanceClass": "db.t3.micro"
   }
 }

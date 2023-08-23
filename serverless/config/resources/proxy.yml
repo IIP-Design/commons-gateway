@@ -1,0 +1,50 @@
+Resources:
+  RDSProxy:
+    Type: AWS::RDS::DBProxy
+    Properties:
+      DBProxyName: ${self:custom.PROXY_NAME}
+      Auth:
+        - IAMAuth: REQUIRED
+          SecretArn: !GetAtt RDSInstance.MasterUserSecret.SecretArn
+      EngineFamily: POSTGRESQL
+      RoleArn: !GetAtt RDSProxyRole.Arn
+      RequireTLS: true
+      VpcSecurityGroupIds:
+        - !Ref RDSSecurityGroup
+      VpcSubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
+
+  RDSProxyTargetGroup:
+    Type: AWS::RDS::DBProxyTargetGroup
+    Properties:
+      TargetGroupName: default
+      DBProxyName: !Ref RDSProxy
+      DBInstanceIdentifiers:
+        - !Ref RDSInstance
+
+  RDSProxyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CommonsGatewayRDSProxyRole-${opt:stage}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "rds.amazonaws.com"
+      Policies:
+        - PolicyName: CommonsGatewayRDSProxyPolicy-${opt:stage}
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "secretsmanager:GetSecretValue"
+                Resource: !GetAtt RDSInstance.MasterUserSecret.SecretArn
+              - Effect: Allow
+                Action: "kms:Decrypt"
+                Resource: "arn:aws:kms:${aws:region}:${aws:accountId}:key/*"
+                Condition:
+                  StringEquals:
+                    kms:ViaService: "secretsmanager.${aws:region}.amazonaws.com"

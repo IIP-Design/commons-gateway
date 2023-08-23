@@ -1,0 +1,25 @@
+Resources:
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: commons-gateway-${opt:stage}
+      DBName: ${self:custom.DB_NAME}
+      MasterUsername: ${self:custom.DB_USER}
+      ManageMasterUserPassword: true
+      Engine: postgres
+      EngineVersion: "15.3"
+      DBInstanceClass: ${file(./config/${param:deployment}.json):rds.instanceClass}
+      AllocatedStorage: ${file(./config/${param:deployment}.json):rds.allocatedStorage}
+      StorageType: gp2
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt RDSSecurityGroup.GroupId
+
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: commons-gateway-${opt:stage}
+      DBSubnetGroupDescription: "RDS subnet group for the Commons Gateway"
+      SubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
