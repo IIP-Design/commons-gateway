@@ -1,0 +1,4 @@
+# Postgres terms that set off the spell checker
+dbname
+psql
+sslmode

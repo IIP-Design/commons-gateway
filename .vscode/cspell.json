@@ -3,15 +3,19 @@
     {
       "name": "Dependencies",
       "path": "../.config/dictionaries/dependencies.txt"
+    },
+    {
+      "name": "Postgres",
+      "path": "../.config/dictionaries/postgres.txt"
     }
   ],
   "dictionaries": [
-    "Dependencies"
+    "Dependencies",
+    "Postgres"
   ],
   "words": [
     "Aprimo",
     "funcs",
-    "psql",
     "somepage"
   ]
 }

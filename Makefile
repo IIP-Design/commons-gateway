@@ -3,7 +3,7 @@
 # Sets the envrionmental variables needed to test functions locally
 DEV_DIR = .gateway-dev
 DEV_AWS_ENV = -e AWS_SES_REGION=us-east-1 -e SOURCE_EMAIL_ADDRESS=contentcommons@state.gov
-DEV_DB_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev?sslmode=disable -e DB_PASSWORD=gateway_dev -e DB_USER=gateway_dev -e JWT_SECRET=2fweb3m$ndj
+DEV_DB_ENV  = -e DB_HOST=host.docker.internal:5454 -e DB_NAME=gateway_dev -e DB_PASSWORD=gateway_dev -e DB_USER=gateway_dev -e JWT_SECRET=2fweb3m$ndj
 
 # Sets the stage for the serverless deployment.
 # Can be overridden in the CLI as so: `make target STAGE=mystage`

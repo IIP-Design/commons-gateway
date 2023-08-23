@@ -33,7 +33,7 @@ const buildQuery = async ( endpoint: string, body: IFetchBody, method?: TMethods
  * @returns The salt value (if the user exits).
  */
 export const passTheSalt = async ( username: string ) => {
-  const response = await buildQuery( 'creds', { username } );
+  const response = await buildQuery( 'creds/salt', { username } );
 
   const { salt } = await response.json();
 
