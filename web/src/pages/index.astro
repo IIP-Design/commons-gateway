@@ -11,6 +11,11 @@ const description = `The users listed on this page are the team leads of Content
     Department of State PD personnel.`;
 ---
 
-<TablePageLayout btnText="+ New User" desc={description} title="External Partner Team Leads">
+<TablePageLayout
+  btnText="+ New User"
+  btnHref="newuser"
+  desc={description}
+  title="External Partner Team Leads"
+>
   <UserTable client:load teams={teams} users={users} />
 </TablePageLayout>

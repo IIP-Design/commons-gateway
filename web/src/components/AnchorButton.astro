@@ -1,0 +1,27 @@
+---
+import styles from '../styles/button.module.scss';
+
+interface Props {
+  class?: string;
+  id?: string;
+  text: string;
+  href: string;
+}
+
+const { class: classes, id, text, href } = Astro.props;
+---
+
+<a
+  class:list={[classes, styles.btn]}
+  id={id || ''}
+  href={href}
+>
+  {text}
+</a>
+
+<style lang="scss">
+  a {
+    font-size: smaller;
+    text-decoration: none;
+  }
+</style>
