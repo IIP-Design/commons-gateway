@@ -43,6 +43,15 @@ func PrepareResponse(body []byte) (Response, error) {
 	return resp, nil
 }
 
+// SendSuccessMessage returns a simple 200 response with a success message.
+func SendSuccessMessage() (Response, error) {
+	body, _ := json.Marshal(map[string]string{
+		"message": "success",
+	})
+
+	return PrepareResponse(body)
+}
+
 // SendServerError accepts an error and returns it as an API Gateway response with
 // a status code of 500.
 func SendServerError(err error) (Response, error) {

@@ -76,7 +76,7 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 		return msgs.SendServerError(err)
 	}
 
-	return msgs.PrepareResponse([]byte("success"))
+	return msgs.SendSuccessMessage()
 }
 
 func main() {

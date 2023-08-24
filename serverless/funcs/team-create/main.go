@@ -51,7 +51,7 @@ func NewTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 		return msgs.SendServerError(err)
 	}
 
-	return msgs.PrepareResponse([]byte("success"))
+	return msgs.SendSuccessMessage()
 }
 
 func main() {

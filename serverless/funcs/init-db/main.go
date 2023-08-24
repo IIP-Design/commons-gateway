@@ -17,7 +17,7 @@ func InitDBHandler(ctx context.Context) (msgs.Response, error) {
 		return msgs.SendServerError(err)
 	}
 
-	return msgs.PrepareResponse([]byte("success"))
+	return msgs.SendSuccessMessage()
 }
 
 func main() {
