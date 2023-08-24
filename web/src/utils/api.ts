@@ -17,15 +17,25 @@ interface IFetchBody {
  * @param body The data to be sent to the API.
  * @param method The HTTP request method.
  */
-const buildQuery = async ( endpoint: string, body: IFetchBody, method?: TMethods ) => (
-  fetch( `${API_ENDPOINT}/${endpoint}`, {
-    body: JSON.stringify( body ),
+export const buildQuery = async ( endpoint: string, body: IFetchBody | null, method?: TMethods ) => {
+  let opts = {
     headers: {
       'Content-Type': 'application/json',
     },
     method: method || 'POST',
-  } )
-);
+  } as RequestInit;
+
+  if ( body !== null ) {
+    opts = {
+      ...opts,
+      body: body as BodyInit,
+    };
+  }
+
+  return (
+    fetch( `${API_ENDPOINT}/${endpoint}`, opts )
+  );
+};
 
 /**
  * Retrieves the salt value used to hash the user's password.
