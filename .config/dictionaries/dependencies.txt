@@ -1,6 +1,9 @@
 # Dependency names that set off the spell checker
 astro
+astrojs
 initdb
+nanostores
 randstr
+sweetalert
 thanhpk
 tsconfigs
