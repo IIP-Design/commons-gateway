@@ -5,6 +5,7 @@ import { isAfter, isBefore, addDays, parse } from 'date-fns';
 import BackButton from './BackButton';
 
 import { buildQuery } from '../utils/api';
+import { addDaysToNow, getYearMonthDay } from '../utils/dates';
 import currentUser from '../stores/current-user';
 import { showError } from '../utils/alert';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
@@ -144,7 +145,7 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
         familyName: userData.familyName,
         team: currentUser.get().team,
       },
-      expiration: new Date( userData.accessEndDate as string ).toISOString(),
+      expiration: new Date( userData.accessEndDate as string ).toISOString(), // Conversion to iso required by Lambda
     };
 
     await buildQuery( 'creds/provision', invitation, 'POST' )
@@ -172,7 +173,13 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
       </label>
       <label>
         <span>Access End Date</span>
-        <input id="date-input" type="date" onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) } />
+        <input
+          id="date-input"
+          type="date"
+          min={ getYearMonthDay( new Date() ) }
+          max={ getYearMonthDay( addDaysToNow( 60 ) ) }
+          onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) }
+        />
       </label>
       <div>
         <button id="login-btn" type="submit" className={ styles.btn }>Invite User</button>
