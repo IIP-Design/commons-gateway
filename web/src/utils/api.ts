@@ -8,6 +8,7 @@ type TMethods = 'GET' | 'POST';
 interface IFetchBody {
   action?: TActions
   hash?: string
+  team?: string
   username?: string
 }
 
@@ -28,7 +29,7 @@ export const buildQuery = async ( endpoint: string, body: IFetchBody | null, met
   if ( body !== null ) {
     opts = {
       ...opts,
-      body: body as BodyInit,
+      body: JSON.stringify( body as BodyInit ),
     };
   }
 

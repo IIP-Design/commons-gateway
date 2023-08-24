@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
+import { buildQuery } from '../utils/api';
 import { getTeamName } from '../utils/team';
 import { selectSlice } from '../utils/arrays';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
@@ -12,21 +13,43 @@ interface IUserTableProps {
   readonly teams: ITeam[]
 }
 
-const UserTable: FC<IUserTableProps> = ( { users, teams } ) => {
+const UserTable: FC<IUserTableProps> = () => {
   // Set the high and low ends of the view toggle.
   const LOW_VIEW = 30;
   const HIGH_VIEW = 90;
 
-  const [userCount, setUserCount] = useState( users.length ); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const [viewCount, setViewCount] = useState( LOW_VIEW );
   const [viewOffset, setViewOffset] = useState( 0 );
-  const [userList, setUserList] = useState( selectSlice( users, viewCount, viewOffset ) );
+  const [userList, setUserList] = useState( selectSlice( [], viewCount, viewOffset ) );
+  const [userCount, setUserCount] = useState( userList.length ); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const [teams, setTeams] = useState( [] );
 
   useEffect( () => {
-    setUserList( selectSlice( users, viewCount, viewOffset ) );
-  }, [
-    users, viewCount, viewOffset,
-  ] );
+    const getUsers = async () => {
+      const response = await buildQuery( 'guests', { team: '1' } );
+      const { data } = await response.json();
+
+      if ( data ) {
+        setUserList( selectSlice( data, viewCount, viewOffset ) );
+        setUserCount( data.length );
+      }
+    };
+
+    getUsers();
+  }, [viewCount, viewOffset] );
+
+  useEffect( () => {
+    const getTeams = async () => {
+      const response = await buildQuery( 'teams', null, 'GET' );
+      const { data } = await response.json();
+
+      if ( data ) {
+        setTeams( data );
+      }
+    };
+
+    getTeams();
+  }, [] );
 
   // How many more users are left to the end of the list.
   const remainingScroll = userCount - ( viewCount * viewOffset );

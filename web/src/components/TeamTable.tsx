@@ -21,11 +21,12 @@ const TeamTable: FC = () => {
   useEffect( () => {
     const getTeams = async () => {
       const response = await buildQuery( 'teams', null, 'GET' );
-
       const { data } = await response.json();
 
-      setTeamList( selectSlice( data, viewCount, viewOffset ) );
-      setTeamCount( data.length );
+      if ( data ) {
+        setTeamList( selectSlice( data, viewCount, viewOffset ) );
+        setTeamCount( data.length );
+      }
     };
 
     getTeams();
