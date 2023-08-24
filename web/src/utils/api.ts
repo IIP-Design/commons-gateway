@@ -10,6 +10,13 @@ interface IFetchBody {
   hash?: string
   team?: string
   username?: string
+  inviter?: string,
+  invitee?: {
+    email?: string,
+    givenName?: string,
+    familyName?: string,
+    team?: string,
+  },
 }
 
 /**

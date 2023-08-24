@@ -1,24 +1,13 @@
-// ////////////////////////////////////////////////////////////////////////////
-// React Imports
-// ////////////////////////////////////////////////////////////////////////////
 import { useEffect, useState } from 'react';
 import type { FC, FormEvent } from 'react';
-
-// ////////////////////////////////////////////////////////////////////////////
-// 3PP Imports
-// ////////////////////////////////////////////////////////////////////////////
 import { isAfter, isBefore, addDays, parse } from 'date-fns';
 
-// ////////////////////////////////////////////////////////////////////////////
-// Local Imports
-// ////////////////////////////////////////////////////////////////////////////
 import BackButton from './BackButton';
+
+import { buildQuery } from '../utils/api';
+import currentUser from '../stores/current-user';
 import { showError } from '../utils/alert';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
-
-// ////////////////////////////////////////////////////////////////////////////
-// Styles and CSS
-// ////////////////////////////////////////////////////////////////////////////
 
 import '../styles/form.css';
 import styles from '../styles/button.module.scss';
@@ -27,7 +16,7 @@ import styles from '../styles/button.module.scss';
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
 interface INewUserProps {
-  readonly teams: ITeam[];
+  readonly isAdmin: boolean;
 }
 
 interface INewUserData {
@@ -47,24 +36,31 @@ interface ITeamElementProps {
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
 const sortTeams = ( a: ITeam, b: ITeam ) => {
-  if ( a.teamName > b.teamName ) {
+  if ( a.name > b.name ) {
     return 1;
-  } if ( b.teamName > a.teamName ) {
+  } if ( b.name > a.name ) {
     return -1;
   }
 
   return 0;
 };
 
+/**
+ * Render the team selection field. If there is only one team available, it will
+ * return a readonly text input. Otherwise, it will provide a select element.
+ * @param param.teams A list of possible teams.
+ * @param param.setData Function to set the form values on input.
+ */
 const TeamElement: FC<ITeamElementProps> = ( { teams, setData } ) => {
   if ( teams.length === 1 ) {
-    return <input id="family-name-input" type="text" disabled value={ teams[0].teamName } />;
+    return <input id="family-name-input" type="text" disabled value={ teams[0].name } />;
   }
+
   const sorted = teams.sort( sortTeams );
 
   return (
     <select id="team-input" onChange={ e => setData( e.target.value ) }>
-      { sorted.map( ( { id, teamName } ) => <option key={ id } value={ id }>{ teamName }</option> ) }
+      { sorted.map( ( { id, name } ) => <option key={ id } value={ id }>{ name }</option> ) }
     </select>
   );
 };
@@ -79,8 +75,8 @@ const dateSelectionIsValid = ( dateStr?: string ) => {
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
 // ////////////////////////////////////////////////////////////////////////////
-const NewUser: FC<INewUserProps> = ( { teams } ) => {
-  const [teamList, setTeamList] = useState( teams ); // eslint-disable-line @typescript-eslint/no-unused-vars
+const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
+  const [teamList, setTeamList] = useState( [] );
   const [userData, setUserData] = useState<Partial<INewUserData>>( {} );
 
   const clear = ( ids: string[] ) => {
@@ -91,6 +87,24 @@ const NewUser: FC<INewUserProps> = ( { teams } ) => {
     } );
   };
 
+  // Generate the teams list.
+  useEffect( () => {
+    const getTeams = async () => {
+      const response = await buildQuery( 'teams', null, 'GET' );
+      const { data } = await response.json();
+
+      if ( data ) {
+        // If the user is not an admin user, only allow them to invite users to their own team.
+        const filtered = isAdmin ? data : data.filter( ( t: ITeam ) => t.id === currentUser.get().team );
+
+        setTeamList( filtered );
+      }
+    };
+
+    getTeams();
+  }, [isAdmin] );
+
+  // Clear the input fields.
   useEffect( () => {
     clear( [
       'given-name-input', 'family-name-input', 'email-input', 'date-input',
@@ -122,8 +136,19 @@ const NewUser: FC<INewUserProps> = ( { teams } ) => {
       return;
     }
 
-    // TODO: Submit user data --> Does this need to vary b/w Bob and Sue types?
-    console.log( userData );
+    const invitation = {
+      inviter: currentUser.get().email,
+      invitee: {
+        email: userData.email,
+        givenName: userData.givenName,
+        familyName: userData.familyName,
+        team: currentUser.get().team,
+      },
+    };
+
+    await buildQuery( 'creds/provision', invitation, 'POST' )
+      .then( () => window.location.assign( '/' ) )
+      .catch( err => console.error( err ) );
   };
 
   return (

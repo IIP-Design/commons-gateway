@@ -1,12 +1,8 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
 import NewUser from '../components/NewUser';
-
-import { mockSomeData } from '../../mocks';
-
-const { teams } = mockSomeData(1, 50);
 ---
 
 <PageLayout narrow title="New User">
-  <NewUser client:load teams={teams.slice(0,1)} />
+  <NewUser client:load isAdmin={false} />
 </PageLayout>
