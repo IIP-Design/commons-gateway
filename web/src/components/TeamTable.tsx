@@ -2,30 +2,34 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import ToggleSwitch from './ToggleSwitch/ToggleSwitch';
+import { buildQuery } from '../utils/api';
 import { selectSlice } from '../utils/arrays';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
 
 import style from '../styles/table.module.scss';
 
-interface ITeamTableProps {
-  readonly teams: ITeam[]
-}
-
-const TeamTable: FC<ITeamTableProps> = ( { teams } ) => {
+const TeamTable: FC = () => {
   // Set the high and low ends of the view toggle.
   const LOW_VIEW = 30;
   const HIGH_VIEW = 90;
 
-  const [teamCount, setTeamCount] = useState( teams.length ); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const [viewCount, setViewCount] = useState( LOW_VIEW );
   const [viewOffset, setViewOffset] = useState( 0 );
-  const [teamList, setTeamList] = useState( selectSlice( teams, viewCount, viewOffset ) );
+  const [teamList, setTeamList] = useState( selectSlice( [], viewCount, viewOffset ) );
+  const [teamCount, setTeamCount] = useState( teamList.length ); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
 
   useEffect( () => {
-    setTeamList( selectSlice( teams, viewCount, viewOffset ) );
-  }, [
-    teams, viewCount, viewOffset,
-  ] );
+    const getTeams = async () => {
+      const response = await buildQuery( 'teams', null, 'GET' );
+
+      const { data } = await response.json();
+
+      setTeamList( selectSlice( data, viewCount, viewOffset ) );
+      setTeamCount( data.length );
+    };
+
+    getTeams();
+  }, [viewCount, viewOffset] );
 
   // How many more teams are left to the end of the list.
   const remainingScroll = teamCount - ( viewCount * viewOffset );
@@ -99,7 +103,7 @@ const TeamTable: FC<ITeamTableProps> = ( { teams } ) => {
           <tbody>
             { teamList && ( teamList.map( team => (
               <tr key={ team.id }>
-                <td>{ team.teamName }</td>
+                <td>{ team.name }</td>
                 <td>
                   <ToggleSwitch active={ team.active } callback={ handleStatusToggle } id={ team.id } />
                 </td>
