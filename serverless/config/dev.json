@@ -1,6 +1,16 @@
 {
+  "allowedOrigins": "*",
   "cors": {
-    "allowedOrigins": "*"
+    "origins": ["http://localhost:3000", "http://*.gpalab.digital"],
+    "headers": [
+      "Content-Type",
+      "X-Amz-Date",
+      "Authorization",
+      "X-Api-Key",
+      "X-Amz-Security-Token",
+      "X-Amz-User-Agent",
+      "X-Amzn-Trace-Id"
+    ]
   },
   "rds": {
     "allocatedStorage": "20",
