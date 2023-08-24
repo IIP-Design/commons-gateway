@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
@@ -12,6 +13,7 @@ import (
 type RequestBodyOptions struct {
 	Action  string `json:"action"`
 	Email   string `json:"email"`
+	Expires string `json:"expiration"`
 	Hash    string `json:"hash"`
 	Invitee struct {
 		Email     string `json:"email"`
@@ -54,6 +56,7 @@ type Team struct {
 type Invite struct {
 	Invitee User
 	Inviter string
+	Expires time.Time
 }
 
 // ParseBodyData converts the serialized JSON string provided in the body
@@ -109,11 +112,18 @@ func ExtractInvite(body string) (Invite, error) {
 	firstName := parsed.Invitee.NameFirst
 	lastName := parsed.Invitee.NameLast
 	team := parsed.Invitee.Team
+	expires := parsed.Expires
 
 	if err != nil {
 		return invite, err
-	} else if admin == "" || guest == "" || lastName == "" || firstName == "" || team == "" {
+	} else if admin == "" || guest == "" || lastName == "" || firstName == "" || team == "" || expires == "" {
 		return invite, errors.New("data missing from request")
+	}
+
+	parsedTime, err := time.Parse(time.RFC3339, expires)
+
+	if err != nil {
+		return invite, err
 	}
 
 	invite.Inviter = admin
@@ -121,6 +131,7 @@ func ExtractInvite(body string) (Invite, error) {
 	invite.Invitee.NameFirst = firstName
 	invite.Invitee.NameLast = lastName
 	invite.Invitee.Team = team
+	invite.Expires = parsedTime
 
 	return invite, err
 }

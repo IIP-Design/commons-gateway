@@ -24,7 +24,7 @@ interface INewUserData {
   familyName: string;
   email: string;
   team: number;
-  accessEndDate?: string;
+  accessEndDate: string;
 }
 
 interface ITeamElementProps {
@@ -144,6 +144,7 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
         familyName: userData.familyName,
         team: currentUser.get().team,
       },
+      expiration: new Date( userData.accessEndDate as string ).toISOString(),
     };
 
     await buildQuery( 'creds/provision', invitation, 'POST' )

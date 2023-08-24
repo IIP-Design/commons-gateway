@@ -40,7 +40,7 @@ func handleInvitation(invite data.Invite) error {
 	pass, salt := generateCredentials()
 	hash := generateHash(pass, salt)
 
-	err = invites.SaveCredentials(invite.Invitee, hash, salt)
+	err = invites.SaveCredentials(invite.Invitee, invite.Expires, hash, salt)
 
 	if err != nil {
 		return errors.New("something went wrong - credential generation failed")

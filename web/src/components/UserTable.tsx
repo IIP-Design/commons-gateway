@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import { buildQuery } from '../utils/api';
+import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { selectSlice } from '../utils/arrays';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
@@ -127,8 +128,8 @@ const UserTable: FC<IUserTableProps> = () => {
                 <td>{ user.email }</td>
                 <td>{ getTeamName( user.team, teams ) }</td>
                 <td className={ style.status }>
-                  <span className={ user.active ? style.active : style.inactive } />
-                  { user.active ? 'Active' : 'Inactive' }
+                  <span className={ isGuestActive( user.expiration ) ? style.active : style.inactive } />
+                  { isGuestActive( user.expiration ) ? 'Active' : 'Inactive' }
                 </td>
               </tr>
             ) ) ) }
