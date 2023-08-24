@@ -7,5 +7,5 @@
 export const getTeamName = ( id: string, teams: ITeam[] ) => {
   const found = teams.filter( team => team.id === id )?.[0] || {};
 
-  return found.teamName || '';
+  return found.name || '';
 };

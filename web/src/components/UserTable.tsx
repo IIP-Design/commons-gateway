@@ -26,7 +26,7 @@ const UserTable: FC<IUserTableProps> = () => {
 
   useEffect( () => {
     const getUsers = async () => {
-      const response = await buildQuery( 'guests', { team: '1' } );
+      const response = await buildQuery( 'guests', { team: 'cjjlml77k98c70bm73pg' } );
       const { data } = await response.json();
 
       if ( data ) {
@@ -122,7 +122,7 @@ const UserTable: FC<IUserTableProps> = () => {
             { userList && ( userList.map( user => (
               <tr key={ user.email }>
                 <td>
-                  { `${user.firstName} ${user.lastName}` }
+                  { `${user.givenName} ${user.familyName}` }
                 </td>
                 <td>{ user.email }</td>
                 <td>{ getTeamName( user.team, teams ) }</td>
