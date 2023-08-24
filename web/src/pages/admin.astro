@@ -1,0 +1,44 @@
+---
+import Button from '../components/Button.astro';
+import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
+
+import oktaIcon from '/icon_okta.svg';
+---
+
+<script>
+  import { Amplify, Auth } from 'aws-amplify';
+
+  import awsConfig from '../utils/aws-config';
+
+  Amplify.configure(awsConfig);
+
+  const handleLogin = () => {
+    Auth.federatedSignIn({
+      provider: import.meta.env.PUBLIC_COGNITO_OKTA_PROVIDER_NAME,
+      customState: '/',
+    });
+  };
+
+  const loginBtn = document.getElementById('okta-btn');
+
+  loginBtn?.addEventListener('click', () => handleLogin());
+</script>
+
+<LoggedOutLayout title="Admin Login">
+  <div>
+    <Button id="okta-btn" class="okta-btn" type="button">
+      <img src={oktaIcon} alt="Okta Single Sign-On" width="24" />
+      {'Log In With Okta'}
+    </Button>
+  </div>
+</LoggedOutLayout>
+
+<style>
+  img {
+    margin-right: 1rem;
+  }
+  .okta-btn {
+    display: flex;
+    align-items: center;
+  }
+</style>
