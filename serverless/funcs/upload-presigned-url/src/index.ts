@@ -19,16 +19,16 @@ config.update( { region: AWS_REGION || 'us-east-1' } );
 
 const s3 = new S3();
 
-const CORS_HEADERS = {
-
-};
-
 // ////////////////////////////////////////////////////////////////////////////
 // exports
 // ////////////////////////////////////////////////////////////////////////////
-export const handler: Handler = async ( { queryStringParameters }: APIGatewayEvent ): Promise<APIGatewayProxyResult> => {
-  const key = nanoid(24);
-  const contentType = queryStringParameters.contentType;
+export const handler: Handler = async ( {
+  queryStringParameters,
+}: APIGatewayEvent ): Promise<APIGatewayProxyResult> => {
+  const key = nanoid( 24 );
+
+  // eslint-disable-next-line dot-notation
+  const contentType = queryStringParameters?.['contentType'];
 
   const s3Params = {
     Bucket: S3_UPLOAD_BUCKET,
@@ -41,10 +41,12 @@ export const handler: Handler = async ( { queryStringParameters }: APIGatewayEve
 
   return {
     statusCode: 201,
-    headers: CORS_HEADERS,
+    headers: {
+      'content-type': 'application/json',
+    },
     body: JSON.stringify( {
       uploadURL,
       key,
     } ),
-  }
+  };
 };

@@ -25,9 +25,11 @@ let fileToUpload: File|null = null;
 const validateFile = ( { type, size }: File ) => {
   if ( !type.match( /^(image|video)\/.+/ ) ) {
     showError( 'Only pictures and/or videos may be uploaded' );
+
     return false;
   } if ( size > MAX_FILE_SIZE ) {
     showError( `Max file size is ${prettyBytes( MAX_FILE_SIZE )}` );
+
     return false;
   }
 
@@ -40,6 +42,7 @@ const setUpload = ( file: File ) => {
   }
 
   const list = document.getElementById( 'file-list' ) as HTMLElement;
+
   list.innerHTML = `${file.name} (${prettyBytes( file.size )})`;
 
   fileToUpload = file;
@@ -47,8 +50,8 @@ const setUpload = ( file: File ) => {
 
 const handleFile = ( files?: FileList|null ) => {
   if ( files && files.length > 1 ) {
-    showError("Only single-file uploads are currently supported")
-  } else if( files ) {
+    showError( 'Only single-file uploads are currently supported' );
+  } else if ( files ) {
     setUpload( files[0] );
   }
 };
@@ -98,11 +101,13 @@ export const dropHandler = ( e: DragEvent ) => {
   haltEvent( e );
 
   const files = e?.dataTransfer?.files;
+
   handleFile( files );
 };
 
 export const chooseHandler = ( e: Event ) => {
   const { files } = ( e.target as HTMLInputElement );
+
   handleFile( files );
 };
 
@@ -113,14 +118,14 @@ export const submitHandler = async () => {
 
   const { file, description, error } = validateSubmission( descriptionElem );
 
-  if( error ) {
+  if ( error ) {
     return;
   }
 
   // Send data
   const response = await submitFiles( file as File, { description } );
 
-  if ( 'ok' !== response ) {
+  if ( response !== 'ok' ) {
     showError( 'Could not upload file' );
   } else {
     showSuccess( 'File has been uploaded' );

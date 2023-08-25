@@ -26,6 +26,7 @@ const getPresignedUrl = async ( contentType: string ) => {
     method: 'GET',
   } );
   const { uploadURL, key } = await response.json();
+
   return { uploadURL, key };
 };
 
@@ -34,7 +35,8 @@ const uploadFile = async ( fqUrl: string, file: File ) => {
     body: file,
     method: 'PUT',
   } );
-  return 200 === response.status;
+
+  return response.status === 200;
 };
 
 const submitFileMetadata = async ( body: IFileUploadMeta ) => {
@@ -46,22 +48,24 @@ const submitFileMetadata = async ( body: IFileUploadMeta ) => {
     method: 'POST',
   } );
 
-  return 201 === response.status;
+  return response.status === 201;
 };
-  
+
 // ////////////////////////////////////////////////////////////////////////////
 // Exports
 // ////////////////////////////////////////////////////////////////////////////
 export const submitFiles = async ( file: File, meta: IMetadata ): Promise<TUploadStatus> => {
   const { uploadURL, key } = await getPresignedUrl( file.type );
-  if( !uploadURL ) { return 'urlFailed'; }
+
+  if ( !uploadURL ) { return 'urlFailed'; }
 
   const fileSuccess = await uploadFile( uploadURL, file );
-  if( !fileSuccess ) { return 'uploadFailed'; };
+
+  if ( !fileSuccess ) { return 'uploadFailed'; }
 
   const metaSuccess = await submitFileMetadata( { ...meta, key, fileType: file.type } );
-  if( !metaSuccess ) { return 'metadataFailed'; }
+
+  if ( !metaSuccess ) { return 'metadataFailed'; }
 
   return 'ok';
 };
-  

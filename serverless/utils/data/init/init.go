@@ -36,5 +36,11 @@ func InitializeDatabase() error {
 		logs.LogError(err, "Table Creation Error - Invites")
 	}
 
+	_, err = pool.Exec(uploadsQuery)
+
+	if err != nil {
+		logs.LogError(err, "Table Creation Error - Uploads")
+	}
+
 	return err
 }

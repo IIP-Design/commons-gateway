@@ -19,6 +19,7 @@ EVENT_EMAIL_2FA = ./config/sim-events/email-2fa.json
 EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
 EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
 EVENT_TEAM_CREATE = ./config/sim-events/team-create.json
+EVENT_UPLOAD_METADATA = ./config/sim-events/upload-metadata.json
 
 build:
 	cd web; npm run build;
@@ -34,10 +35,12 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-update funcs/team-update/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/upload-metadata funcs/upload-metadata/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\
 	cd email-creds && npm run zip && cd ../;\
-	cd email-support-staff && npm run zip && cd ../;
+	cd email-support-staff && npm run zip && cd ../;\
+	cd upload-presigned-url && npm run zip && cd ../;
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock;\
@@ -103,3 +106,12 @@ local-email-creds: build
 local-email-support-staff: build
 	cd serverless;\
 	npm run sls -- invoke local -f emailSupportStaff $(DEV_ENV) -p $(EVENT_EMAIL_SUPPORT_STAFF);
+
+local-email-creds: build
+	cd serverless;\
+	npm run sls -- invoke local -f uploadMetadata $(DEV_AWS_ENV) -p $(EVENT_UPLOAD_METADATA);
+
+local-email-support-staff: build
+	cd serverless;\
+	npm run sls -- invoke local -f uploadPresignedUrl $(DEV_ENV);
+
