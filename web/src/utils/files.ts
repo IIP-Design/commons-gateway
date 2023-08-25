@@ -2,12 +2,12 @@
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
 import prettyBytes from 'pretty-bytes';
-import Swal from 'sweetalert2';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { submitFiles } from './api';
+import { submitFiles } from './upload';
+import { showError, showSuccess } from './alert';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -17,88 +17,61 @@ const MAX_FILE_SIZE = 100 * 1000 * 1000;
 // ////////////////////////////////////////////////////////////////////////////
 // Config
 // ////////////////////////////////////////////////////////////////////////////
-const formData = new FormData();
+let fileToUpload: File|null = null;
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-const showError = ( text: string ) => Swal.fire( {
-  icon: 'error',
-  title: 'Input Error',
-  text,
-} );
-
-const showSuccess = ( text: string ) => Swal.fire( {
-  icon: 'success',
-  title: 'Success!',
-  text,
-} );
-
 const validateFile = ( { type, size }: File ) => {
   if ( !type.match( /^(image|video)\/.+/ ) ) {
     showError( 'Only pictures and/or videos may be uploaded' );
-
     return false;
   } if ( size > MAX_FILE_SIZE ) {
     showError( `Max file size is ${prettyBytes( MAX_FILE_SIZE )}` );
-
     return false;
   }
 
   return true;
 };
 
-const addToUploadList = ( file: File ) => {
+const setUpload = ( file: File ) => {
   if ( !validateFile( file ) ) {
     return;
   }
 
-  const list = document.getElementById( 'file-list' );
-  const listItem = document.createElement( 'li' );
+  const list = document.getElementById( 'file-list' ) as HTMLElement;
+  list.innerHTML = `${file.name} (${prettyBytes( file.size )})`;
 
-  listItem.innerHTML = `${file.name} (${prettyBytes( file.size )})`;
-  list?.appendChild( listItem );
-
-  formData.append( 'file', file );
+  fileToUpload = file;
 };
 
-const handleFiles = ( files: FileList ) => {
-  [...files].forEach( file => addToUploadList( file ) );
+const handleFile = ( files?: FileList|null ) => {
+  if ( files && files.length > 1 ) {
+    showError("Only single-file uploads are currently supported")
+  } else if( files ) {
+    setUpload( files[0] );
+  }
 };
 
-const validateSubmission = ( descriptionElem: HTMLInputElement, listElem: HTMLElement|null ) => {
+const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
   const description = descriptionElem?.value;
+  const file = fileToUpload;
 
-  const listEntries = listElem?.childElementCount;
-  const plural = ( listEntries && listEntries > 1 ) ? 's' : '';
-
-  let totalSizeBytes = 0;
-
-  formData.forEach( entry => {
-    console.log( entry );
-    totalSizeBytes += ( entry as File ).size;
-  } );
-
-  const ret = { description, listEntries, totalSizeBytes, plural, error: false };
+  let error = false;
 
   // Error Check
-  if ( !descriptionElem || !listElem ) {
+  if ( !descriptionElem ) {
     showError( 'Internal error' );
-    ret.error = true;
-  } else if ( !listEntries ) {
-    showError( 'No files have been selected for upload' );
-    ret.error = true;
+    error = true;
+  } else if ( !file ) {
+    showError( 'No file has been selected for upload' );
+    error = true;
   } else if ( !description ) {
     showError( 'No file description provided' );
-    ret.error = true;
+    error = true;
   }
 
-  if ( totalSizeBytes > MAX_FILE_SIZE ) {
-    showError( `File${plural} total size is ${prettyBytes( totalSizeBytes )}, but the maximum allowed is ${prettyBytes( MAX_FILE_SIZE )}` );
-    ret.error = true;
-  }
-
-  return ret;
+  return { description, file, error };
 };
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -125,43 +98,36 @@ export const dropHandler = ( e: DragEvent ) => {
   haltEvent( e );
 
   const files = e?.dataTransfer?.files;
-
-  if ( files ) {
-    handleFiles( files );
-  }
+  handleFile( files );
 };
 
 export const chooseHandler = ( e: Event ) => {
   const { files } = ( e.target as HTMLInputElement );
-
-  if ( files ) {
-    handleFiles( files );
-  }
+  handleFile( files );
 };
 
 export const submitHandler = async () => {
   // Prepare and validate
   const descriptionElem = document.getElementById( 'description-text' ) as HTMLInputElement;
-  const listElem = document.getElementById( 'file-list' ) as HTMLElement;
-  const { description, totalSizeBytes, plural, error } = validateSubmission( descriptionElem, listElem );
+  const fileElem = document.getElementById( 'file-list' ) as HTMLInputElement;
 
-  if ( error ) {
+  const { file, description, error } = validateSubmission( descriptionElem );
+
+  if( error ) {
     return;
   }
-  formData.set( 'description', description );
 
   // Send data
-  const response = await submitFiles( 'upload', formData );
+  const response = await submitFiles( file as File, { description } );
 
-  if ( !response.ok ) {
-    showError( `Error on the ${response.status >= 500 ? 'server' : 'client'}` );
+  if ( 'ok' !== response ) {
+    showError( 'Could not upload file' );
   } else {
-    showSuccess( `File${plural} have been uploaded` );
+    showSuccess( 'File has been uploaded' );
   }
 
   // Cleanup
   descriptionElem.value = '';
-  listElem.innerHTML = '';
-  formData.delete( 'file' );
-  formData.delete( 'description' );
+  fileElem.innerHTML = '';
+  fileToUpload = null;
 };
