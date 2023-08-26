@@ -1,15 +1,32 @@
 ---
 import Hamburger from '../components/Hamburger.astro';
 import Navigation from '../components/Navigation.astro';
+
+interface Props {
+  centered?: boolean;
+}
+
+const { centered } = Astro.props;
 ---
 
 <header>
-  <div>
-    <img src="/dos_seal.svg" height="70px" alt="Official seal of the U.S. Department of State" />
-    <span>Commons External Partners</span>
-    <Hamburger />
+  <div class={centered ? 'centered' : 'normal'}>
+    <img
+      alt="Official seal of the U.S. Department of State"
+      class={centered ? 'centered' : 'normal'}
+      height={centered ? '110px' : '70px'}
+      src="/dos_seal.svg"
+    />
+    {
+      !centered && (
+        <>
+          <span>Commons External Partners</span>
+          <Hamburger />
+        </>
+      )
+    }
   </div>
-  <Navigation />
+  {!centered && <Navigation />}
 </header>
 
 <style lang="scss">
@@ -18,17 +35,31 @@ import Navigation from '../components/Navigation.astro';
   div {
     background-color: var(--blue);
     display: flex;
-    align-items: center;
     text-transform: uppercase;
-    padding: 0.5rem;
+
+    &.centered {
+      height: 90px;
+      justify-content: center;
+    }
+
+    &.normal {
+      align-items: center;
+      padding: 0.5rem;
+    }
   }
 
   img {
-    display: none;
-    margin: 1rem 1.5rem 1rem 1rem;
+    &.centered {
+      transform: translateY(40px);
+    }
 
-    @include breakpoint('tablet') {
-      display: block;
+    &.normal {
+      display: none;
+      margin: 1rem 1.5rem 1rem 1rem;
+
+      @include breakpoint('tablet') {
+        display: block;
+      }
     }
   }
 
