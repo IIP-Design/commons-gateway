@@ -9,12 +9,7 @@ import { renderCountWidget, setIntermediatePagination } from '../utils/paginatio
 
 import style from '../styles/table.module.scss';
 
-interface IUserTableProps {
-  readonly users: IUser[]
-  readonly teams: ITeam[]
-}
-
-const UserTable: FC<IUserTableProps> = () => {
+const UserTable: FC = () => {
   // Set the high and low ends of the view toggle.
   const LOW_VIEW = 30;
   const HIGH_VIEW = 90;
