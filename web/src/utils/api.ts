@@ -52,10 +52,9 @@ export const buildQuery = async ( endpoint: string, body: IFetchBody | null, met
  */
 export const passTheSalt = async ( username: string ) => {
   const response = await buildQuery( 'creds/salt', { username } );
+  const { data } = await response.json();
 
-  const { salt } = await response.json();
-
-  return salt;
+  return data;
 };
 
 /**
@@ -65,7 +64,7 @@ export const passTheSalt = async ( username: string ) => {
  * @param username The email of the user attempting to log in.
  */
 export const submitHash = async ( action: TActions, hash: string, username: string ) => {
-  const response = await buildQuery( 'creds', {
+  const response = await buildQuery( 'guest/auth', {
     action,
     hash,
     username,

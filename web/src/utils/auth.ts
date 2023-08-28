@@ -1,6 +1,7 @@
 import { Amplify, Auth } from 'aws-amplify';
 
 import currentUser, { clearCurrentUser } from '../stores/current-user';
+import { buildQuery } from './api';
 
 interface IIdToken {
   /** The user's email address. */
@@ -46,8 +47,22 @@ export const initializeAmplify = () => Amplify.configure( awsConfig );
  * This data is user to provide the app with the relevant user information.
  * @param payload
  */
-const setUserFromToken = ( payload: IIdToken ) => {
+const setUserFromToken = async ( payload: IIdToken ) => {
+  // Set user name based on id token.
   currentUser.setKey( 'email', payload.email );
+
+  // Retrieve additional data from the application.
+  const response = await buildQuery( 'admin/get', { username: payload.email }, 'POST' );
+  const { data } = await response.json();
+
+  if ( data ) {
+    const { active, team } = data;
+
+    currentUser.setKey( 'team', team );
+    currentUser.setKey( 'isAdmin', active );
+  } else {
+    currentUser.setKey( 'isAdmin', 'false' );
+  }
 };
 
 /**
@@ -59,7 +74,7 @@ export const isLoggedIn = async () => {
 
     if ( user ) {
       // Add the required data from the id token to the current user store.
-      setUserFromToken( user?.signInUserSession?.idToken?.payload );
+      await setUserFromToken( user?.signInUserSession?.idToken?.payload );
 
       return true;
     }
