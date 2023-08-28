@@ -1,4 +1,5 @@
 ---
+import Button from './Button.astro';
 import Hamburger from '../components/Hamburger.astro';
 import Navigation from '../components/Navigation.astro';
 
@@ -9,8 +10,16 @@ interface Props {
 const { centered } = Astro.props;
 ---
 
+<script>
+  import { signOut } from '../utils/auth';
+
+  const signOutBtn = document.getElementById('sign-out');
+
+  signOutBtn?.addEventListener('click', () => signOut());
+</script>
+
 <header>
-  <div class={centered ? 'centered' : 'normal'}>
+  <div class={centered ? 'centered main' : 'normal main'}>
     <img
       alt="Official seal of the U.S. Department of State"
       class={centered ? 'centered' : 'normal'}
@@ -26,13 +35,20 @@ const { centered } = Astro.props;
       )
     }
   </div>
-  {!centered && <Navigation />}
+  {
+    !centered && (
+      <div class="below">
+        <Navigation />
+        <Button id="sign-out">Sign Out</Button>
+      </div>
+    )
+  }
 </header>
 
 <style lang="scss">
   @use '../styles/breakpoints.scss' as *;
 
-  div {
+  .main {
     background-color: var(--blue);
     display: flex;
     text-transform: uppercase;
@@ -48,6 +64,12 @@ const { centered } = Astro.props;
     }
   }
 
+  .below {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   img {
     &.centered {
       transform: translateY(40px);
@@ -61,6 +83,10 @@ const { centered } = Astro.props;
         display: block;
       }
     }
+  }
+
+  #sign-out {
+    margin-right: 5rem;
   }
 
   span {
