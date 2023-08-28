@@ -7,7 +7,7 @@ const { btnHref, btnText, desc, narrow, title } = Astro.props;
 ---
 
 <PageContainer narrow={narrow} title={title}>
-  <AnchorButton class="add-btn" text={btnText} href={btnHref} />
+  {btnHref && <AnchorButton class="add-btn" text={btnText} href={btnHref} />}
   {desc && <p class="description">{desc}</p>}
   <div class="table">
     <slot />

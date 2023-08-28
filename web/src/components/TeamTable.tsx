@@ -7,6 +7,7 @@ import { selectSlice } from '../utils/arrays';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
 
 import style from '../styles/table.module.scss';
+import btnStyle from '../styles/button.module.scss';
 
 const TeamTable: FC = () => {
   // Set the high and low ends of the view toggle.
@@ -62,12 +63,25 @@ const TeamTable: FC = () => {
     setViewOffset( 0 );
   };
 
-  const handleStatusToggle = ( status: boolean, id: string ) => {
-    console.log( status, id );
+  const handleStatusToggle = async ( status: boolean, id: string ) => {
+    try {
+      const response = await buildQuery( 'team/update', { active: status, team: id }, 'POST' );
+      const { message } = await response.json();
+
+      console.log( message );
+    } catch ( err ) {
+      console.log( err );
+    }
   };
 
   return (
     <div className={ style.container }>
+      <button
+        className={ `${style['add-btn']} ${btnStyle.btn}` }
+        type="button"
+      >
+        + New Team
+      </button>
       <div>
         <div className={ style.controls }>
           <span>{ renderCountWidget( teamCount, viewCount, viewOffset ) }</span>

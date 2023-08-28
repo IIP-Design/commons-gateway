@@ -7,6 +7,7 @@ type TMethods = 'GET' | 'POST';
 /** The values that can be sent to the server. */
 interface IFetchBody {
   action?: TActions
+  active?: boolean
   hash?: string
   team?: string
   username?: string
