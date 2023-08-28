@@ -17,8 +17,7 @@ const { title } = Astro.props;
 
   const content = document.getElementById('page-content');
 
-  console.log(currentUser.get());
-  if (content && currentUser.get().authOkta === 'true') {
+  if (content && currentUser.get().isAdmin === 'true') {
     content.style.display = 'block';
   }
 </script>
