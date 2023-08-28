@@ -75,6 +75,20 @@ functions:
     package:
       patterns:
         - './bin/admin-create'
+  adminGet:
+    name: gateway-${opt:stage}-admin-get
+    handler: bin/admin-get
+    description: Retrieve an individual admin users.
+    runtime: go1.x
+    events:
+      - http:
+          path: /admin/get
+          method: post
+          cors:
+            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+    package:
+      patterns:
+        - './bin/admin-get'
   adminsGet:
     name: gateway-${opt:stage}-admins-get
     handler: bin/admins-get
