@@ -32,6 +32,7 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-update funcs/team-update/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\

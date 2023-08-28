@@ -19,7 +19,7 @@ func GetGuestsHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 
 	parsed, err := data.ParseBodyData(event.Body)
 
-	team := parsed.Team
+	team := parsed.TeamId
 
 	if err != nil {
 		return msgs.SendServerError(err)
