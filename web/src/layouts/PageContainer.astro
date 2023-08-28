@@ -1,8 +1,4 @@
 ---
-import BaseLayout from './BaseLayout.astro';
-
-import '../styles/main.css';
-
 interface Props {
   narrow?: boolean;
   title: string;
@@ -11,19 +7,17 @@ interface Props {
 const { narrow, title } = Astro.props;
 ---
 
-<BaseLayout title={title}>
-  <div class={narrow ? 'container narrow' : 'container'}>
-    <div class="content">
-      <h1>{title}</h1>
-      <slot />
-    </div>
-    <p class="support">
-      For assistance, please contact <a href="mailto:commonssupport@state.gov"
-        >commonssupport@state.gov</a
-      >
-    </p>
+<div class={narrow ? 'container narrow' : 'container'}>
+  <div class="content">
+    <h1>{title}</h1>
+    <slot />
   </div>
-</BaseLayout>
+  <p class="support">
+    For assistance, please contact <a href="mailto:commonssupport@state.gov"
+      >commonssupport@state.gov</a
+    >
+  </p>
+</div>
 
 <style lang="scss">
   .container {
