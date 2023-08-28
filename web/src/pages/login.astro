@@ -20,8 +20,14 @@ import '../styles/form.css';
     const name = nameInput.value;
     const pass = passInput.value;
 
-    if (!name) {
-      showError('Please input a username');
+    if (!name || !pass) {
+      if (!name && !pass) {
+        showError('Please input a username and password');
+      } else if (!name) {
+        showError('Please input a username');
+      } else {
+        showError('Please input a password');
+      }
       return;
     }
 
