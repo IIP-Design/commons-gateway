@@ -1,17 +1,16 @@
 ---
-import TablePageLayout from '../layouts/TablePageLayout.astro';
+import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import TableContainer from '../layouts/TableContainer.astro';
 import UserTable from '../components/UserTable';
 
 const description = `The users listed on this page are the team leads of Content Commons external partners. These
     team leads help manage the external partner(s) who help provide content to be utilized by
     Department of State PD personnel.`;
+const title = 'External Partner Team Leads';
 ---
 
-<TablePageLayout
-  btnText="+ New User"
-  btnHref="newuser"
-  desc={description}
-  title="External Partner Team Leads"
->
-  <UserTable client:load />
-</TablePageLayout>
+<AdminPageLayout title={title}>
+  <TableContainer btnText="+ New User" btnHref="newuser" desc={description} title={title}>
+    <UserTable client:load />
+  </TableContainer>
+</AdminPageLayout>

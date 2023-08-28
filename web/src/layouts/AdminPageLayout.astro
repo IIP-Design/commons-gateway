@@ -1,0 +1,36 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<script>
+  import { adminOnlyPage, initializeAmplify } from '../utils/auth';
+  import currentUser from '../stores/current-user';
+
+  initializeAmplify();
+  adminOnlyPage();
+
+  const content = document.getElementById('page-content');
+
+  console.log(currentUser.get());
+  if (content && currentUser.get().authOkta === 'true') {
+    content.style.display = 'block';
+  }
+</script>
+
+<BaseLayout title={title}>
+  <div id="page-content">
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  #page-content {
+    display: none;
+  }
+</style>
