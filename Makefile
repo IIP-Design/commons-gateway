@@ -25,6 +25,7 @@ build:
 	cd serverless;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\

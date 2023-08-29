@@ -1,8 +1,13 @@
 ---
-import TablePageLayout from '../layouts/TablePageLayout.astro';
+import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import TableContainer from '../layouts/TableContainer.astro';
 import TeamTable from '../components/TeamTable';
+
+const title = 'Teams';
 ---
 
-<TablePageLayout btnText="+ New Team" btnHref="newteam" narrow title="Teams">
-  <TeamTable client:load />
-</TablePageLayout>
+<AdminPageLayout title={title}>
+  <TableContainer btnText="+ New Team" btnHref="newteam" narrow title={title}>
+    <TeamTable client:load />
+  </TableContainer>
+</AdminPageLayout>

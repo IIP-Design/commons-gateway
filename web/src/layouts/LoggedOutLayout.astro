@@ -1,10 +1,7 @@
 ---
-import Head from '../components/Head.astro';
-
-import '../styles/main.css';
+import BaseLayout from './BaseLayout.astro';
 
 interface Props {
-  narrow?: boolean;
   title: string;
   showHomeLink?: boolean;
 }
@@ -12,39 +9,19 @@ interface Props {
 const { title, showHomeLink } = Astro.props;
 ---
 
-<script is:inline>
-const global = globalThis;
-</script>
+<BaseLayout centered title={title}>
+  <div class="container">
+    <h1>{title}</h1>
+    <slot />
+    {showHomeLink && <a href="/">Take me home</a>}
+  </div>
+</BaseLayout>
 
-<html lang="en">
-  <Head title={title} />
-  <body>
-    <header>
-      <img src="/dos_seal.svg" alt="" height="110px" />
-    </header>
-    <main>
-      <div class="container">
-        <h1>{title}</h1>
-        <slot />
-        {showHomeLink && <a href="/">Take me home</a>}
-      </div>
-    </main>
-    <style>
-      header {
-        background-color: var(--blue);
-        display: flex;
-        justify-content: center;
-        height: 90px;
-      }
-      img {
-        transform: translateY(40px);
-      }
-      .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin: 0 auto;
-      }
-    </style>
-  </body>
-</html>
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+  }
+</style>

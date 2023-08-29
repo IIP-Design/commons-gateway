@@ -6,22 +6,20 @@ import oktaIcon from '/icon_okta.svg';
 ---
 
 <script>
-  import { Amplify, Auth } from 'aws-amplify';
+  import { handleAdminLogin, initializeAmplify, isLoggedIn } from '../utils/auth';
 
-  import awsConfig from '../utils/aws-config';
+  initializeAmplify();
 
-  Amplify.configure(awsConfig);
+  // Bypass authentication screen for authenticated users.
+  const authenticated = await isLoggedIn();
 
-  const handleLogin = () => {
-    Auth.federatedSignIn({
-      provider: import.meta.env.PUBLIC_COGNITO_OKTA_PROVIDER_NAME,
-      customState: '/',
-    });
-  };
+  if (authenticated) {
+    window.location.assign('/');
+  }
 
   const loginBtn = document.getElementById('okta-btn');
 
-  loginBtn?.addEventListener('click', () => handleLogin());
+  loginBtn?.addEventListener('click', () => handleAdminLogin());
 </script>
 
 <LoggedOutLayout title="Admin Login">

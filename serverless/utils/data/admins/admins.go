@@ -49,6 +49,39 @@ func CreateAdmin(adminData data.User) error {
 	return err
 }
 
+// RetrieveAdmin opens a database connection and retrieves the data for an individual admin user.
+func RetrieveAdmin(username string) (map[string]any, error) {
+	var admin map[string]any
+	var err error
+
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	var email string
+	var first_name string
+	var last_name string
+	var team string
+	var active string
+
+	query := fmt.Sprintf(`SELECT email, first_name, last_name, team, active FROM admins WHERE email = '%s';`, username)
+	err = pool.QueryRow(query).Scan(&email, &first_name, &last_name, &team, &active)
+
+	if err != nil {
+		logs.LogError(err, "Get Admin Query Error")
+		return admin, err
+	}
+
+	admin = map[string]any{
+		"email":      email,
+		"givenName":  first_name,
+		"familyName": last_name,
+		"team":       team,
+		"active":     active,
+	}
+
+	return admin, err
+}
+
 // RetrieveAdmins opens a database connection and retrieves the full list of admin users.
 func RetrieveAdmins() ([]map[string]any, error) {
 	var admins []map[string]any

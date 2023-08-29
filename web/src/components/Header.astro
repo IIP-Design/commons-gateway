@@ -1,35 +1,92 @@
 ---
+import Button from './Button.astro';
 import Hamburger from '../components/Hamburger.astro';
 import Navigation from '../components/Navigation.astro';
+
+interface Props {
+  centered?: boolean;
+}
+
+const { centered } = Astro.props;
 ---
 
+<script>
+  import { signOut } from '../utils/auth';
+
+  const signOutBtn = document.getElementById('sign-out');
+
+  signOutBtn?.addEventListener('click', () => signOut());
+</script>
+
 <header>
-  <div>
-    <img src="/dos_seal.svg" height="70px" alt="Official seal of the U.S. Department of State" />
-    <span>Commons External Partners</span>
-    <Hamburger />
+  <div class={centered ? 'centered main' : 'normal main'}>
+    <img
+      alt="Official seal of the U.S. Department of State"
+      class={centered ? 'centered' : 'normal'}
+      height={centered ? '110px' : '70px'}
+      src="/dos_seal.svg"
+    />
+    {
+      !centered && (
+        <>
+          <span>Commons External Partners</span>
+          <Hamburger />
+        </>
+      )
+    }
   </div>
-  <Navigation />
+  {
+    !centered && (
+      <div class="below">
+        <Navigation />
+        <Button id="sign-out">Sign Out</Button>
+      </div>
+    )
+  }
 </header>
 
 <style lang="scss">
   @use '../styles/breakpoints.scss' as *;
 
-  div {
+  .main {
     background-color: var(--blue);
     display: flex;
-    align-items: center;
     text-transform: uppercase;
-    padding: 0.5rem;
+
+    &.centered {
+      height: 90px;
+      justify-content: center;
+    }
+
+    &.normal {
+      align-items: center;
+      padding: 0.5rem;
+    }
+  }
+
+  .below {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   img {
-    display: none;
-    margin: 1rem 1.5rem 1rem 1rem;
-
-    @include breakpoint('tablet') {
-      display: block;
+    &.centered {
+      transform: translateY(40px);
     }
+
+    &.normal {
+      display: none;
+      margin: 1rem 1.5rem 1rem 1rem;
+
+      @include breakpoint('tablet') {
+        display: block;
+      }
+    }
+  }
+
+  #sign-out {
+    margin-right: 5rem;
   }
 
   span {

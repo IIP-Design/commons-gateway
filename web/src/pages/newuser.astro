@@ -1,8 +1,13 @@
 ---
-import PageLayout from '../layouts/PageLayout.astro';
+import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import PageContainer from '../layouts/PageContainer.astro';
 import NewUser from '../components/NewUser';
+
+const title = 'New User';
 ---
 
-<PageLayout narrow title="New User">
-  <NewUser client:load isAdmin={false} />
-</PageLayout>
+<AdminPageLayout title={title}>
+  <PageContainer narrow title={title}>
+    <NewUser client:load isAdmin />
+  </PageContainer>
+</AdminPageLayout>

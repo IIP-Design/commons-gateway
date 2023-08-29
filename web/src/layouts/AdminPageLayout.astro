@@ -1,0 +1,44 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<script>
+  import { adminOnlyPage, initializeAmplify } from '../utils/auth';
+  import currentUser from '../stores/current-user';
+
+  initializeAmplify();
+  adminOnlyPage();
+
+  const content = document.getElementById('page-content');
+  const error = document.getElementById('error');
+
+  if (content && currentUser.get().isAdmin === 'true') {
+    content.style.display = 'block';
+  } else if (error) {
+    error.style.display = 'block';
+  }
+</script>
+
+<BaseLayout title={title}>
+  <span id="error">Sorry, you do not have access to this page</span>
+  <div id="page-content">
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  #page-content {
+    display: none;
+  }
+  #error {
+    display: none;
+    font-size: var(--fontSizeMedium);
+    text-align: center;
+  }
+</style>
