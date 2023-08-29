@@ -5,20 +5,28 @@ import ToggleSwitch from './ToggleSwitch/ToggleSwitch';
 import { buildQuery } from '../utils/api';
 import { selectSlice } from '../utils/arrays';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
+import { showError } from '../utils/alert';
 
 import style from '../styles/table.module.scss';
+import btnStyle from '../styles/button.module.scss';
 
 const TeamTable: FC = () => {
   // Set the high and low ends of the view toggle.
   const LOW_VIEW = 30;
   const HIGH_VIEW = 90;
 
+  // State of the results pagination.
   const [viewCount, setViewCount] = useState( LOW_VIEW );
   const [viewOffset, setViewOffset] = useState( 0 );
+  // State of the full team list.
   const [teamList, setTeamList] = useState( selectSlice( [], viewCount, viewOffset ) );
-  const [teamCount, setTeamCount] = useState( teamList.length ); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const [teamCount, setTeamCount] = useState( teamList.length );
+  // State used when add/editing a team.
+  const [editing, setEditing] = useState( '' );
+  const [newName, setNewName] = useState( '' );
 
   useEffect( () => {
+    // Retrieve the full list of teams from the API.
     const getTeams = async () => {
       const response = await buildQuery( 'teams', null, 'GET' );
       const { data } = await response.json();
@@ -62,12 +70,105 @@ const TeamTable: FC = () => {
     setViewOffset( 0 );
   };
 
-  const handleStatusToggle = ( status: boolean, id: string ) => {
-    console.log( status, id );
+  /**
+   * Activate/deactivate a given team using the status toggle.
+   * @param status The active/inactive value the team should be set to.
+   * @param id The id of the team in question.
+   */
+  const handleStatusToggle = async ( status: boolean, id: string ) => {
+    try {
+      const response = await buildQuery( 'team/update', { active: status, team: id }, 'POST' );
+      const { message } = await response.json();
+
+      if ( message ) {
+        showError( `Unable to complete your request. Reason: ${message}` );
+      }
+    } catch ( err ) {
+      console.log( err );
+    }
+  };
+
+  /**
+   * Enable an input field to create a new team.
+   */
+  const addNewTeam = () => {
+    // Add a placeholder team with the id `temp`
+    teamList.unshift( { id: 'temp', active: true, name: '' } );
+    setEditing( 'temp' );
+  };
+
+  /**
+   * Enable an input field to alter an existing team name.
+   * @param id The id of the team to be altered.
+   * @param name The current name of the team.
+   */
+  const editTeam = ( id: string, name: string ) => {
+    setEditing( id );
+    setNewName( name );
+  };
+
+  /**
+   * Abort the editing/addition of a team.
+   * @param id The id of the team being altered.
+   */
+  const cancelEdit = ( id: string ) => {
+    setEditing( '' );
+    setNewName( '' );
+
+    // If canceling a team creation, remove the placeholder team.
+    if ( id === 'temp' ) {
+      teamList.shift();
+    }
+  };
+
+  /**
+   * Sends the user inputs on the team being created/updated to the API.
+   * @param team Information about the team to be created/edited.
+   */
+  const saveTeam = async ( team: ITeam ) => {
+    let newList;
+    let errMessage;
+
+    // If the team is new, send a create request, otherwise send an update request.
+    if ( team.id === 'temp' ) {
+      const response = await buildQuery( 'team/create', { teamName: newName }, 'POST' );
+      const { data, message } = await response.json();
+
+      newList = data;
+      errMessage = message;
+    } else {
+      const response = await buildQuery( 'team/update', { active: team.active, team: team.id, teamName: newName }, 'POST' );
+      const { data, message } = await response.json();
+
+      newList = data;
+      errMessage = message;
+    }
+
+    if ( errMessage ) {
+      cancelEdit( team.id ); // Remove the placeholder if failed to add new item.
+      showError( `Unable to complete your request. Reason: ${errMessage}` );
+    }
+
+    // Update the team list with new data from the API.
+    if ( newList ) {
+      setTeamList( selectSlice( newList, viewCount, viewOffset ) );
+      setTeamCount( newList.length );
+    }
+
+    // Reset the state used when add/editing a team.
+    setEditing( '' );
+    setNewName( '' );
   };
 
   return (
     <div className={ style.container }>
+      <button
+        className={ `${style['add-btn']} ${btnStyle.btn}` }
+        type="button"
+        onClick={ addNewTeam }
+      >
+        + New Team
+      </button>
       <div>
         <div className={ style.controls }>
           <span>{ renderCountWidget( teamCount, viewCount, viewOffset ) }</span>
@@ -104,9 +205,26 @@ const TeamTable: FC = () => {
           <tbody>
             { teamList && ( teamList.map( team => (
               <tr key={ team.id }>
-                <td>{ team.name }</td>
                 <td>
-                  <ToggleSwitch active={ team.active } callback={ handleStatusToggle } id={ team.id } />
+                  { editing === team.id && (
+                    <input style={ { padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } />
+                  ) }
+                  { editing !== team.id && (
+                    <button className={ style['pagination-btn'] } disabled={ editing !== '' } type="button" onClick={ () => editTeam( team.id, team.name ) }>
+                      { team.name }
+                    </button>
+                  ) }
+                </td>
+                <td>
+                  { editing === team.id && (
+                    <div>
+                      <button className={ btnStyle.btn } type="button" onClick={ () => saveTeam( team ) }>Save</button>
+                      <button className={ btnStyle['btn-light'] } style={ { marginLeft: '1rem' } } type="button" onClick={ () => cancelEdit( team.id ) }>Cancel</button>
+                    </div>
+                  ) }
+                  { editing !== team.id && (
+                    <ToggleSwitch active={ team.active } callback={ handleStatusToggle } id={ team.id } />
+                  ) }
                 </td>
               </tr>
             ) ) ) }

@@ -12,6 +12,7 @@ import (
 // JSON object sent to the serverless functions by the API Gateway.
 type RequestBodyOptions struct {
 	Action  string `json:"action"`
+	Active  bool   `json:"active"`
 	Email   string `json:"email"`
 	Expires string `json:"expiration"`
 	Hash    string `json:"hash"`
@@ -24,7 +25,8 @@ type RequestBodyOptions struct {
 	Inviter   string `json:"inviter"`
 	NameFirst string `json:"givenName"`
 	NameLast  string `json:"familyName"`
-	Team      string `json:"team"`
+	TeamId    string `json:"team"`
+	TeamName  string `json:"teamName"`
 	Username  string `json:"username"`
 }
 
@@ -84,7 +86,7 @@ func ExtractUser(body string) (User, error) {
 	adminEmail := parsed.Email
 	firstName := parsed.NameFirst
 	lastName := parsed.NameLast
-	team := parsed.Team
+	team := parsed.TeamId
 
 	if err != nil {
 		return admin, err

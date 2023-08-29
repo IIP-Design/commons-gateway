@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "event.schema.json",
+  "title": "Event Body Format for Admin Create",
+  "description": "Data required to create a new admin user",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": "boolean"
+    },
+    "team": {
+      "type": "string",
+      "minLength": 1
+    },
+    "teamName": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": ["active", "team", "teamName"],
+  "additionalProperties": false
+}

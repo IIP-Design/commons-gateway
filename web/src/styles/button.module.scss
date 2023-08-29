@@ -1,10 +1,21 @@
-.btn,
-.btn:visited {
-  background-color: var(--blue);
-  color: #ffffff;
-  border: none;
+@mixin button-structure {
   border-radius: 5px;
   padding: 0.5rem 1rem;
+}
+
+.btn,
+.btn:visited {
+  @include button-structure;
+  border: none;
+  background-color: var(--blue);
+  color: #ffffff;
+}
+
+.btn-light {
+  @include button-structure;
+  border: 1px solid var(--blue);
+  background-color: #ffffff;
+  color: var(--blue);
 }
 
 .back-btn {
