@@ -77,7 +77,12 @@ const TeamTable: FC = () => {
    */
   const handleStatusToggle = async ( status: boolean, id: string ) => {
     try {
-      await buildQuery( 'team/update', { active: status, team: id }, 'POST' );
+      const response = await buildQuery( 'team/update', { active: status, team: id }, 'POST' );
+      const { message } = await response.json();
+
+      if ( message ) {
+        showError( `Unable to complete your request. Reason: ${message}` );
+      }
     } catch ( err ) {
       console.log( err );
     }
