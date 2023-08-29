@@ -10,6 +10,7 @@ interface IFetchBody {
   active?: boolean
   hash?: string
   team?: string
+  teamName?: string
   username?: string
   inviter?: string,
   invitee?: {
