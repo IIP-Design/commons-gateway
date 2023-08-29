@@ -21,7 +21,7 @@ const ToggleSwitch: FC<IToggleSwitchProps> = ( { id, active, callback } ) => {
 
   return (
     <label className={ style.toggle } htmlFor={ `${id}-toggle` }>
-      <span style={ { marginRight: '1rem', width: '3.5rem' } }>
+      <span className={ style.label }>
         { toggled ? 'Active' : 'Inactive' }
       </span>
       <input id={ `${id}-toggle` } checked={ toggled } type="checkbox" onChange={ handleToggle } />

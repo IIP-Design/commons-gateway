@@ -105,13 +105,13 @@ const UserTable: FC = () => {
             </div>
           ) }
         </div>
-        <table className={ style.table }>
+        <table className={ `${style.table} ${style['user-table']}` }>
           <thead>
             <tr>
               <th>Name</th>
               <th>Email</th>
               <th>Team Name</th>
-              <th>Account Status</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>

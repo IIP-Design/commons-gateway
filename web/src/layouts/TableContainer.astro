@@ -14,17 +14,31 @@ const { btnHref, btnText, desc, narrow, title } = Astro.props;
   </div>
 </PageContainer>
 
-<style>
+<style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
   .add-btn {
-    transform: translateY(-3.2rem);
+    transform: translateY(8.4rem);
     position: absolute;
     right: 0;
-    margin-right: 3rem;
+    margin-right: 1rem;
+
+    @include breakpoint('tablet') {
+      margin-right: 3rem;
+      transform: translateY(-3.2rem);
+    }
   }
+
   .table {
     display: grid;
+    font-size: var(--fontSizeSmall);
     grid-template-rows: 1fr;
     height: calc(100% - 11rem);
-    margin-top: 4rem;
+    margin-top: 2rem;
+
+    @include breakpoint('tablet') {
+      font-size: var(--fontSizeNormal);
+      margin-top: 4rem;
+    }
   }
 </style>

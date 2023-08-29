@@ -17,11 +17,17 @@ const { title, showHomeLink } = Astro.props;
   </div>
 </BaseLayout>
 
-<style>
+<style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
   .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 auto;
+    margin: 5rem auto 2rem;
+
+    @include breakpoint('tablet') {
+      margin: 0 auto;
+    }
   }
 </style>

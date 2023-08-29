@@ -207,19 +207,19 @@ const TeamTable: FC = () => {
               <tr key={ team.id }>
                 <td>
                   { editing === team.id && (
-                    <input style={ { padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } />
+                    <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } />
                   ) }
                   { editing !== team.id && (
-                    <button className={ style['pagination-btn'] } disabled={ editing !== '' } type="button" onClick={ () => editTeam( team.id, team.name ) }>
+                    <button className={ style['pagination-btn'] } disabled={ editing !== '' } style={ { textAlign: 'left' } } type="button" onClick={ () => editTeam( team.id, team.name ) }>
                       { team.name }
                     </button>
                   ) }
                 </td>
                 <td>
                   { editing === team.id && (
-                    <div>
+                    <div className={ btnStyle['btn-pair'] }>
                       <button className={ btnStyle.btn } type="button" onClick={ () => saveTeam( team ) }>Save</button>
-                      <button className={ btnStyle['btn-light'] } style={ { marginLeft: '1rem' } } type="button" onClick={ () => cancelEdit( team.id ) }>Cancel</button>
+                      <button className={ btnStyle['btn-light'] } type="button" onClick={ () => cancelEdit( team.id ) }>Cancel</button>
                     </div>
                   ) }
                   { editing !== team.id && (

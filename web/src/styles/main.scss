@@ -1,3 +1,5 @@
+@import './breakpoints.scss';
+
 :root {
   --blue: #0a2240;
   --blueLight: #0086c9;
@@ -41,19 +43,32 @@
 body {
   background: #ffffff;
   font-family: 'Open Sans', sans-serif;
+  font-size: var(--fontSizeNormal);
   color: var(--blue);
 }
 
 main {
-  margin: 5rem;
+  margin: 1rem;
   height: calc(100% - calc(70px + 12rem)); /* Make sure main fills the page, adjusted for header */
+
+  @include breakpoint('tablet') {
+    margin: 3rem;
+  }
+
+  @include breakpoint('desktop') {
+    margin: 5rem;
+  }
 }
 
 h1 {
   color: var(--blue);
-  font-size: var(--fontSizeMediumLarge);
+  font-size: var(--fontSizeMedium);
   font-weight: 600;
   line-height: 1;
+
+  @include breakpoint('tablet') {
+    font-size: var(--fontSizeMediumLarge);
+  }
 }
 
 button {
