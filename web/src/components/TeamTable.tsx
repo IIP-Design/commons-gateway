@@ -5,6 +5,7 @@ import ToggleSwitch from './ToggleSwitch/ToggleSwitch';
 import { buildQuery } from '../utils/api';
 import { selectSlice } from '../utils/arrays';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
+import { showError } from '../utils/alert';
 
 import style from '../styles/table.module.scss';
 import btnStyle from '../styles/button.module.scss';
@@ -121,18 +122,26 @@ const TeamTable: FC = () => {
    */
   const saveTeam = async ( team: ITeam ) => {
     let newList;
+    let errMessage;
 
     // If the team is new, send a create request, otherwise send an update request.
     if ( team.id === 'temp' ) {
       const response = await buildQuery( 'team/create', { teamName: newName }, 'POST' );
-      const { data } = await response.json();
+      const { data, message } = await response.json();
 
       newList = data;
+      errMessage = message;
     } else {
       const response = await buildQuery( 'team/update', { active: team.active, team: team.id, teamName: newName }, 'POST' );
-      const { data } = await response.json();
+      const { data, message } = await response.json();
 
       newList = data;
+      errMessage = message;
+    }
+
+    if ( errMessage ) {
+      cancelEdit( team.id ); // Remove the placeholder if failed to add new item.
+      showError( `Unable to complete your request. Reason: ${errMessage}` );
     }
 
     // Update the team list with new data from the API.
