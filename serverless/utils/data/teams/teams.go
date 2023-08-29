@@ -135,7 +135,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	rows, err := pool.Query(`SELECT id, team_name, active FROM teams`)
+	rows, err := pool.Query(`SELECT id, team_name, active FROM teams ORDER BY team_name`)
 
 	if err != nil {
 		logs.LogError(err, "Get Teams Query Error")
