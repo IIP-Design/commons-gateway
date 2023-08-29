@@ -50,7 +50,20 @@ func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest)
 		return msgs.SendServerError(err)
 	}
 
-	return msgs.SendSuccessMessage()
+	// Return the full list of teams in the response.
+	teams, err := teams.RetrieveTeams()
+
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
+	body, err := msgs.MarshalBody(teams)
+
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
+	return msgs.PrepareResponse(body)
 }
 
 func main() {
