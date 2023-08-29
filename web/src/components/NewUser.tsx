@@ -24,7 +24,7 @@ interface INewUserData {
   givenName: string;
   familyName: string;
   email: string;
-  team: number;
+  team: string;
   accessEndDate: string;
 }
 
@@ -36,16 +36,6 @@ interface ITeamElementProps {
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-const sortTeams = ( a: ITeam, b: ITeam ) => {
-  if ( a.name > b.name ) {
-    return 1;
-  } if ( b.name > a.name ) {
-    return -1;
-  }
-
-  return 0;
-};
-
 /**
  * Render the team selection field. If there is only one team available, it will
  * return a readonly text input. Otherwise, it will provide a select element.
@@ -57,11 +47,10 @@ const TeamElement: FC<ITeamElementProps> = ( { teams, setData } ) => {
     return <input id="family-name-input" type="text" disabled value={ teams[0].name } />;
   }
 
-  const sorted = teams.sort( sortTeams );
-
   return (
     <select id="team-input" onChange={ e => setData( e.target.value ) }>
-      { sorted.map( ( { id, name } ) => <option key={ id } value={ id }>{ name }</option> ) }
+      <option value="">- Select a team -</option>
+      { teams.map( ( { id, name } ) => <option key={ id } value={ id }>{ name }</option> ) }
     </select>
   );
 };
@@ -116,6 +105,9 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
     setUserData( { ...userData, [key]: value } );
   };
 
+  /**
+   * Ensure that the form submissions are valid before sending data to the API.
+   */
   const validateSubmission = () => {
     if ( !userData.email?.match( /^.+@.+$/ ) ) {
       showError( 'Email address is not valid' );
@@ -123,6 +115,11 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
       return false;
     } if ( !dateSelectionIsValid( userData.accessEndDate ) ) {
       showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
+
+      return false;
+    } if ( currentUser.get().isAdmin && !userData.team ) {
+      // Admin users have the option to set a team, so a team should be
+      showError( 'Please assign this user to a valid team' );
 
       return false;
     }
@@ -143,7 +140,7 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
         email: userData.email,
         givenName: userData.givenName,
         familyName: userData.familyName,
-        team: currentUser.get().team,
+        team: userData.team || currentUser.get().team,
       },
       expiration: new Date( userData.accessEndDate as string ).toISOString(), // Conversion to iso required by Lambda
     };
