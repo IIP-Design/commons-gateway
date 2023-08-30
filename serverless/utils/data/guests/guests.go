@@ -8,6 +8,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
+// RetrieveGuest opens a database connection and retrieves the information for a single user.
 func RetrieveGuest(email string) (map[string]string, error) {
 	var guest map[string]string
 
@@ -48,10 +49,12 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 	defer pool.Close()
 
 	if team == "" {
-		query = `SELECT email, first_name, last_name, team, expiration FROM guests`
+		query = `SELECT email, first_name, last_name, team, expiration FROM guests ORDER BY first_name;`
 		rows, err = pool.Query(query)
 	} else {
-		query = `SELECT email, first_name, last_name, team, expiration FROM guests WHERE team = $1;`
+		query =
+			`SELECT email, first_name, last_name, team, expiration
+			 FROM guests WHERE team = $1 ORDER BY first_name;`
 		rows, err = pool.Query(query, team)
 	}
 
