@@ -43,11 +43,6 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
   const [teamList, setTeamList] = useState( [] );
   const [userData, setUserData] = useState<IUserFormData>( initialState );
 
-  // Reset the form fields
-  const clear = () => {
-    setUserData( initialState );
-  };
-
   // Check whether the user is an admin and set that value in state.
   // Doing so outside of a useEffect hook causes a mismatch in values
   // between the statically rendered portion and the client.
@@ -72,7 +67,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     getTeams();
   }, [isAdmin] );
 
-  // Clear the input fields.
+  // Initialize the form.
   useEffect( () => {
     const getUser = async ( id: string ) => {
       const response = await buildQuery( `guest?id=${id}`, null, 'GET' );
@@ -87,8 +82,6 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       }
     };
 
-    clear();
-
     if ( user ) {
       const urlSearchParams = new URLSearchParams( window.location.search );
       const { id } = Object.fromEntries( urlSearchParams.entries() );
@@ -97,6 +90,10 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     }
   }, [user] );
 
+  /**
+   * Updates the user state on changed to the form inputs.
+   * @param key The user property being updated.
+   */
   const handleUpdate = ( key: keyof IUserFormData, value?: string|Date ) => {
     setUserData( { ...userData, [key]: value } );
   };
@@ -123,6 +120,10 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     return true;
   };
 
+  /**
+   * Validates the form inputs and sends the provided data to the API.
+   * @param e The submission event - simply used to prevent the default page refresh.
+   */
   const handleSubmit = async ( e: FormEvent<HTMLFormElement> ) => {
     e.preventDefault();
 
@@ -138,7 +139,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
         familyName: userData.familyName,
         team: userData.team || currentUser.get().team,
       },
-      expiration: new Date( userData.accessEndDate as string ).toISOString(), // Conversion to iso required by Lambda
+      expiration: new Date( userData.accessEndDate ).toISOString(), // Conversion to iso required by Lambda
     };
 
     await buildQuery( 'creds/provision', invitation, 'POST' )
