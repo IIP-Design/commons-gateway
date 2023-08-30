@@ -8,6 +8,7 @@ type TMethods = 'GET' | 'POST';
 interface IFetchBody {
   action?: TActions
   active?: boolean
+  expiration?: string
   hash?: string
   team?: string
   teamName?: string

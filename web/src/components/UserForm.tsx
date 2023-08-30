@@ -131,20 +131,31 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       return;
     }
 
-    const invitation = {
-      inviter: currentUser.get().email,
-      invitee: {
-        email: userData.email,
-        givenName: userData.givenName,
-        familyName: userData.familyName,
-        team: userData.team || currentUser.get().team,
-      },
-      expiration: new Date( userData.accessEndDate ).toISOString(), // Conversion to iso required by Lambda
+    // Conversion to iso required by Lambda
+    const expiration = new Date( userData.accessEndDate ).toISOString();
+
+    const invitee = {
+      email: userData.email,
+      givenName: userData.givenName,
+      familyName: userData.familyName,
+      team: userData.team || currentUser.get().team,
     };
 
-    await buildQuery( 'creds/provision', invitation, 'POST' )
-      .then( () => window.location.assign( '/' ) )
-      .catch( err => console.error( err ) );
+    const invitation = {
+      inviter: currentUser.get().email,
+      invitee,
+      expiration,
+    };
+
+    if ( user ) {
+      await buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
+        .then( () => window.location.assign( '/' ) )
+        .catch( err => console.error( err ) );
+    } else {
+      await buildQuery( 'creds/provision', invitation, 'POST' )
+        .then( () => window.location.assign( '/' ) )
+        .catch( err => console.error( err ) );
+    }
   };
 
   return (
@@ -178,6 +189,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
             id="email-input"
             type="text"
             required
+            disabled={ user } // Email is the primary key for users so we prevent changes for existing users.
             value={ userData.email }
             onChange={ e => handleUpdate( 'email', e.target.value ) }
           />
@@ -210,7 +222,13 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
         </label>
       </div>
       <div style={ { textAlign: 'center' } }>
-        <button id="login-btn" type="submit" className={ styles.btn }>Invite User</button>
+        <button
+          className={ styles.btn }
+          id="login-btn"
+          type="submit"
+        >
+          { user ? 'Update User' : 'Invite User' }
+        </button>
         <BackButton showConfirmDialog />
       </div>
     </form>
