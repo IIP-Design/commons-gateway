@@ -90,3 +90,23 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 
 	return guests, err
 }
+
+// UpdateGuest opens a database connection and updates a given
+// guest user with the provided information.
+// TODO? - Allow for changes to user email? If so we may need
+// to add an id field and set that as the primary key on a guest.
+func UpdateGuest(guest data.GuestUser) error {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query :=
+		`UPDATE guests SET first_name = $1, last_name = $2, team = $3,
+		 expiration = $4 WHERE email = $5`
+	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, guest.Expires, guest.Email)
+
+	if err != nil {
+		logs.LogError(err, "Update Guest Query Error")
+	}
+
+	return err
+}
