@@ -1,7 +1,7 @@
 ---
 import Button from '../components/Button.astro';
 import File from '../components/File.astro';
-import PageLayout from '../layouts/PageLayout.astro';
+import AdminPageLayout from '../layouts/AdminPageLayout.astro';
 ---
 
 <script>
@@ -24,7 +24,7 @@ import PageLayout from '../layouts/PageLayout.astro';
   sumbitButton?.addEventListener('click', submitHandler );
 </script>
 
-<PageLayout narrow title="Submit Files">
+<AdminPageLayout title="Submit Files">
   <p class="section-header"><strong>Upload video or photo files <span>*</span></strong></p>
   <div class="drop-zone" id="drop-zone">
     <strong>drag and drop files</strong>
@@ -36,7 +36,7 @@ import PageLayout from '../layouts/PageLayout.astro';
   <p>Include a point of contact email in case questions arise.</p>
   <textarea id="description-text"></textarea>
   <Button id="upload-files-btn" type="submit">Submit</Button>
-</PageLayout>
+</AdminPageLayout>
 
 <style>
   p,

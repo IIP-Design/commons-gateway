@@ -13,10 +13,11 @@ import (
 )
 
 type RequestBody struct {
-	S3Id     string `json:"s3Id"`
-	User     string `json:"user"`
-	TeamId   string `json:"teamId"`
-	FileType string `json:"fileType"`
+	S3Id        string `json:"s3Id"`
+	User        string `json:"email"`
+	TeamId      string `json:"teamId"`
+	FileType    string `json:"fileType"`
+	Description string `json:"description"`
 }
 
 func parseRequest(body string) (RequestBody, error) {
@@ -32,12 +33,12 @@ func parseRequest(body string) (RequestBody, error) {
 	return parsed, err
 }
 
-func createUploadRecord(s3Id string, user string, teamId string, fileType string) error {
+func createUploadRecord(s3Id string, user string, teamId string, fileType string, description string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := "INSERT INTO uploads ( s3_id, user, team_id, file_type ) VALUES ( $1, $2, $3, $4 )"
-	_, err := pool.Exec(query, s3Id, user, teamId, fileType)
+	query := "INSERT INTO uploads ( s3_id, user_id, team_id, file_type, description ) VALUES ( $1, $2, $3, $4, $5 )"
+	_, err := pool.Exec(query, s3Id, user, teamId, fileType, description)
 
 	if err != nil {
 		logs.LogError(err, "Create Upload Record Query Error")
@@ -56,12 +57,13 @@ func NewUploadHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 	user := parsed.User
 	teamId := parsed.TeamId
 	fileType := parsed.FileType
+	description := parsed.Description
 
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
-	err = createUploadRecord(s3Id, user, teamId, fileType)
+	err = createUploadRecord(s3Id, user, teamId, fileType, description)
 
 	if err != nil {
 		return msgs.SendServerError(err)

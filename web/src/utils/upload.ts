@@ -5,6 +5,8 @@ type TUploadStatus = 'ok' | 'urlFailed' | 'uploadFailed' | 'metadataFailed';
 
 interface IMetadata {
   description: string;
+  email?: string;
+  team?: string;
 }
 
 interface IFileUploadMeta extends IMetadata {
@@ -22,7 +24,7 @@ const UPLOAD_ENDPOINT = import.meta.env.UPLOAD_ENDPOINT || 'upload';
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
 const getPresignedUrl = async ( contentType: string ) => {
-  const response = await fetch( `${API_ENDPOINT}/${UPLOAD_ENDPOINT}?contentType=${contentType}`, {
+  const response = await fetch( `${API_ENDPOINT}/${UPLOAD_ENDPOINT}?contentType=${encodeURIComponent( contentType )}`, {
     method: 'GET',
   } );
   const { uploadURL, key } = await response.json();

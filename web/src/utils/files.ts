@@ -9,6 +9,8 @@ import prettyBytes from 'pretty-bytes';
 import { submitFiles } from './upload';
 import { showError, showSuccess } from './alert';
 
+import currentUser from '../stores/current-user';
+
 // ////////////////////////////////////////////////////////////////////////////
 // Constants
 // ////////////////////////////////////////////////////////////////////////////
@@ -59,6 +61,7 @@ const handleFile = ( files?: FileList|null ) => {
 const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
   const description = descriptionElem?.value;
   const file = fileToUpload;
+  const { email, team } = currentUser.get();
 
   let error = false;
 
@@ -72,9 +75,15 @@ const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
   } else if ( !description ) {
     showError( 'No file description provided' );
     error = true;
+  } else if ( !email ) {
+    showError( 'No current user email' );
+    error = true;
+  } else if ( !team ) {
+    showError( 'No current user team' );
+    error = true;
   }
 
-  return { description, file, error };
+  return { description, file, error, email, team };
 };
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -116,14 +125,14 @@ export const submitHandler = async () => {
   const descriptionElem = document.getElementById( 'description-text' ) as HTMLInputElement;
   const fileElem = document.getElementById( 'file-list' ) as HTMLInputElement;
 
-  const { file, description, error } = validateSubmission( descriptionElem );
+  const { file, description, email, team, error } = validateSubmission( descriptionElem );
 
   if ( error ) {
     return;
   }
 
   // Send data
-  const response = await submitFiles( file as File, { description } );
+  const response = await submitFiles( file as File, { description, email, team } );
 
   if ( response !== 'ok' ) {
     showError( 'Could not upload file' );
