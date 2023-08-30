@@ -10,7 +10,7 @@ import currentUser from '../stores/current-user';
 import { showError } from '../utils/alert';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 
-import '../styles/form.css';
+import '../styles/form.scss';
 import styles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -155,33 +155,39 @@ const NewUser: FC<INewUserProps> = ( { isAdmin } ) => {
 
   return (
     <form onSubmit={ handleSubmit }>
-      <label>
-        <span>Given (First) Name</span>
-        <input id="given-name-input" type="text" required onChange={ e => handleUpdate( 'givenName', e.target.value ) } />
-      </label>
-      <label>
-        <span>Family (Last) Name</span>
-        <input id="family-name-input" type="text" required onChange={ e => handleUpdate( 'familyName', e.target.value ) } />
-      </label>
-      <label>
-        <span>Email</span>
-        <input id="email-input" type="text" required onChange={ e => handleUpdate( 'email', e.target.value ) } />
-      </label>
-      <label>
-        <span>Team</span>
-        <TeamElement teams={ teamList } setData={ val => handleUpdate( 'team', val ) } />
-      </label>
-      <label>
-        <span>Access End Date</span>
-        <input
-          id="date-input"
-          type="date"
-          min={ getYearMonthDay( new Date() ) }
-          max={ getYearMonthDay( addDaysToNow( 60 ) ) }
-          onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) }
-        />
-      </label>
-      <div>
+      <div className="field-group">
+        <label>
+          <span>Given (First) Name</span>
+          <input id="given-name-input" type="text" required onChange={ e => handleUpdate( 'givenName', e.target.value ) } />
+        </label>
+        <label>
+          <span>Family (Last) Name</span>
+          <input id="family-name-input" type="text" required onChange={ e => handleUpdate( 'familyName', e.target.value ) } />
+        </label>
+      </div>
+      <div className="field-group">
+        <label>
+          <span>Email</span>
+          <input id="email-input" type="text" required onChange={ e => handleUpdate( 'email', e.target.value ) } />
+        </label>
+        <label>
+          <span>Team</span>
+          <TeamElement teams={ teamList } setData={ val => handleUpdate( 'team', val ) } />
+        </label>
+      </div>
+      <div className="field-group">
+        <label>
+          <span>Access End Date</span>
+          <input
+            id="date-input"
+            type="date"
+            min={ getYearMonthDay( new Date() ) }
+            max={ getYearMonthDay( addDaysToNow( 60 ) ) }
+            onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) }
+          />
+        </label>
+      </div>
+      <div style={ { textAlign: 'center' } }>
         <button id="login-btn" type="submit" className={ styles.btn }>Invite User</button>
         <BackButton showConfirmDialog />
       </div>

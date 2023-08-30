@@ -3,6 +3,14 @@ const { pathname } = new URL(Astro.request.url);
 const currentPath = pathname.replaceAll('/', '');
 ---
 
+<script>
+  import { signOut } from '../utils/auth';
+
+  const signOutBtn = document.getElementById('sign-out-hamburger');
+
+  signOutBtn?.addEventListener('click', () => signOut());
+</script>
+
 <nav class="nav-links">
   <!-- TODO: Replace with filtered list from user role -->
   <ul>
@@ -14,6 +22,9 @@ const currentPath = pathname.replaceAll('/', '');
     </li>
     <li>
       <a class={currentPath === 'upload' ? 'active' : ''} href="/upload/">Upload</a>
+    </li>
+    <li class="sign-out">
+      <button id="sign-out-hamburger" type="button">Sign Out</button>
     </li>
   </ul>
 </nav>
@@ -69,6 +80,20 @@ const currentPath = pathname.replaceAll('/', '');
     }
   }
 
+  .sign-out {
+    display: block;
+
+    > button {
+      background: none;
+      border: none;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+  }
+
   @include breakpoint('tablet') {
     .nav-links {
       margin-left: 5rem; // To line up with content container
@@ -85,6 +110,10 @@ const currentPath = pathname.replaceAll('/', '');
       &:not(:last-of-type) {
         margin-right: 2rem;
       }
+    }
+
+    li.sign-out {
+      display: none;
     }
   }
 </style>

@@ -15,7 +15,9 @@ const { centered } = Astro.props;
 
   const signOutBtn = document.getElementById('sign-out');
 
-  signOutBtn?.addEventListener('click', () => signOut());
+  signOutBtn?.addEventListener('click', () => {
+    signOut();
+  });
 </script>
 
 <header>
@@ -86,7 +88,12 @@ const { centered } = Astro.props;
   }
 
   #sign-out {
+    display: none;
     margin-right: 5rem;
+
+    @include breakpoint('tablet') {
+      display: block;
+    }
   }
 
   span {

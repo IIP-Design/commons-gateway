@@ -20,6 +20,8 @@ const { narrow, title } = Astro.props;
 </div>
 
 <style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
   .container {
     border: 1px solid var(--greyLight);
     border-radius: 5px;
@@ -29,17 +31,26 @@ const { narrow, title } = Astro.props;
     margin: 0 auto;
     max-width: 1755px;
     min-height: 100%;
-    padding: 3rem 3rem 2rem;
+    padding: 1rem;
+
+    @include breakpoint('tablet') {
+      padding: 3rem 3rem 2rem;
+    }
   }
   .narrow {
     max-width: 1021px;
   }
   .support {
+    font-size: var(--fontSizeSmall);
     text-align: center;
     color: var(--mine-shaft-1); // Official DoS grey colors here do not meet contrast requirements
 
     > a {
       color: var(--blue);
+    }
+
+    @include breakpoint('tablet') {
+      font-size: var(--fontSizeNormal);
     }
   }
 </style>

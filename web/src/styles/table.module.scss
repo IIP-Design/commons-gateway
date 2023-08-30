@@ -1,8 +1,15 @@
+@import './breakpoints.scss';
+
 .add-btn {
   position: absolute;
-  margin-right: 3rem;
+  margin-right: 1rem;
   right: 0;
-  transform: translateY(-6rem);
+  transform: translateY(-0.5rem);
+
+  @include breakpoint('tablet') {
+    margin-right: 3rem;
+    transform: translateY(-6rem);
+  }
 }
 
 .container {
@@ -37,6 +44,7 @@
   td, th {
     padding: 1rem 0.75rem;
     text-align: left;
+    overflow: hidden;
   }
 
   .status {
@@ -44,13 +52,17 @@
     align-items: center;
 
     > span {
-      display: inline-block;
+      display: none;
       width: 1rem;
       height: 1rem;
       -moz-border-radius: 50%;
       -webkit-border-radius: 50%;
       border-radius: 50%;
       margin-right: 0.75rem;
+
+      @include breakpoint('tablet') {
+        display: inline-block;
+      }
     }
   }
 
@@ -71,15 +83,33 @@
   &-btn {
     border: none;
     background-color: transparent;
-    font-size: var(--fontSizeNormal);
+    font-size: var(--fontSizeSmall);
     padding: 0 0.5rem;
 
     &:disabled {
       cursor: default;
     }
+
+    @include breakpoint('tablet') {
+      font-size: var(--fontSizeNormal);;
+    }
   }
 
   &-intermediate {
     margin: 0 0.5rem;
+  }
+}
+
+.user-table {
+  tr th:nth-child(3),
+  tr td:nth-child(3) {
+    display: none;
+  }
+
+  @include breakpoint('tablet') {
+    tr th:nth-child(3),
+    tr td:nth-child(3) {
+      display: table-cell;
+    }
   }
 }
