@@ -121,7 +121,7 @@ const UserTable: FC = () => {
             { userList && ( userList.map( user => (
               <tr key={ user.email }>
                 <td>
-                  <a href={ `/user?id=${user.email}` }>
+                  <a href={ `/user?id=${user.email}` } style={ { padding: '0.3rem' } }>
                     { `${user.givenName} ${user.familyName}` }
                   </a>
                 </td>
