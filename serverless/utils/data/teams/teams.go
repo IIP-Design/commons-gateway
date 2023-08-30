@@ -2,7 +2,6 @@ package teams
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -21,8 +20,8 @@ func CheckForExistingTeam(teamName string) (bool, error) {
 
 	var team string
 
-	query := fmt.Sprintf(`SELECT team_name FROM teams WHERE team_name = '%s';`, teamName)
-	err = pool.QueryRow(query).Scan(&team)
+	query := `SELECT team_name FROM teams WHERE team_name = $1;`
+	err = pool.QueryRow(query, teamName).Scan(&team)
 
 	if err != nil {
 		// Do not return an error if no results are found.
@@ -47,8 +46,8 @@ func CheckForExistingTeamById(teamId string) (bool, error) {
 
 	var team string
 
-	query := fmt.Sprintf(`SELECT id FROM teams WHERE id = '%s';`, teamId)
-	err = pool.QueryRow(query).Scan(&team)
+	query := `SELECT id FROM teams WHERE id = $1;`
+	err = pool.QueryRow(query, teamId).Scan(&team)
 
 	if err != nil {
 		// Do not return an error if no results are found.
@@ -91,13 +90,8 @@ func UpdateTeam(teamId string, teamName string, active bool) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := fmt.Sprintf(
-		`UPDATE teams SET team_name = '%s', active = '%t' WHERE id = '%s';`,
-		teamName,
-		active,
-		teamId,
-	)
-	_, err = pool.Exec(query)
+	query := `UPDATE teams SET team_name = $1, active = $2 WHERE id = $3;`
+	_, err = pool.Exec(query, teamName, active, teamId)
 
 	if err != nil {
 		logs.LogError(err, "Update Team Query Error")
@@ -113,12 +107,8 @@ func UpdateTeamStatus(teamId string, active bool) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := fmt.Sprintf(
-		`UPDATE teams SET active = '%t' WHERE id = '%s';`,
-		active,
-		teamId,
-	)
-	_, err = pool.Exec(query)
+	query := `UPDATE teams SET active = $1 WHERE id = $2;`
+	_, err = pool.Exec(query, active, teamId)
 
 	if err != nil {
 		logs.LogError(err, "Update Team Status Query Error")
