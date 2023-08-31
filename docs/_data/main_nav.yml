@@ -8,5 +8,8 @@ nav_list:
       - title: Function Reference
         url: serverless/functions
 
+  - title: User Types
+    url: users
+
   - title: Todo List
     url: todo
