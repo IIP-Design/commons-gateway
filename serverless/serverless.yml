@@ -235,6 +235,8 @@ functions:
     package:
       patterns:
         - 'funcs/upload-presigned-url/dist/index.cjs'
+    environment:
+      S3_UPLOAD_BUCKET: s3uploader-s3uploadbucket-8qfrclyi5f2f  # TODO - Parameterize
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler

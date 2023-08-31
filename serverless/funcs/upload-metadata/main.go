@@ -13,9 +13,9 @@ import (
 )
 
 type RequestBody struct {
-	S3Id        string `json:"s3Id"`
+	S3Id        string `json:"key"`
 	User        string `json:"email"`
-	TeamId      string `json:"teamId"`
+	TeamId      string `json:"team"`
 	FileType    string `json:"fileType"`
 	Description string `json:"description"`
 }

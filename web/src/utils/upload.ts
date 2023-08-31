@@ -50,7 +50,7 @@ const submitFileMetadata = async ( body: IFileUploadMeta ) => {
     method: 'POST',
   } );
 
-  return response.status === 201;
+  return response.status === 200;
 };
 
 // ////////////////////////////////////////////////////////////////////////////
