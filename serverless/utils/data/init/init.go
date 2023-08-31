@@ -36,5 +36,17 @@ func InitializeDatabase() error {
 		logs.LogError(err, "Table Creation Error - Invites")
 	}
 
+	_, err = pool.Exec(uploadsQuery)
+
+	if err != nil {
+		logs.LogError(err, "Table Creation Error - Uploads")
+	}
+
+	_, err = pool.Exec("ALTER TABLE uploads DROP CONSTRAINT uploads_user_id_fkey;")
+
+	if err != nil {
+		logs.LogError(err, "Table Update Error - Uploads")
+	}
+
 	return err
 }

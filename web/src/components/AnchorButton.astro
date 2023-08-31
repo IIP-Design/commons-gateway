@@ -4,11 +4,10 @@ import styles from '../styles/button.module.scss';
 interface Props {
   class?: string;
   id?: string;
-  text: string;
   href: string;
 }
 
-const { class: classes, id, text, href } = Astro.props;
+const { class: classes, id, href } = Astro.props;
 ---
 
 <a
@@ -16,7 +15,7 @@ const { class: classes, id, text, href } = Astro.props;
   id={id || ''}
   href={href}
 >
-  {text}
+  <slot />
 </a>
 
 <style lang="scss">

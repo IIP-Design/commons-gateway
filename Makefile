@@ -19,25 +19,28 @@ EVENT_EMAIL_2FA = ./config/sim-events/email-2fa.json
 EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
 EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
 EVENT_TEAM_CREATE = ./config/sim-events/team-create.json
+EVENT_UPLOAD_METADATA = ./config/sim-events/upload-metadata.json
 
 build:
-	cd web; npm run build;
+	cd web; npm i && npm run build;
 	cd serverless;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/team-update funcs/team-update/*.go;\
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/team-update funcs/team-update/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-metadata funcs/upload-metadata/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\
 	cd email-creds && npm run zip && cd ../;\
-	cd email-support-staff && npm run zip && cd ../;
+	cd email-support-staff && npm run zip && cd ../;\
+	cd upload-presigned-url && npm run zip && cd ../;
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock;\
@@ -103,3 +106,12 @@ local-email-creds: build
 local-email-support-staff: build
 	cd serverless;\
 	npm run sls -- invoke local -f emailSupportStaff $(DEV_ENV) -p $(EVENT_EMAIL_SUPPORT_STAFF);
+
+local-upload-metadata: build
+	cd serverless;\
+	npm run sls -- invoke local -f uploadMetadata $(DEV_AWS_ENV) -p $(EVENT_UPLOAD_METADATA);
+
+local-upload-presigned-url: build
+	cd serverless;\
+	npm run sls -- invoke local -f uploadPresignedUrl $(DEV_ENV);
+

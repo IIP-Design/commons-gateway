@@ -207,6 +207,36 @@ functions:
     package:
       patterns:
         - './bin/creds-provision'
+  uploadMetadata:
+    name: gateway-${opt:stage}-upload-metadata
+    handler: bin/upload-metadata
+    description: Records a file upload record.
+    runtime: go1.x
+    events:
+      - http:
+          path: /upload
+          method: post
+          cors:
+            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+    package:
+      patterns:
+        - './bin/upload-metadata'
+  uploadPresignedUrl:
+    name: gateway-${opt:stage}-upload-presigned-url
+    handler: funcs/upload-presigned-url/dist/index.handler
+    description: Return a presigned URL from S3 to upload a specific file.
+    runtime: nodejs18.x
+    events:
+      - http:
+          path: /upload
+          method: get
+          cors:
+            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+    package:
+      patterns:
+        - 'funcs/upload-presigned-url/dist/index.cjs'
+    environment:
+      S3_UPLOAD_BUCKET: s3uploader-s3uploadbucket-8qfrclyi5f2f  # TODO - Parameterize
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler

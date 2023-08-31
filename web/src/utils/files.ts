@@ -1,24 +1,104 @@
+// ////////////////////////////////////////////////////////////////////////////
+// 3PP Imports
+// ////////////////////////////////////////////////////////////////////////////
+import prettyBytes from 'pretty-bytes';
+
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
+import { submitFiles } from './upload';
+import { showError, showSuccess } from './alert';
+
+import currentUser from '../stores/current-user';
+
+// ////////////////////////////////////////////////////////////////////////////
+// Constants
+// ////////////////////////////////////////////////////////////////////////////
+const MAX_FILE_SIZE = 100 * 1000 * 1000;
+
+// ////////////////////////////////////////////////////////////////////////////
+// Config
+// ////////////////////////////////////////////////////////////////////////////
+let fileToUpload: File|null = null;
+
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+// ////////////////////////////////////////////////////////////////////////////
+const validateFile = ( { type, size }: File ) => {
+  if ( !type.match( /^(image|video)\/.+/ ) ) {
+    showError( 'Only pictures and/or videos may be uploaded' );
+
+    return false;
+  } if ( size > MAX_FILE_SIZE ) {
+    showError( `Max file size is ${prettyBytes( MAX_FILE_SIZE )}` );
+
+    return false;
+  }
+
+  return true;
+};
+
+const setUpload = ( file: File ) => {
+  if ( !validateFile( file ) ) {
+    return;
+  }
+
+  const list = document.getElementById( 'file-list' ) as HTMLElement;
+
+  list.innerHTML = `${file.name} (${prettyBytes( file.size )})`;
+
+  fileToUpload = file;
+};
+
+const handleFile = ( files?: FileList|null ) => {
+  if ( files && files.length > 1 ) {
+    showError( 'Only single-file uploads are currently supported' );
+  } else if ( files ) {
+    setUpload( files[0] );
+  }
+};
+
+const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
+  const description = descriptionElem?.value;
+  const file = fileToUpload;
+  const { email, team } = currentUser.get();
+
+  let error = false;
+
+  // Error Check
+  if ( !descriptionElem ) {
+    showError( 'Internal error' );
+    error = true;
+  } else if ( !file ) {
+    showError( 'No file has been selected for upload' );
+    error = true;
+  } else if ( !description ) {
+    showError( 'No file description provided' );
+    error = true;
+  } else if ( !email ) {
+    showError( 'No current user email' );
+    error = true;
+  } else if ( !team ) {
+    showError( 'No current user team' );
+    error = true;
+  }
+
+  return { description, file, error, email, team };
+};
+
+// ////////////////////////////////////////////////////////////////////////////
+// Exports
+// ////////////////////////////////////////////////////////////////////////////
+
 /**
    * Prevents the default browser behavior (i.e. opening the file) when
    * a file is dropped into the browser.
    *
    * @param e The dragenter/dragover event.
    */
-export const dragHandler = ( e: DragEvent ) => {
+export const haltEvent = ( e: Event ) => {
   e.stopPropagation();
   e.preventDefault();
-};
-
-const addToUploadList = ( file: string ) => {
-  const list = document.getElementById( 'file-list' );
-  const listItem = document.createElement( 'li' );
-
-  listItem.innerHTML = file;
-  list?.appendChild( listItem );
-};
-
-const handleFiles = ( files: FileList ) => {
-  [...files].forEach( file => addToUploadList( file.name ) );
 };
 
 /**
@@ -27,12 +107,41 @@ const handleFiles = ( files: FileList ) => {
  * @param e The drop event.
  */
 export const dropHandler = ( e: DragEvent ) => {
-  e.stopPropagation();
-  e.preventDefault();
+  haltEvent( e );
 
   const files = e?.dataTransfer?.files;
 
-  if ( files ) {
-    handleFiles( files );
+  handleFile( files );
+};
+
+export const chooseHandler = ( e: Event ) => {
+  const { files } = ( e.target as HTMLInputElement );
+
+  handleFile( files );
+};
+
+export const submitHandler = async () => {
+  // Prepare and validate
+  const descriptionElem = document.getElementById( 'description-text' ) as HTMLInputElement;
+  const fileElem = document.getElementById( 'file-list' ) as HTMLInputElement;
+
+  const { file, description, email, team, error } = validateSubmission( descriptionElem );
+
+  if ( error ) {
+    return;
   }
+
+  // Send data
+  const response = await submitFiles( file as File, { description, email, team } );
+
+  if ( response !== 'ok' ) {
+    showError( 'Could not upload file' );
+  } else {
+    showSuccess( 'File has been uploaded' );
+  }
+
+  // Cleanup
+  descriptionElem.value = '';
+  fileElem.innerHTML = '';
+  fileToUpload = null;
 };
