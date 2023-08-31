@@ -2,7 +2,7 @@
 
 :root {
   --blue: #0a2240;
-  --blueLight: #0086c9;
+  --blueLight: #3474DA;
   --grey: #8c8c8c;
   --greyLight: #dadada;
   --greyLighter: #f5f5f5;
@@ -38,6 +38,18 @@
 * + * {
   margin: 0;
   padding: 0;
+}
+
+a,
+a:visited {
+  color: var(--blueLight);
+}
+
+button:focus-visible,
+a:focus-visible {
+  border-radius: 5px;
+  outline: 3px solid var(--blueLight);
+  outline-offset: 1px;
 }
 
 body {

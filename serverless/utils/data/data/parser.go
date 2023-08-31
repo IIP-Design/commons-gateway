@@ -79,27 +79,58 @@ func ParseBodyData(body string) (RequestBodyOptions, error) {
 // ExtractUser parses an API Gateway request body returning the data
 // need to create a new user.
 func ExtractUser(body string) (User, error) {
-	var admin User
+	var user User
 
 	parsed, err := ParseBodyData(body)
 
-	adminEmail := parsed.Email
+	email := parsed.Email
 	firstName := parsed.NameFirst
 	lastName := parsed.NameLast
 	team := parsed.TeamId
 
 	if err != nil {
-		return admin, err
-	} else if adminEmail == "" || firstName == "" || lastName == "" || team == "" {
-		return admin, errors.New("data missing from request")
+		return user, err
+	} else if email == "" || firstName == "" || lastName == "" || team == "" {
+		return user, errors.New("data missing from request")
 	}
 
-	admin.Email = adminEmail
-	admin.NameFirst = firstName
-	admin.NameLast = lastName
-	admin.Team = team
+	user.Email = email
+	user.NameFirst = firstName
+	user.NameLast = lastName
+	user.Team = team
 
-	return admin, err
+	return user, err
+}
+
+// ExtractGuestUser parses an API Gateway request body returning the data
+// need to modify an existing guest user.
+func ExtractGuestUser(body string) (GuestUser, error) {
+	var guest GuestUser
+
+	userData, err := ExtractUser(body)
+
+	if err != nil {
+		return guest, err
+	}
+
+	guest.Email = userData.Email
+	guest.NameFirst = userData.NameFirst
+	guest.NameLast = userData.NameLast
+	guest.Team = userData.Team
+
+	parsed, err := ParseBodyData(body)
+
+	expiration := parsed.Expires
+
+	if err != nil {
+		return guest, err
+	} else if expiration == "" {
+		return guest, errors.New("expiration data missing from request")
+	}
+
+	guest.Expires = expiration
+
+	return guest, err
 }
 
 // ExtractInvite parses an API Gateway request body returning the data

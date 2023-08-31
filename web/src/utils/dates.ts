@@ -1,3 +1,7 @@
+import { isAfter, isBefore, addDays, parse } from 'date-fns';
+
+import { MAX_ACCESS_GRANT_DAYS } from './constants';
+
 /**
  * Converts any date to a string in the `YYYY-MM-DD` format
  * @param date The date to be transformed.
@@ -20,4 +24,15 @@ export const addDaysToNow = ( days: number ) => {
   const future = new Date( now ).setDate( now.getDate() + days );
 
   return new Date( future );
+};
+
+/**
+ * Checks whether a given date falls after the present and before max grant days.
+ * @param dateStr A provided date string.
+ */
+export const dateSelectionIsValid = ( dateStr?: string ) => {
+  const now = new Date();
+  const date = parse( dateStr || '', 'yyyy-MM-dd', new Date() );
+
+  return date && isAfter( date, now ) && isBefore( date, addDays( now, MAX_ACCESS_GRANT_DAYS ) );
 };

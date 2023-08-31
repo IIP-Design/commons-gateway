@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import { buildQuery } from '../utils/api';
+import currentUser from '../stores/current-user';
 import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { selectSlice } from '../utils/arrays';
@@ -21,8 +22,10 @@ const UserTable: FC = () => {
   const [teams, setTeams] = useState( [] );
 
   useEffect( () => {
+    const body = currentUser.get().isAdmin === 'true' ? {} : { team: currentUser.get().team };
+
     const getUsers = async () => {
-      const response = await buildQuery( 'guests', { team: 'cjjlml77k98c70bm73pg' } );
+      const response = await buildQuery( 'guests', body );
       const { data } = await response.json();
 
       if ( data ) {
@@ -118,7 +121,9 @@ const UserTable: FC = () => {
             { userList && ( userList.map( user => (
               <tr key={ user.email }>
                 <td>
-                  { `${user.givenName} ${user.familyName}` }
+                  <a href={ `/user?id=${user.email}` } style={ { padding: '0.3rem' } }>
+                    { `${user.givenName} ${user.familyName}` }
+                  </a>
                 </td>
                 <td>{ user.email }</td>
                 <td>{ getTeamName( user.team, teams ) }</td>

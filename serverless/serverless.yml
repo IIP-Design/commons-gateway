@@ -117,6 +117,36 @@ functions:
     package:
       patterns:
         - './bin/guest-auth'
+  guestGet:
+    name: gateway-${opt:stage}-guest-get
+    handler: bin/guest-get
+    description: Retrieve a single guest users.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guest
+          method: get
+          request:
+            parameters:
+              querystrings:
+                id: true
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/guest-get'
+  guestUpdate:
+    name: gateway-${opt:stage}-guest-update
+    handler: bin/guest-update
+    description: Update a guest users.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guest/update
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/guest-update'
   guestsGet:
     name: gateway-${opt:stage}-guests-get
     handler: bin/guests-get

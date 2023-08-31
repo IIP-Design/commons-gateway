@@ -3,11 +3,11 @@ import AdminPageLayout from '../layouts/AdminPageLayout.astro';
 import PageContainer from '../layouts/PageContainer.astro';
 import UserForm from '../components/UserForm';
 
-const title = 'New User';
+const title = 'Edit User';
 ---
 
 <AdminPageLayout title={title}>
   <PageContainer narrow title={title}>
-    <UserForm client:load />
+    <UserForm client:load user />
   </PageContainer>
 </AdminPageLayout>
