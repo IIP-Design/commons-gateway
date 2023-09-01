@@ -149,7 +149,19 @@ func switchUploadsUserId(pool *sql.DB) error {
 			return err
 		} else if err != nil {
 			logs.LogError(err, "Select Admin Email Query Error")
+
+			return err
 		}
+	}
+
+	// Set foreign key constraint on `user_id` property.
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD CONSTRAINT uploads_user_id_fkey FOREIGN KEY(user_id)
+		 REFERENCES all_users(user_id) ON UPDATE CASCADE ON DELETE RESTRICT;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Update Uploads User Id FK Query Error")
 	}
 
 	return err
