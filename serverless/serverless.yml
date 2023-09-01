@@ -41,6 +41,7 @@ provider:
   disableRollback: ${param:rollback}
 
 custom:
+  CIDR: 10.0.0.0/16
   DB_NAME: gateway_${opt:stage}
   DB_USER: gateway${opt:stage}
   DB_PORT: !GetAtt RDSInstance.Endpoint.Port
@@ -266,7 +267,7 @@ functions:
       patterns:
         - 'funcs/upload-presigned-url/dist/index.cjs'
     environment:
-      S3_UPLOAD_BUCKET: s3uploader-s3uploadbucket-8qfrclyi5f2f  # TODO - Parameterize
+      S3_UPLOAD_BUCKET: s3uploader-s3uploadbucket-8qfrclyi5f2f # TODO - Parameterize
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler
