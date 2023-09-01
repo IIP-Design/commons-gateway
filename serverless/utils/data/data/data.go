@@ -93,8 +93,8 @@ func CheckForExistingUser(email string, table string) (bool, error) {
 
 	var user string
 
-	query := fmt.Sprintf(`SELECT email FROM %s WHERE email = '%s';`, table, email)
-	err = pool.QueryRow(query).Scan(&user)
+	query := `SELECT email FROM $1 WHERE email = $2;`
+	err = pool.QueryRow(query, table, email).Scan(&user)
 
 	if err != nil {
 		// Do not return an error if no results are found.
