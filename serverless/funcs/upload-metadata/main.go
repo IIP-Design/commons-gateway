@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
@@ -37,8 +38,10 @@ func createUploadRecord(s3Id string, user string, teamId string, fileType string
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := "INSERT INTO uploads ( s3_id, user_id, team_id, file_type, description ) VALUES ( $1, $2, $3, $4, $5 )"
-	_, err := pool.Exec(query, s3Id, user, teamId, fileType, description)
+	currentTime := time.Now()
+
+	query := "INSERT INTO uploads ( s3_id, user_id, team_id, file_type, description, date_uploaded ) VALUES ( $1, $2, $3, $4, $5, $6 )"
+	_, err := pool.Exec(query, s3Id, user, teamId, fileType, description, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Create Upload Record Query Error")
