@@ -25,6 +25,7 @@ type RequestBodyOptions struct {
 	Inviter   string `json:"inviter"`
 	NameFirst string `json:"givenName"`
 	NameLast  string `json:"familyName"`
+	Role      string `json:"role"`
 	TeamId    string `json:"team"`
 	TeamName  string `json:"teamName"`
 	Username  string `json:"username"`
@@ -35,6 +36,7 @@ type User struct {
 	Email     string
 	NameFirst string
 	NameLast  string
+	Role      string
 	Team      string
 }
 
@@ -86,17 +88,19 @@ func ExtractUser(body string) (User, error) {
 	email := parsed.Email
 	firstName := parsed.NameFirst
 	lastName := parsed.NameLast
+	role := parsed.Role
 	team := parsed.TeamId
 
 	if err != nil {
 		return user, err
-	} else if email == "" || firstName == "" || lastName == "" || team == "" {
+	} else if email == "" || firstName == "" || lastName == "" || role == "" || team == "" {
 		return user, errors.New("data missing from request")
 	}
 
 	user.Email = email
 	user.NameFirst = firstName
 	user.NameLast = lastName
+	user.Role = role
 	user.Team = team
 
 	return user, err
@@ -116,6 +120,7 @@ func ExtractGuestUser(body string) (GuestUser, error) {
 	guest.Email = userData.Email
 	guest.NameFirst = userData.NameFirst
 	guest.NameLast = userData.NameLast
+	guest.Role = userData.Role
 	guest.Team = userData.Team
 
 	parsed, err := ParseBodyData(body)

@@ -17,11 +17,12 @@ func RetrieveGuest(email string) (map[string]string, error) {
 
 	var firstName string
 	var lastName string
+	var role string
 	var team string
 	var expiration time.Time
 
-	query := `SELECT first_name, last_name, team, expiration FROM guests WHERE email = $1`
-	err := pool.QueryRow(query, email).Scan(&firstName, &lastName, &team, &expiration)
+	query := `SELECT first_name, last_name, role, team, expiration FROM guests WHERE email = $1`
+	err := pool.QueryRow(query, email).Scan(&firstName, &lastName, &role, &team, &expiration)
 
 	if err != nil {
 		logs.LogError(err, "Retrieve Guest Query Error")
@@ -31,6 +32,7 @@ func RetrieveGuest(email string) (map[string]string, error) {
 		"email":      email,
 		"givenName":  firstName,
 		"familyName": lastName,
+		"role":       role,
 		"team":       team,
 		"expiration": expiration.String(),
 	}
@@ -49,11 +51,11 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 	defer pool.Close()
 
 	if team == "" {
-		query = `SELECT email, first_name, last_name, team, expiration FROM guests ORDER BY first_name;`
+		query = `SELECT email, first_name, last_name, role, team, expiration FROM guests ORDER BY first_name;`
 		rows, err = pool.Query(query)
 	} else {
 		query =
-			`SELECT email, first_name, last_name, team, expiration
+			`SELECT email, first_name, last_name, role, team, expiration
 			 FROM guests WHERE team = $1 ORDER BY first_name;`
 		rows, err = pool.Query(query, team)
 	}
@@ -67,7 +69,7 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 
 	for rows.Next() {
 		var guest data.GuestUser
-		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Team, &guest.Expires); err != nil {
+		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Role, &guest.Team, &guest.Expires); err != nil {
 			logs.LogError(err, "Get Guests Query Error")
 			return guests, err
 		}
@@ -76,6 +78,7 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 			"email":      guest.Email,
 			"givenName":  guest.NameFirst,
 			"familyName": guest.NameLast,
+			"role":       guest.Role,
 			"team":       guest.Team,
 			"expiration": guest.Expires,
 		}
@@ -99,10 +102,12 @@ func UpdateGuest(guest data.GuestUser) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
+	currentTime := time.Now()
+
 	query :=
 		`UPDATE guests SET first_name = $1, last_name = $2, team = $3,
-		 expiration = $4 WHERE email = $5`
-	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, guest.Expires, guest.Email)
+		 expiration = $4, date_modified = $5 WHERE email = $6`
+	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, guest.Expires, currentTime, guest.Email)
 
 	if err != nil {
 		logs.LogError(err, "Update Guest Query Error")
