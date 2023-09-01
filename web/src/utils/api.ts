@@ -10,6 +10,7 @@ type TMethods = 'GET' | 'POST';
  * @param body The data to be sent to the API.
  * @param method The HTTP request method (if not provided defaults to POST).
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const buildQuery = async ( endpoint: string, body: Record<string, any> | null, method?: TMethods ) => {
   let opts = {
     headers: {

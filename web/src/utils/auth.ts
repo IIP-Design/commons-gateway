@@ -7,63 +7,57 @@ import currentUser from '../stores/current-user';
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
 const userIsExpired = () => {
-  const exp = currentUser.get().exp;
-  if( !exp ) {
+  const { exp } = currentUser.get();
+
+  if ( !exp ) {
     return true;
   }
 
-  const expTime = Number.parseInt( exp as unknown as string || '' );
-  return isNaN( expTime ) || expTime < Date.now()/1000;
-}
+  const expTime = Number.parseInt( exp as unknown as string || '', 10 );
+
+  return Number.isNaN( expTime ) || expTime < Date.now() / 1000;
+};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
-export const isLoggedIn = ( additionalCheck?: boolean ) => {
-  return !userIsExpired() && ( additionalCheck ?? true );
-}
+export const isLoggedIn = ( additionalCheck?: boolean ) => !userIsExpired() && ( additionalCheck ?? true );
 
 export const userIsExternalPartner = () => {
-  const role = currentUser.get().role;
+  const { role } = currentUser.get();
+
   return role === 'externalPartner';
-}
+};
 
 export const userIsAdmin = () => {
-  const role = currentUser.get().role;
+  const { role } = currentUser.get();
+
   return role === 'superAdmin' || role === 'admin';
-}
+};
 
 export const userIsSuperAdmin = () => {
-  const role = currentUser.get().role;
+  const { role } = currentUser.get();
+
   return role === 'superAdmin';
-}
-
-export const isLoggedInAsSuperAdmin = () => {
-  return isLoggedIn( userIsSuperAdmin() );
-}
-
-export const isLoggedInAsAdmin = () => {
-  return isLoggedIn( userIsAdmin() );
 };
 
-export const isLoggedInAsExternalPartner = () => {
-  return isLoggedIn( userIsExternalPartner() );
-};
+export const isLoggedInAsSuperAdmin = () => isLoggedIn( userIsSuperAdmin() );
+
+export const isLoggedInAsAdmin = () => isLoggedIn( userIsAdmin() );
+
+export const isLoggedInAsExternalPartner = () => isLoggedIn( userIsExternalPartner() );
 
 /**
  * Checks whether the current user is authenticated and if not,
  * redirects them to the specified page.
  */
-const protectPage = ( protectionFn: () => boolean, redirect: string ) => {
-  return () => {
-    const authenticated = protectionFn();
+const protectPage = ( protectionFn: () => boolean, redirect: string ) => () => {
+  const authenticated = protectionFn();
 
-    if ( !authenticated ) {
-      console.log( redirect );
-      window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
-    }
-  };
-}
+  if ( !authenticated ) {
+    window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
+  }
+};
 
 export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin' );
 export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin' );

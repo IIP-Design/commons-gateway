@@ -10,7 +10,7 @@ export type ICurrentUser = {
   exp: number;
 }
 
-const STORAGE_KEY_PREFIX = 'CommonsGatewayCurrentUser:'
+const STORAGE_KEY_PREFIX = 'CommonsGatewayCurrentUser:';
 
 const currentUser = persistentMap<Partial<ICurrentUser>>( STORAGE_KEY_PREFIX,
   {},
