@@ -1,4 +1,7 @@
 # Postgres terms that set off the spell checker
 dbname
+fkey
 psql
+schemaname
 sslmode
+tablename

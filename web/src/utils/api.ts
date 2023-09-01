@@ -26,7 +26,7 @@ interface IFetchBody {
  * Helper function to consistently construct the API requests.
  * @param endpoint The API endpoint for the function in question (without a leading slash)
  * @param body The data to be sent to the API.
- * @param method The HTTP request method.
+ * @param method The HTTP request method (if not provided defaults to POST).
  */
 export const buildQuery = async ( endpoint: string, body: IFetchBody | null, method?: TMethods ) => {
   let opts = {

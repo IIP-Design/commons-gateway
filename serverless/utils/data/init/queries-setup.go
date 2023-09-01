@@ -1,5 +1,18 @@
 package init
 
+/*
+THIS FILE IS LOCKED
+
+This file defines the initial setup for the application database.
+To ensure repeatable and recoverable updates, we no longer modify
+these initial queries. Rather, any modifications should be completed
+by means of migration queries that build sequentially upon this
+foundation (and each other).
+
+This formulation allows us to more easily trace schema changes and
+revert changes if necessary.
+*/
+
 const teamsQuery = `CREATE TABLE IF NOT EXISTS teams (
   id VARCHAR(255) PRIMARY KEY,
   team_name VARCHAR(255) NOT NULL,
@@ -30,8 +43,8 @@ const guestsQuery = `CREATE TABLE IF NOT EXISTS guests (
 );`
 
 const invitesQuery = `CREATE TABLE IF NOT EXISTS invites (
-  invitee varchar(255) NOT NULL,
-  inviter varchar(255) NOT NULL,
+  invitee VARCHAR(255) NOT NULL,
+  inviter VARCHAR(255) NOT NULL,
   date_invited TIMESTAMP NOT NULL,
   FOREIGN KEY(invitee) REFERENCES guests(email) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY(inviter) REFERENCES admins(email) ON UPDATE CASCADE ON DELETE CASCADE
@@ -44,4 +57,10 @@ const uploadsQuery = `CREATE TABLE IF NOT EXISTS uploads (
   file_type VARCHAR(255) NOT NULL,
   description VARCHAR(255) NOT NULL,
   FOREIGN KEY(team_id) REFERENCES teams(id) ON UPDATE CASCADE ON DELETE RESTRICT
+);`
+
+const migrationsQuery = `CREATE TABLE IF NOT EXISTS migrations (
+	id VARCHAR(20) PRIMARY KEY,
+	title VARCHAR(255) NOT NULL,
+	date_applied TIMESTAMP NOT NULL
 );`

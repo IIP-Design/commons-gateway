@@ -2,7 +2,7 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.0.0.0/16
+      CidrBlock: ${self:custom.CIDR}
 
   SubnetA:
     Type: AWS::EC2::Subnet
@@ -35,4 +35,4 @@ Resources:
         - IpProtocol: tcp
           FromPort: 0
           ToPort: 65535
-          CidrIp: 0.0.0.0/0
+          CidrIp: ${self:custom.CIDR}

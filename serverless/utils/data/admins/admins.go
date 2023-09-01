@@ -1,7 +1,6 @@
 package admins
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -17,8 +16,8 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := fmt.Sprintf(`SELECT active FROM admins WHERE email = '%s';`, adminEmail)
-	err = pool.QueryRow(query).Scan(&active)
+	query := `SELECT active FROM admins WHERE email = $1;`
+	err = pool.QueryRow(query, adminEmail).Scan(&active)
 
 	if err != nil {
 		logs.LogError(err, "Existing Admin Query Error")
@@ -38,9 +37,9 @@ func CreateAdmin(adminData data.User) error {
 	currentTime := time.Now()
 
 	insertAdmin :=
-		`INSERT INTO "admins"("email", "first_name", "last_name", "team", "active", "date_created")
-		 VALUES ($1, $2, $3, $4, $5, $6);`
-	_, err = pool.Exec(insertAdmin, adminData.Email, adminData.NameFirst, adminData.NameLast, adminData.Team, true, currentTime)
+		`INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified )
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+	_, err = pool.Exec(insertAdmin, adminData.Email, adminData.NameFirst, adminData.NameLast, adminData.Role, adminData.Team, true, currentTime, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Create Admin Query Error")
@@ -60,11 +59,12 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 	var email string
 	var first_name string
 	var last_name string
+	var role string
 	var team string
 	var active string
 
-	query := fmt.Sprintf(`SELECT email, first_name, last_name, team, active FROM admins WHERE email = '%s';`, username)
-	err = pool.QueryRow(query).Scan(&email, &first_name, &last_name, &team, &active)
+	query := `SELECT email, first_name, last_name, role, team, active FROM admins WHERE email = $1;`
+	err = pool.QueryRow(query, username).Scan(&email, &first_name, &last_name, &role, &team, &active)
 
 	if err != nil {
 		logs.LogError(err, "Get Admin Query Error")
@@ -75,6 +75,7 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 		"email":      email,
 		"givenName":  first_name,
 		"familyName": last_name,
+		"role":       role,
 		"team":       team,
 		"active":     active,
 	}
@@ -90,7 +91,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	rows, err := pool.Query(`SELECT email, first_name, last_name, team, active FROM admins`)
+	rows, err := pool.Query(`SELECT email, first_name, last_name, role, team, active FROM admins`)
 
 	if err != nil {
 		logs.LogError(err, "Get Admins Query Error")
@@ -101,7 +102,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 
 	for rows.Next() {
 		var admin data.AdminUser
-		if err := rows.Scan(&admin.Email, &admin.NameFirst, &admin.NameLast, &admin.Team, &admin.Active); err != nil {
+		if err := rows.Scan(&admin.Email, &admin.NameFirst, &admin.NameLast, &admin.Role, &admin.Team, &admin.Active); err != nil {
 			logs.LogError(err, "Get Admins Query Error")
 			return admins, err
 		}
@@ -110,6 +111,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 			"email":      admin.Email,
 			"givenName":  admin.NameFirst,
 			"familyName": admin.NameLast,
+			"role":       admin.Role,
 			"team":       admin.Team,
 			"active":     admin.Active,
 		}

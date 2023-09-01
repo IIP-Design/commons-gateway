@@ -72,9 +72,9 @@ func CreateTeam(teamName string) error {
 	currentTime := time.Now()
 
 	insertTeam :=
-		`INSERT INTO "teams"("id", "team_name", "active", "date_created")
-		 VALUES ($1, $2, $3, $4);`
-	_, err = pool.Exec(insertTeam, guid, teamName, true, currentTime)
+		`INSERT INTO teams( id, team_name, active, date_created, date_modified )
+		 VALUES ($1, $2, $3, $4, $5);`
+	_, err = pool.Exec(insertTeam, guid, teamName, true, currentTime, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Create Team Query Error")
@@ -90,8 +90,10 @@ func UpdateTeam(teamId string, teamName string, active bool) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := `UPDATE teams SET team_name = $1, active = $2 WHERE id = $3;`
-	_, err = pool.Exec(query, teamName, active, teamId)
+	currentTime := time.Now()
+
+	query := `UPDATE teams SET team_name = $1, active = $2, date_modified = $3 WHERE id = $4;`
+	_, err = pool.Exec(query, teamName, active, currentTime, teamId)
 
 	if err != nil {
 		logs.LogError(err, "Update Team Query Error")
@@ -107,8 +109,10 @@ func UpdateTeamStatus(teamId string, active bool) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := `UPDATE teams SET active = $1 WHERE id = $2;`
-	_, err = pool.Exec(query, active, teamId)
+	currentTime := time.Now()
+
+	query := `UPDATE teams SET active = $1, date_modified = $2 WHERE id = $3;`
+	_, err = pool.Exec(query, active, currentTime, teamId)
 
 	if err != nil {
 		logs.LogError(err, "Update Team Status Query Error")

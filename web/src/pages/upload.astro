@@ -2,6 +2,9 @@
 import Button from '../components/Button.astro';
 import File from '../components/File.astro';
 import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import PageContainer from '../layouts/PageContainer.astro';
+
+const title = 'Submit Files';
 ---
 
 <script>
@@ -16,26 +19,28 @@ import AdminPageLayout from '../layouts/AdminPageLayout.astro';
 
   // Handle file browse upload.
   const fileBrowse = document.getElementById('add-files-button');
-  fileBrowse?.addEventListener('change', chooseHandler );
+  fileBrowse?.addEventListener('change', chooseHandler);
 
   // Handle submit button.
-  const sumbitButton = document.getElementById('upload-files-btn');
+  const submitButton = document.getElementById('upload-files-btn');
 
-  sumbitButton?.addEventListener('click', submitHandler );
+  submitButton?.addEventListener('click', submitHandler);
 </script>
 
-<AdminPageLayout title="Submit Files">
-  <p class="section-header"><strong>Upload video or photo files <span>*</span></strong></p>
-  <div class="drop-zone" id="drop-zone">
-    <strong>drag and drop files</strong>
-    <ul class="file-list" id="file-list"></ul>
-  </div>
-  <File id="add-files-button" promptText="or search your computer: "/>
-    
-  <p class="section-header"><strong>Description <span>*</span></strong></p>
-  <p>Include a point of contact email in case questions arise.</p>
-  <textarea id="description-text"></textarea>
-  <Button id="upload-files-btn" type="submit">Submit</Button>
+<AdminPageLayout title={title}>
+  <PageContainer title={title}>
+    <p class="section-header"><strong>Upload video or photo files <span>*</span></strong></p>
+    <div class="drop-zone" id="drop-zone">
+      <strong>drag and drop files</strong>
+      <ul class="file-list" id="file-list"></ul>
+    </div>
+    <File id="add-files-button" promptText="or search your computer: " />
+
+    <p class="section-header"><strong>Description <span>*</span></strong></p>
+    <p>Include a point of contact email in case questions arise.</p>
+    <textarea id="description-text"></textarea>
+    <Button id="upload-files-btn" type="submit">Submit</Button>
+  </PageContainer>
 </AdminPageLayout>
 
 <style>
