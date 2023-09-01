@@ -267,6 +267,27 @@ func addInviteProposerSupport(pool *sql.DB) error {
 func addModifiedDates(pool *sql.DB) error {
 	var err error
 
+	// Uploads
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD COLUMN date_uploaded TIMESTAMP NOT NULL DEFAULT current_timestamp;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Add Uploaded Date to Uploads Query Error")
+
+		return err
+	}
+
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ALTER COLUMN date_uploaded DROP DEFAULT;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Drop Uploads Uploaded Default Query Error")
+
+		return err
+	}
+
 	// Teams
 	_, err = pool.Exec(
 		`ALTER TABLE teams ADD COLUMN date_modified TIMESTAMP NOT NULL DEFAULT current_timestamp;`,
