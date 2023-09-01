@@ -23,28 +23,48 @@ export const isLoggedIn = ( additionalCheck?: boolean ) => {
   return !userIsExpired() && ( additionalCheck ?? true );
 }
 
+export const userIsExternalPartner = () => {
+  const role = currentUser.get().role;
+  return role === 'externalPartner';
+}
+
 export const userIsAdmin = () => {
   const role = currentUser.get().role;
   return role === 'superAdmin' || role === 'admin';
 }
 
+export const userIsSuperAdmin = () => {
+  const role = currentUser.get().role;
+  return role === 'superAdmin';
+}
+
 export const isLoggedInAsSuperAdmin = () => {
-  const superAdmin = currentUser.get().role === 'superAdmin';
-  return isLoggedIn( superAdmin );
+  return isLoggedIn( userIsSuperAdmin() );
 }
 
 export const isLoggedInAsAdmin = () => {
   return isLoggedIn( userIsAdmin() );
 };
 
+export const isLoggedInAsExternalPartner = () => {
+  return isLoggedIn( userIsExternalPartner() );
+};
+
 /**
  * Checks whether the current user is authenticated and if not,
- * redirects them to the admin login page.
+ * redirects them to the specified page.
  */
-export const adminOnlyPage = () => {
-  const authenticated = isLoggedInAsAdmin();
+const protectPage = ( protectionFn: () => boolean, redirect: string ) => {
+  return () => {
+    const authenticated = protectionFn();
 
-  if ( !authenticated ) {
-    window.location.replace( '/admin' );
-  }
-};
+    if ( !authenticated ) {
+      console.log( redirect );
+      window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
+    }
+  };
+}
+
+export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin' );
+export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin' );
+export const partnerOnlyPage = protectPage( isLoggedInAsAdmin, 'partnerLogin' );

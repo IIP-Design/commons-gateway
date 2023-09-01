@@ -13,6 +13,7 @@ import oktaIcon from '/icon_okta.svg';
   const authenticated = isLoggedInAsAdmin() || await handleAdminLogin();
 
   if (authenticated) {
+    console.log( 'I am auth\'d and about to redirect' )
     window.location.assign('/');
   }
 
@@ -28,6 +29,7 @@ import oktaIcon from '/icon_okta.svg';
       {'Log In With Okta'}
     </Button>
   </div>
+  <a href="/login" style="margin-top: 1em;">Or choose a different method</a>
 </LoggedOutLayout>
 
 <style>

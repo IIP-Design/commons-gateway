@@ -1,0 +1,57 @@
+---
+import Button from '../components/Button.astro';
+import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
+
+import '../styles/form.scss';
+---
+
+<script>
+  import { deriveHash } from '../utils/hashing';
+  import { passTheSalt, submitHash } from '../utils/api';
+  import { showError } from '../utils/alert';
+
+  const submitBtn = document.getElementById('login-btn');
+  const nameInput = document.getElementById('name-input') as HTMLInputElement;
+  const passInput = document.getElementById('pass-input') as HTMLInputElement;
+
+  submitBtn?.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const name = nameInput.value;
+    const pass = passInput.value;
+
+    if (!name || !pass) {
+      if (!name && !pass) {
+        showError('Please input a username and password');
+      } else if (!name) {
+        showError('Please input a username');
+      } else {
+        showError('Please input a password');
+      }
+      return;
+    }
+
+    const salt = await passTheSalt(name);
+
+    if (salt) {
+      const localHash = await deriveHash(pass, salt);
+
+      submitHash('create', localHash, name);
+    }
+  });
+</script>
+
+<LoggedOutLayout title="External Partner Login">
+  <form>
+    <label>
+      Username
+      <input id="name-input" type="text" />
+    </label>
+    <label>
+      Password
+      <input id="pass-input" type="password" />
+    </label>
+  </form>
+  <Button id="login-btn" type="submit">Sign In</Button>
+  <a href="/login" style="margin-top: 1em;">Or choose a different method</a>
+</LoggedOutLayout>

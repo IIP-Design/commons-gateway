@@ -27,6 +27,7 @@ export const handleFederatedLogin = async () => {
     provider: import.meta.env.PUBLIC_COGNITO_OKTA_PROVIDER_NAME,
   } );
 
+  // Needed due to limitations of Cognito
   loginStatus.set( 'loggedIn' );
 }
 
@@ -35,6 +36,7 @@ export const handleFederatedLogin = async () => {
  * updates the current user store with the relevant data.
  */
 export const handleAdminLogin = async () => {
+  // Needed due to limitations of Cognito
   if( loginStatus.get() === 'loggedOut' ) {
     return false;
   }
@@ -44,7 +46,6 @@ export const handleAdminLogin = async () => {
 
   try {
     const user = await Auth.currentAuthenticatedUser( { bypassCache: true } );
-    const sess = await Auth.userSession( user );
   
     if ( user ) {
       const { payload: { email, exp } } = user?.signInUserSession?.idToken;
@@ -81,11 +82,10 @@ export const handlePartnerLogin = async ( email: string, password: string ) => {
   }
 }
   
-export const logout = async ( e: Event ) => {
-  e.preventDefault()
+export const logout = async () => {
   try {
-    // Admin signout
-    await Auth.signOut({ global: true });
+    // Admin signout, though this doesn't always work
+    await Auth.signOut();
 
     // Partner signout
     Cookie.remove( 'token' );

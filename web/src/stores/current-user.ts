@@ -16,6 +16,7 @@ const currentUser = persistentMap<Partial<ICurrentUser>>( STORAGE_KEY_PREFIX,
   {},
   { listen: false } ); // Do not sync across tabs
 
+// This is needed due to issues with Cognito logout: https://stackoverflow.com/questions/58154256/aws-cognito-how-to-force-select-account-when-signing-in-with-google
 export const loginStatus = persistentAtom<LoginStatus>( STORAGE_KEY_PREFIX, 'loggedOut' );
 
 /**

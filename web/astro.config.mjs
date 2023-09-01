@@ -9,4 +9,7 @@ export default defineConfig( {
       exclude: ['date-fns'],
     },
   },
+  redirects: {
+    '/admin': '/adminLogin'
+  }
 } );

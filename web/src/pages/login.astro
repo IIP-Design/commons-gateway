@@ -1,56 +1,37 @@
 ---
-import Button from '../components/Button.astro';
+import AnchorButton from '../components/AnchorButton.astro';
 import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
 
 import '../styles/form.scss';
 ---
 
 <script>
-  import { deriveHash } from '../utils/hashing';
-  import { passTheSalt, submitHash } from '../utils/api';
-  import { showError } from '../utils/alert';
+  import {
+    isLoggedIn,
+    isLoggedInAsAdmin,
+    isLoggedInAsExternalPartner,
+  } from '../utils/auth';
 
-  const submitBtn = document.getElementById('login-btn');
-  const nameInput = document.getElementById('name-input') as HTMLInputElement;
-  const passInput = document.getElementById('pass-input') as HTMLInputElement;
-
-  submitBtn?.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    const name = nameInput.value;
-    const pass = passInput.value;
-
-    if (!name || !pass) {
-      if (!name && !pass) {
-        showError('Please input a username and password');
-      } else if (!name) {
-        showError('Please input a username');
-      } else {
-        showError('Please input a password');
-      }
-      return;
-    }
-
-    const salt = await passTheSalt(name);
-
-    if (salt) {
-      const localHash = await deriveHash(pass, salt);
-
-      submitHash('create', localHash, name);
-    }
-  });
+  if( isLoggedInAsAdmin() ) {
+    window.location.assign( '/' );
+  } else if( isLoggedInAsExternalPartner() ) {
+    window.location.assign( '/invite' );
+  } else if( isLoggedIn() ) {
+    window.location.assign( '/upload' );
+  }
 </script>
 
-<LoggedOutLayout title="External Partner Login">
-  <form>
-    <label>
-      Username
-      <input id="name-input" type="text" />
-    </label>
-    <label>
-      Password
-      <input id="pass-input" type="password" />
-    </label>
-  </form>
-  <Button id="login-btn" type="submit">Sign In</Button>
+<LoggedOutLayout title="Content Commons Login">
+  <AnchorButton class="login-btn" href={"/adminLogin"}>Department of State Login</AnchorButton>
+  <AnchorButton class="login-btn" href={"/partnerLogin"}>External Partner Login</AnchorButton>
 </LoggedOutLayout>
+
+<style>
+  .login-btn {
+    padding: 1rem;
+    margin: 1em;
+    min-width: 20em;
+    text-align: center;
+    font-weight: bold;
+  }
+</style>

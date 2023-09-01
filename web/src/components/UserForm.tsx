@@ -11,6 +11,7 @@ import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 
 import '../styles/form.scss';
 import styles from '../styles/button.module.scss';
+import { userIsAdmin } from '../utils/auth';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
@@ -47,7 +48,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
   // Doing so outside of a useEffect hook causes a mismatch in values
   // between the statically rendered portion and the client.
   useEffect( () => {
-    setIsAdmin( currentUser.get().isAdmin === 'true' );
+    setIsAdmin( userIsAdmin() );
   }, [] );
 
   // Generate the teams list.
