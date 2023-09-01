@@ -93,8 +93,15 @@ func CheckForExistingUser(email string, table string) (bool, error) {
 
 	var user string
 
-	query := `SELECT email FROM $1 WHERE email = $2;`
-	err = pool.QueryRow(query, table, email).Scan(&user)
+	var query string
+
+	if table == "admins" {
+		query = "SELECT email FROM admins WHERE email = $1;"
+	} else if table == "guests" {
+		query = "SELECT email FROM guests WHERE email = $1;"
+	}
+
+	err = pool.QueryRow(query, email).Scan(&user)
 
 	if err != nil {
 		// Do not return an error if no results are found.
