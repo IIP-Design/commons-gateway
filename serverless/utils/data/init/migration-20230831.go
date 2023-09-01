@@ -106,49 +106,72 @@ func switchUploadsUserId(pool *sql.DB) error {
 	// Loop through the user_ids updating the uploads
 	for uploadsRows.Next() {
 		var uploadId string
-		var userId string
-		if err := uploadsRows.Scan(&uploadId, &userId); err != nil {
+		var oldId string
+		if err := uploadsRows.Scan(&uploadId, &oldId); err != nil {
 			logs.LogError(err, "Select Upload User Id Query Error")
 			return err
 		}
 
-		// Initialize a guid for the new all_users entry
-		guid := xid.New()
-
-		var userEmail string
-
 		// Check if user exists in the admins table
-		err := pool.QueryRow(`SELECT email FROM admins WHERE email = $1`, userId).Scan(&userEmail)
+		isAdmin, err := data.CheckForExistingUser(oldId, "admins")
 
-		if err == nil {
-			_, err = pool.Exec(
-				`UPDATE uploads SET user_id = $1, admin_id = $2 WHERE s3_id = $3;`,
-				guid,
-				userEmail,
-				uploadId,
-			)
+		if err == nil && isAdmin {
+			var userId string
 
-			return err
-		} else if err == sql.ErrNoRows {
-			// If not found in admin table, look in the guests table.
-			err := pool.QueryRow(`SELECT email FROM guests WHERE email = $1`, userId).Scan(&userEmail)
+			// Retrieve the new user id from the all_users table
+			err := pool.QueryRow(`SELECT user_id FROM all_users WHERE admin_id = $1`, oldId).Scan(&userId)
 
 			if err != nil {
-				logs.LogError(err, "Select Guest Email Query Error")
+				logs.LogError(err, "Select Admin's User Id Query Error")
 
 				return err
 			}
 
 			_, err = pool.Exec(
-				`UPDATE uploads SET user_id = $1, guest_id = $2 WHERE s3_id = $3;`,
-				guid,
-				userEmail,
+				`UPDATE uploads SET user_id = $1 WHERE s3_id = $2;`,
+				userId,
 				uploadId,
 			)
 
-			return err
+			if err != nil {
+				logs.LogError(err, "Update Upload User Id Query Error")
+
+				return err
+			}
+		} else if err == nil && !isAdmin {
+			var userId string
+
+			// If not found in admin table, look in the guests table.
+			isGuest, err := data.CheckForExistingUser(oldId, "guests")
+
+			if err != nil {
+				logs.LogError(err, "Check for Guest Query Error")
+
+				return err
+			} else if isGuest {
+				// Retrieve the new user id from the all_users table
+				err := pool.QueryRow(`SELECT user_id FROM all_users WHERE guest_id = $1`, oldId).Scan(&userId)
+
+				if err != nil {
+					logs.LogError(err, "Select Guest's User Id Query Error")
+
+					return err
+				}
+
+				_, err = pool.Exec(
+					`UPDATE uploads SET user_id = $1 WHERE s3_id = $2;`,
+					userId,
+					uploadId,
+				)
+
+				if err != nil {
+					logs.LogError(err, "Update Upload User Id Query Error")
+
+					return err
+				}
+			}
 		} else if err != nil {
-			logs.LogError(err, "Select Admin Email Query Error")
+			logs.LogError(err, "Check for Admin User Query Error")
 
 			return err
 		}
