@@ -4,31 +4,13 @@ const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
 type TActions = 'create' | 'confirm';
 type TMethods = 'GET' | 'POST';
 
-/** The values that can be sent to the server. */
-interface IFetchBody {
-  action?: TActions
-  active?: boolean
-  expiration?: string
-  hash?: string
-  team?: string
-  teamName?: string
-  username?: string
-  inviter?: string,
-  invitee?: {
-    email?: string,
-    givenName?: string,
-    familyName?: string,
-    team?: string,
-  },
-}
-
 /**
  * Helper function to consistently construct the API requests.
  * @param endpoint The API endpoint for the function in question (without a leading slash)
  * @param body The data to be sent to the API.
  * @param method The HTTP request method (if not provided defaults to POST).
  */
-export const buildQuery = async ( endpoint: string, body: IFetchBody | null, method?: TMethods ) => {
+export const buildQuery = async ( endpoint: string, body: Record<string, any> | null, method?: TMethods ) => {
   let opts = {
     headers: {
       'Content-Type': 'application/json',
@@ -43,9 +25,7 @@ export const buildQuery = async ( endpoint: string, body: IFetchBody | null, met
     };
   }
 
-  return (
-    fetch( `${API_ENDPOINT}/${endpoint}`, opts )
-  );
+  return fetch( `${API_ENDPOINT}/${endpoint}`, opts );
 };
 
 /**
