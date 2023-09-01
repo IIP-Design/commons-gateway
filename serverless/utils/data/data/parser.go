@@ -8,27 +8,29 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
-// RequestBodyOptions represents the possible properties on the body
-// JSON object sent to the serverless functions by the API Gateway.
-type RequestBodyOptions struct {
-	Action  string `json:"action"`
-	Active  bool   `json:"active"`
-	Email   string `json:"email"`
-	Expires string `json:"expiration"`
-	Hash    string `json:"hash"`
-	Invitee struct {
-		Email     string `json:"email"`
-		NameFirst string `json:"givenName"`
-		NameLast  string `json:"familyName"`
-		Team      string `json:"team"`
-	} `json:"invitee"`
-	Inviter   string `json:"inviter"`
+// UserBodyOptions represents the possible properties on the body
+// JSON object sent to the serverless functions by the API Gateway
+// for operations that update guest or admin users.
+type UserBodyOptions struct {
+	Email     string `json:"email"`
+	Expires   string `json:"expiration"`
 	NameFirst string `json:"givenName"`
 	NameLast  string `json:"familyName"`
 	Role      string `json:"role"`
 	TeamId    string `json:"team"`
 	TeamName  string `json:"teamName"`
-	Username  string `json:"username"`
+}
+
+// RequestBodyOptions represents the possible properties on the body
+// JSON object sent to the serverless functions by the API Gateway.
+type RequestBodyOptions struct {
+	UserBodyOptions
+	Action   string          `json:"action"`
+	Active   bool            `json:"active"`
+	Hash     string          `json:"hash"`
+	Invitee  UserBodyOptions `json:"invitee"`
+	Inviter  string          `json:"inviter"`
+	Username string          `json:"username"`
 }
 
 // User represents the properties required to record a user.
@@ -40,16 +42,19 @@ type User struct {
 	Team      string
 }
 
+// AdminUser extends the base User struct with unique admin properties.
 type AdminUser struct {
 	Active bool
 	User
 }
 
+// GuestUser extends the base User struct with unique guest properties.
 type GuestUser struct {
 	Expires string
 	User
 }
 
+// Team represents the properties required to record a team.
 type Team struct {
 	Id     string
 	Name   string
@@ -149,7 +154,7 @@ func ExtractInvite(body string) (Invite, error) {
 	guest := parsed.Invitee.Email
 	firstName := parsed.Invitee.NameFirst
 	lastName := parsed.Invitee.NameLast
-	team := parsed.Invitee.Team
+	team := parsed.Invitee.TeamId
 	expires := parsed.Expires
 
 	if err != nil {
