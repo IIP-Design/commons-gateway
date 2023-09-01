@@ -8,6 +8,7 @@
     "email": { "$ref": "#/$defs/user" },
     "givenName": { "$ref": "#/$defs/user" },
     "familyName": { "$ref": "#/$defs/user" },
+    "role": { "$ref": "#/$defs/user" },
     "team": { "$ref": "#/$defs/user" }
   },
   "required": ["email", "givenName", "familyName", "team"],
@@ -31,6 +32,10 @@
           "description": "The family (last) name of the user",
           "type": "string",
           "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": ["super admin", "admin"]
         },
         "team": {
           "type": "string",

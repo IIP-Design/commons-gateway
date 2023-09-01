@@ -38,7 +38,7 @@ func CreateAdmin(adminData data.User) error {
 
 	insertAdmin :=
 		`INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified )
-		 VALUES ($1, $2, $3, $4, $5, $6, $7);`
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 	_, err = pool.Exec(insertAdmin, adminData.Email, adminData.NameFirst, adminData.NameLast, adminData.Role, adminData.Team, true, currentTime, currentTime)
 
 	if err != nil {
