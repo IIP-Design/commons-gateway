@@ -42,10 +42,10 @@ func InitializeDatabase() error {
 		logs.LogError(err, "Table Creation Error - Uploads")
 	}
 
-	_, err = pool.Exec("ALTER TABLE uploads DROP CONSTRAINT uploads_user_id_fkey;")
+	_, err = pool.Exec(migrationsQuery)
 
 	if err != nil {
-		logs.LogError(err, "Table Update Error - Uploads")
+		logs.LogError(err, "Table Creation Error - Migrations")
 	}
 
 	return err
