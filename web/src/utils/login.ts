@@ -21,6 +21,7 @@ import { TActions, buildQuery, constructUrl } from './api';
 import { AMPLIFY_CONFIG } from './constants';
 import { derivePasswordHash } from './hashing';
 import { tokenExpiration } from './jwt';
+import { isLoggedInAsAdmin } from './auth';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Admin/DoS
@@ -93,6 +94,9 @@ export const handlePartnerLogin = async ( email: string, password: string ) => {
 
 export const logout = async () => {
   try {
+    // For UX
+    const isAdmin = isLoggedInAsAdmin();
+
     // Admin signout, though this doesn't always work
     await Auth.signOut();
 
@@ -102,7 +106,7 @@ export const logout = async () => {
     // Common signout
     clearCurrentUser();
     loginStatus.set( 'loggedOut' );
-    window.location.replace( '/' );
+    window.location.replace( isAdmin ? '/adminLogin' : '/partnerLogin' );
   } catch ( err ) {
     console.log( 'error signing out', err );
   }
