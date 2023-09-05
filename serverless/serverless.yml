@@ -52,6 +52,7 @@ resources:
   - ${file(./config/resources/vpc.yml)}
   - ${file(./config/resources/rds.yml)}
   - ${file(./config/resources/proxy.yml)}
+  - ${file(./config/resources/s3.yml)}
 
 # Defines how the functions are deployed. To reduce the functions
 # size for each Lambda, we package them independently. This requires
@@ -274,7 +275,7 @@ functions:
       patterns:
         - 'funcs/upload-presigned-url/dist/index.cjs'
     environment:
-      S3_UPLOAD_BUCKET: s3uploader-s3uploadbucket-8qfrclyi5f2f # TODO - Parameterize
+      S3_UPLOAD_BUCKET: commons-gateway-${opt:stage}-upload
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler

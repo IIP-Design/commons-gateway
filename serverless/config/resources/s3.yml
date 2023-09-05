@@ -1,0 +1,10 @@
+Resources:
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: commons-gateway-${opt:stage}-upload
+
+  CleanBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: commons-gateway-${opt:stage}-clean
