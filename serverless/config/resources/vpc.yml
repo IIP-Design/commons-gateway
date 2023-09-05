@@ -3,6 +3,9 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: ${self:custom.CIDR}
+      Tags:
+        - Key: Name
+          Value: commons-gateway-vpc-${opt:stage}
 
   SubnetA:
     Type: AWS::EC2::Subnet
@@ -10,6 +13,9 @@ Resources:
       VpcId: !Ref VPC
       AvailabilityZone: ${aws:region}a
       CidrBlock: 10.0.0.0/24
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-subnet-a
 
   SubnetB:
     Type: AWS::EC2::Subnet
@@ -17,22 +23,31 @@ Resources:
       VpcId: !Ref VPC
       AvailabilityZone: ${aws:region}b
       CidrBlock: 10.0.1.0/24
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-subnet-b
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref VPC
-      GroupName: commons-gateway-${opt:stage}-lambdas
-      GroupDescription: Commons Gateway Lambda functions security group
+      GroupName: commons-gateway-${opt:stage}-sg-lambdas
+      GroupDescription: Enables outgoing internet access for Lambdas within the VPC
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-lambdas
 
   RDSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref VPC
-      GroupName: commons-gateway-${opt:stage}-rds
-      GroupDescription: Commons Gateway RDS security group
+      GroupName: commons-gateway-${opt:stage}-sg-rds
+      GroupDescription: Grants access to the RDS instance used by the Commons Gateway
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 0
           ToPort: 65535
           CidrIp: ${self:custom.CIDR}
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-rds

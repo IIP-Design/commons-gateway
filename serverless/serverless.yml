@@ -10,7 +10,7 @@ plugins:
 params:
   default:
     deployment: dev
-    rollback: true
+    rollback: false
   prod:
     deployment: prod
     rollback: false
@@ -71,8 +71,7 @@ functions:
       - http:
           path: /admin/create
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admin-create'
@@ -85,8 +84,7 @@ functions:
       - http:
           path: /admin/get
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admin-get'
@@ -99,8 +97,7 @@ functions:
       - http:
           path: /admins
           method: get
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admins-get'
@@ -113,8 +110,7 @@ functions:
       - http:
           path: /guest/auth
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/guest-auth'
@@ -174,8 +170,7 @@ functions:
       - http:
           path: /guests
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/guests-get'
@@ -196,8 +191,7 @@ functions:
       - http:
           path: /team/create
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/team-create'
@@ -236,8 +230,7 @@ functions:
       - http:
           path: /creds/salt
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/creds-salt'
@@ -250,8 +243,7 @@ functions:
       - http:
           path: /creds/provision
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/creds-provision'
@@ -264,8 +256,7 @@ functions:
       - http:
           path: /upload
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/upload-metadata'
@@ -278,8 +269,7 @@ functions:
       - http:
           path: /upload
           method: get
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - 'funcs/upload-presigned-url/dist/index.cjs'
