@@ -1,17 +1,26 @@
+// ////////////////////////////////////////////////////////////////////////////
+// React Imports
+// ////////////////////////////////////////////////////////////////////////////
 import { useEffect, useState } from 'react';
 import type { FC, FormEvent } from 'react';
 
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
 import BackButton from './BackButton';
 
-import { buildQuery } from '../utils/api';
-import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
 import currentUser from '../stores/current-user';
 import { showError } from '../utils/alert';
+import { buildQuery } from '../utils/api';
+import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
+import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
 
+// ////////////////////////////////////////////////////////////////////////////
+// Styles and CSS
+// ////////////////////////////////////////////////////////////////////////////
 import '../styles/form.scss';
 import styles from '../styles/button.module.scss';
-import { userIsAdmin } from '../utils/auth';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
