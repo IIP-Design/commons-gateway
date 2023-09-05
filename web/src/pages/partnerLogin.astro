@@ -8,7 +8,7 @@ import '../styles/form.scss';
 <script>
   import { isLoggedInAsExternalPartner } from '../utils/auth';
   import { showError } from '../utils/alert';
-import { partnerLogin } from '../utils/login';
+  import { handlePartnerLogin } from '../utils/login';
 
   // Bypass authentication screen for authenticated users.
   const authenticated = isLoggedInAsExternalPartner();
@@ -38,7 +38,10 @@ import { partnerLogin } from '../utils/login';
       return;
     }
 
-    await partnerLogin( name, pass ) && window.location.assign('/upload');
+    const loggedIn = await handlePartnerLogin( name, pass );
+    if( loggedIn ) {
+      window.location.assign('/upload');
+    }
   });
 </script>
 

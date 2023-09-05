@@ -16,7 +16,6 @@ import {
   loginStatus,
   setCurrentUser,
 } from '../stores/current-user';
-import { showError } from './alert';
 import { TActions, buildQuery, constructUrl } from './api';
 import { AMPLIFY_CONFIG } from './constants';
 import { derivePasswordHash } from './hashing';
@@ -76,42 +75,6 @@ export const handleAdminLogin = async () => {
   return authenticated;
 };
 
-export const handlePartnerLogin = async ( email: string, password: string ) => {
-  const response = await buildQuery( 'partner/login', { email, password }, 'POST' );
-  const { data } = await response.json();
-
-  if ( data ) {
-    const { role, team, exp, token } = data;
-
-    Cookie.set( 'token', token );
-
-    // Add the required data from the id token to the current user store.
-    setCurrentUser( { email, team, role, exp } );
-  } else {
-    showError( 'Invalid username or password' );
-  }
-};
-
-export const logout = async () => {
-  try {
-    // For UX
-    const isAdmin = isLoggedInAsAdmin();
-
-    // Admin signout, though this doesn't always work
-    await Auth.signOut();
-
-    // Partner signout
-    Cookie.remove( 'token' );
-
-    // Common signout
-    clearCurrentUser();
-    loginStatus.set( 'loggedOut' );
-    window.location.replace( isAdmin ? '/adminLogin' : '/partnerLogin' );
-  } catch ( err ) {
-    console.log( 'error signing out', err );
-  }
-};
-
 // ////////////////////////////////////////////////////////////////////////////
 // Partner
 // ////////////////////////////////////////////////////////////////////////////
@@ -145,24 +108,28 @@ const submitUserPasswordHash = async (
   } );
 
   const { data } = await response.json();
-  if( data ) {
+
+  if ( data ) {
     const parsed = JSON.parse( data );
+
     return parsed.token ?? null;
   }
 
   return null;
 };
 
-export const partnerLogin = async ( username: string, password: string ) => {
+export const handlePartnerLogin = async ( username: string, password: string ) => {
   let authenticated = false;
 
   try {
     const salt = await getUserPasswordSalt( username );
-    if( !salt ) { return authenticated; }
+
+    if ( !salt ) { return authenticated; }
 
     const localHash = await derivePasswordHash( password, salt );
     const token = await submitUserPasswordHash( 'create', localHash, username );
-    if( !token ) { return authenticated; }
+
+    if ( !token ) { return authenticated; }
 
     const exp = tokenExpiration( token );
 
@@ -175,9 +142,33 @@ export const partnerLogin = async ( username: string, password: string ) => {
     setCurrentUser( { email: username, team, role, exp } );
     loginStatus.set( 'loggedIn' );
     authenticated = true;
-  } catch( err ) {
+  } catch ( err ) {
     console.log( err );
   }
 
   return authenticated;
-}
+};
+
+// ////////////////////////////////////////////////////////////////////////////
+// Common
+// ////////////////////////////////////////////////////////////////////////////
+
+export const logout = async () => {
+  try {
+    // For UX
+    const isAdmin = isLoggedInAsAdmin();
+
+    // Admin signout, though this doesn't always work
+    await Auth.signOut();
+
+    // Partner signout
+    Cookie.remove( 'token' );
+
+    // Common signout
+    clearCurrentUser();
+    loginStatus.set( 'loggedOut' );
+    window.location.replace( isAdmin ? '/adminLogin' : '/partnerLogin' );
+  } catch ( err ) {
+    console.log( 'error signing out', err );
+  }
+};

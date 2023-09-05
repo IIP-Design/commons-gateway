@@ -4,6 +4,8 @@ const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
 export type TActions = 'create' | 'confirm';
 export type TMethods = 'GET' | 'POST';
 
+export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}`;
+
 /**
  * Helper function to consistently construct the API requests.
  * @param endpoint The API endpoint for the function in question (without a leading slash)
@@ -28,5 +30,3 @@ export const buildQuery = async ( endpoint: string, body: Nullable<Record<string
 
   return fetch( constructUrl( endpoint ), opts );
 };
-
-export const constructUrl = ( endpoint: string ) => { return `${API_ENDPOINT}/${endpoint}`; }

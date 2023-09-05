@@ -11,8 +11,6 @@ export const NavBar = () => {
   const { pathname } = new URL(window.location.href);
   const currentPath = pathname.replaceAll('/', '');
 
-  console.log( userRole );
-
   const filteredRoutes = filterRoutes( userRole || 'guest' );
   
   return (
