@@ -16,7 +16,8 @@ import {
   loginStatus,
   setCurrentUser,
 } from '../stores/current-user';
-import { TActions, buildQuery, constructUrl } from './api';
+import { buildQuery, constructUrl } from './api';
+import type { TActions } from './api';
 import { AMPLIFY_CONFIG } from './constants';
 import { derivePasswordHash } from './hashing';
 import { tokenExpiration } from './jwt';
