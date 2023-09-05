@@ -26,19 +26,19 @@ export const isLoggedIn = ( additionalCheck?: boolean ) => !userIsExpired() && (
 export const userIsExternalPartner = () => {
   const { role } = currentUser.get();
 
-  return role === 'externalPartner';
+  return role === 'guest admin';
 };
 
 export const userIsAdmin = () => {
   const { role } = currentUser.get();
 
-  return role === 'superAdmin' || role === 'admin';
+  return role === 'super admin' || role === 'admin';
 };
 
 export const userIsSuperAdmin = () => {
   const { role } = currentUser.get();
 
-  return role === 'superAdmin';
+  return role === 'super admin';
 };
 
 export const isLoggedInAsSuperAdmin = () => isLoggedIn( userIsSuperAdmin() );
@@ -46,6 +46,8 @@ export const isLoggedInAsSuperAdmin = () => isLoggedIn( userIsSuperAdmin() );
 export const isLoggedInAsAdmin = () => isLoggedIn( userIsAdmin() );
 
 export const isLoggedInAsExternalPartner = () => isLoggedIn( userIsExternalPartner() );
+
+export const isLoggedInAsNotGuest = () => isLoggedIn( userIsAdmin() || userIsExternalPartner() );
 
 /**
  * Checks whether the current user is authenticated and if not,
@@ -62,3 +64,4 @@ const protectPage = ( protectionFn: () => boolean, redirect: string ) => () => {
 export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin' );
 export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin' );
 export const partnerOnlyPage = protectPage( isLoggedInAsAdmin, 'partnerLogin' );
+export const loggedInOnlyPage = protectPage( isLoggedIn, 'login' );

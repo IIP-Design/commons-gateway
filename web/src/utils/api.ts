@@ -1,8 +1,8 @@
 // The URL for the API Gateway.
 const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
 
-type TActions = 'create' | 'confirm';
-type TMethods = 'GET' | 'POST';
+export type TActions = 'create' | 'confirm';
+export type TMethods = 'GET' | 'POST';
 
 /**
  * Helper function to consistently construct the API requests.
@@ -11,7 +11,7 @@ type TMethods = 'GET' | 'POST';
  * @param method The HTTP request method (if not provided defaults to POST).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const buildQuery = async ( endpoint: string, body: Record<string, any> | null, method?: TMethods ) => {
+export const buildQuery = async ( endpoint: string, body: Nullable<Record<string, any>>, method?: TMethods ) => {
   let opts = {
     headers: {
       'Content-Type': 'application/json',
@@ -26,35 +26,7 @@ export const buildQuery = async ( endpoint: string, body: Record<string, any> | 
     };
   }
 
-  return fetch( `${API_ENDPOINT}/${endpoint}`, opts );
+  return fetch( constructUrl( endpoint ), opts );
 };
 
-/**
- * Retrieves the salt value used to hash the user's password.
- * @param username The name of the user to look up.
- * @returns The salt value (if the user exits).
- */
-export const passTheSalt = async ( username: string ) => {
-  const response = await buildQuery( 'creds/salt', { username } );
-  const { data } = await response.json();
-
-  return data;
-};
-
-/**
- * Send the locally generated password hash to the server to authenticate user and request access.
- * @param action Whether to initiate a authenticated session or confirm an existing session.
- * @param hash The locally generated password hash.
- * @param username The email of the user attempting to log in.
- */
-export const submitHash = async ( action: TActions, hash: string, username: string ) => {
-  const response = await buildQuery( 'guest/auth', {
-    action,
-    hash,
-    username,
-  } );
-
-  const res = await response.json();
-
-  console.log( res );
-};
+export const constructUrl = ( endpoint: string ) => { return `${API_ENDPOINT}/${endpoint}`; }

@@ -1,5 +1,7 @@
 declare module '*.scss';
 
+type Nullable<T> = T | null;
+
 interface ITeam {
   id: string
   name: string

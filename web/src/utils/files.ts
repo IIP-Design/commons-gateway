@@ -19,7 +19,7 @@ const MAX_FILE_SIZE = 100 * 1000 * 1000;
 // ////////////////////////////////////////////////////////////////////////////
 // Config
 // ////////////////////////////////////////////////////////////////////////////
-let fileToUpload: File|null = null;
+let fileToUpload: Nullable<File> = null;
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
@@ -50,7 +50,7 @@ const setUpload = ( file: File ) => {
   fileToUpload = file;
 };
 
-const handleFile = ( files?: FileList|null ) => {
+const handleFile = ( files?: Nullable<FileList> ) => {
   if ( files && files.length > 1 ) {
     showError( 'Only single-file uploads are currently supported' );
   } else if ( files ) {

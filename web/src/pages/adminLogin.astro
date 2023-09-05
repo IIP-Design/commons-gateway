@@ -13,7 +13,6 @@ import oktaIcon from '/icon_okta.svg';
   const authenticated = isLoggedInAsAdmin() || await handleAdminLogin();
 
   if (authenticated) {
-    console.log( 'I am auth\'d and about to redirect' )
     window.location.assign('/');
   }
 

@@ -6,9 +6,16 @@ import '../styles/form.scss';
 ---
 
 <script>
-  import { deriveHash } from '../utils/hashing';
-  import { passTheSalt, submitHash } from '../utils/api';
+  import { isLoggedInAsExternalPartner } from '../utils/auth';
   import { showError } from '../utils/alert';
+import { partnerLogin } from '../utils/login';
+
+  // Bypass authentication screen for authenticated users.
+  const authenticated = isLoggedInAsExternalPartner();
+
+  if (authenticated) {
+    window.location.assign('/upload');
+  }
 
   const submitBtn = document.getElementById('login-btn');
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
@@ -31,13 +38,7 @@ import '../styles/form.scss';
       return;
     }
 
-    const salt = await passTheSalt(name);
-
-    if (salt) {
-      const localHash = await deriveHash(pass, salt);
-
-      submitHash('create', localHash, name);
-    }
+    await partnerLogin( name, pass ) && window.location.assign('/upload');
   });
 </script>
 

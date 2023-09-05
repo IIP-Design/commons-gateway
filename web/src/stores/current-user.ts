@@ -1,7 +1,7 @@
 import { persistentAtom, persistentMap } from '@nanostores/persistent';
 
 export type LoginStatus = 'loggedIn' | 'loggedOut';
-export type UserRole = 'superAdmin' | 'admin' | 'externalPartner' | 'uploader';
+export type UserRole = 'super admin' | 'admin' | 'guest admin' | 'guest';
 
 export type ICurrentUser = {
   email: string;
