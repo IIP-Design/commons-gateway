@@ -57,6 +57,7 @@ resources:
   - ${file(./config/resources/rds.yml)}
   - ${file(./config/resources/proxy.yml)}
   - ${file(./config/resources/s3.yml)}
+  - ${file(./config/resources/cloudfront.yml)}
 
 # Defines how the functions are deployed. To reduce the functions
 # size for each Lambda, we package them independently. This requires

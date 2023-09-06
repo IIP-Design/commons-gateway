@@ -50,8 +50,8 @@ clean:
 	cd ../web; rm -rf dist;
 
 deploy: clean build
-	aws s3 cp ./web/dist s3://$(STAGE).gateway.gpalab.digital/ --recursive;\
-	cd serverless; npm run sls -- deploy --stage $(STAGE) --verbose;
+	cd serverless; npm run sls -- deploy --stage $(STAGE) --verbose;\
+	aws s3 cp ./web/dist s3://$(STAGE)-gateway.gpalab.digital/ --recursive;
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d

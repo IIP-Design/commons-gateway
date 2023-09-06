@@ -1,0 +1,106 @@
+Resources:
+  CloudFrontCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Comment: Determines the caching behavior for the commons gateway static site
+        DefaultTTL: 0
+        MaxTTL: 0
+        MinTTL: 0
+        Name: commons-gateway-${opt:stage}-web
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          EnableAcceptEncodingBrotli: false
+          EnableAcceptEncodingGzip: false
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: none
+
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Used by CloudFront to access the static site bucket.
+        Name: CommonsGatewayOriginAccessControl-${opt:stage}
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # Allows the use of index.html files in subdirectories
+  CloudFrontFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          
+          // Check whether the URI is missing a file name.
+          if (uri.endsWith('/')) {
+            request.uri += 'index.html';
+          } 
+          // Check whether the URI is missing a file extension.
+          else if (!uri.includes('.')) {
+            request.uri += '/index.html';
+          }
+
+          return request;
+        }
+      FunctionConfig:
+        Comment: Redirect to index files in subdirectories
+        Runtime: cloudfront-js-1.0
+      Name: commons-gateway-${opt:stage}-index-redirect
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: Points to the S3 bucket hosting the Commons Gateway static site.
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          CachePolicyId: !Ref CloudFrontCachePolicy
+          Compress: true
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt CloudFrontFunction.FunctionARN
+          TargetOriginId: commons-gateway-${opt:stage}
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
+            Id: commons-gateway-${opt:stage}
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+            OriginShield:
+              Enabled: false
+            S3OriginConfig:
+              OriginAccessIdentity: '' # Required when using Origin Access Control
+
+  CloudFrontS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Version: '2008-10-17'
+        Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Resource: arn:aws:s3:::commons-gateway-${opt:stage}-web/*
+            Sid: AllowCloudFrontServicePrincipal
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Join
+                  - ''
+                  - - arn:aws:cloudfront::${aws:accountId}:distribution/
+                    - !Ref CloudFrontDistribution
