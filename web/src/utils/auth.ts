@@ -2,7 +2,7 @@
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import type { UserRole } from '../stores/current-user';
+import type { TUserRole } from '../stores/current-user';
 import { buildQuery, constructUrl } from './api';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ const userIsExpired = () => {
   return Number.isNaN( expTime ) || expTime < Date.now() / 1000;
 };
 
-const makeAdminVerificationFn = ( roles: UserRole[] ): TPermissionVerificationFn => async ( redirect: string ) => {
+const makeAdminVerificationFn = ( roles: TUserRole[] ): TPermissionVerificationFn => async ( redirect: string ) => {
   const email = currentUser.get().email || '';
   let authenticated = false;
 

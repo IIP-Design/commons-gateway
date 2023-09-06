@@ -10,7 +10,7 @@ import type { FC, FormEvent } from 'react';
 import BackButton from './BackButton';
 
 import currentUser from '../stores/current-user';
-import type { UserRole } from '../stores/current-user';
+import type { TUserRole } from '../stores/current-user';
 import { showConfirm, showError } from '../utils/alert';
 import { buildQuery, constructUrl } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
@@ -32,7 +32,7 @@ interface IUserFormData {
   email: string;
   team: string;
   accessEndDate: string;
-  role: Nullable<UserRole[]>,
+  role: Nullable<TUserRole[]>,
 }
 
 interface IUserFormProps {

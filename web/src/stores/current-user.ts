@@ -1,12 +1,12 @@
 import { persistentAtom, persistentMap } from '@nanostores/persistent';
 
-export type LoginStatus = 'loggedIn' | 'loggedOut';
-export type UserRole = 'super admin' | 'admin' | 'guest admin' | 'guest';
+export type TLoginStatus = 'loggedIn' | 'loggedOut';
+export type TUserRole = 'super admin' | 'admin' | 'guest admin' | 'guest';
 
-export type ICurrentUser = {
+export interface ICurrentUser {
   email: string;
   team: string;
-  role: UserRole;
+  role: TUserRole;
   exp: number;
 }
 
@@ -17,7 +17,7 @@ const currentUser = persistentMap<Partial<ICurrentUser>>( STORAGE_KEY_PREFIX,
   { listen: false } ); // Do not sync across tabs
 
 // This is needed due to issues with Cognito logout: https://stackoverflow.com/questions/58154256/aws-cognito-how-to-force-select-account-when-signing-in-with-google
-export const loginStatus = persistentAtom<LoginStatus>( STORAGE_KEY_PREFIX, 'loggedOut' );
+export const loginStatus = persistentAtom<TLoginStatus>( STORAGE_KEY_PREFIX, 'loggedOut' );
 
 /**
  * Removes user data from local storage.

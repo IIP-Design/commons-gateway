@@ -1,9 +1,9 @@
-import type { UserRole } from "../stores/current-user";
+import type { TUserRole } from "../stores/current-user";
 
 interface IRoute {
   href: string;
   name?: string;
-  rolesAccessible?: UserRole[];
+  rolesAccessible?: TUserRole[];
 }
 
 export const routes: IRoute[] = [
@@ -21,6 +21,6 @@ export const routes: IRoute[] = [
 ]
 
 
-export const filterRoutes = ( userRole: UserRole ) => {
+export const filterRoutes = ( userRole: TUserRole ) => {
   return routes.filter( r => !r.rolesAccessible || r.rolesAccessible.includes( userRole ) );
 }
