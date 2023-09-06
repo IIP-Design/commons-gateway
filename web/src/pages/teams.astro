@@ -1,13 +1,13 @@
 ---
-import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import SuperAdminPageLayout from '../layouts/SuperAdminPageLayout.astro';
 import TableContainer from '../layouts/TableContainer.astro';
 import TeamTable from '../components/TeamTable';
 
 const title = 'Teams';
 ---
 
-<AdminPageLayout title={title}>
+<SuperAdminPageLayout title={title}>
   <TableContainer narrow title={title}>
     <TeamTable client:only />
   </TableContainer>
-</AdminPageLayout>
+</SuperAdminPageLayout>
