@@ -118,10 +118,27 @@ functions:
     package:
       patterns:
         - './bin/guest-auth'
+  guestDeactivate:
+    name: gateway-${opt:stage}-guest-deactivate
+    handler: bin/guest-deactivate
+    description: Deactivate a single guest user.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guest
+          method: delete
+          request:
+            parameters:
+              querystrings:
+                id: true
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/guest-deactivate'
   guestGet:
     name: gateway-${opt:stage}-guest-get
     handler: bin/guest-get
-    description: Retrieve a single guest users.
+    description: Retrieve a single guest user.
     runtime: go1.x
     events:
       - http:

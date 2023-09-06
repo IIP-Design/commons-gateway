@@ -1,117 +1,119 @@
-import { Amplify, Auth } from 'aws-amplify';
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
+import currentUser from '../stores/current-user';
+import type { TUserRole } from '../stores/current-user';
+import { buildQuery, constructUrl } from './api';
 
-import currentUser, { clearCurrentUser } from '../stores/current-user';
-import { buildQuery } from './api';
+// ////////////////////////////////////////////////////////////////////////////
+// Types and Interfaces
+// ////////////////////////////////////////////////////////////////////////////
+type TImmediateUxProtectionFn = () => boolean;
+type TPermissionVerificationFn = ( redirect: string ) => Promise<void>;
 
-interface IIdToken {
-  /** The user's email address. */
-  email: string
-  /** The expiration time for the token. */
-  exp: number
-  /** The issued-at time when Cognito issued the token. */
-  iat: number
-  /** The identity provider that issued the token. */
-  iss: string
-  /** A unique identifier (UUID), or subject, for the authenticated user. */
-  sub: string
-}
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+// ////////////////////////////////////////////////////////////////////////////
+const userIsExpired = () => {
+  const { exp } = currentUser.get();
 
-/**
- * Variables used to initialize AWS Amplify to work with our Cognito instance.
- */
-const awsConfig = {
-  aws_project_region: 'us-east-1',
-  aws_cognito_region: 'us-east-1',
-  aws_cognito_identity_pool_id: import.meta.env.PUBLIC_COGNITO_IDENTITY_POOL_ID,
-  aws_user_pools_id: import.meta.env.PUBLIC_COGNITO_USER_POOLS_ID,
-  aws_user_pools_web_client_id: import.meta.env.PUBLIC_COGNITO_USER_POOL_WEB_CLIENT_ID,
-  oauth: {
-    domain: import.meta.env.PUBLIC_COGNITO_CLIENT_DOMAIN,
-    scope: [
-      'email', 'openid', 'profile',
-    ],
-    redirectSignIn: import.meta.env.PUBLIC_COGNITO_CLIENT_REDIRECT_SIGNIN,
-    redirectSignOut: import.meta.env.PUBLIC_COGNITO_CLIENT_REDIRECT_SIGNOUT,
-    responseType: 'code',
-  },
-  federationTarget: 'COGNITO_USER_POOLS',
-};
-
-/**
- * Initializes AWS Amplify for use in authentication.
- */
-export const initializeAmplify = () => Amplify.configure( awsConfig );
-
-/**
- * Pulls out the relevant data from the Cognito id token.
- * This data is user to provide the app with the relevant user information.
- * @param payload
- */
-const setUserFromToken = async ( payload: IIdToken ) => {
-  // Set user name based on id token.
-  currentUser.setKey( 'email', payload.email );
-
-  // Retrieve additional data from the application.
-  const response = await buildQuery( 'admin/get', { username: payload.email }, 'POST' );
-  const { data } = await response.json();
-
-  if ( data ) {
-    const { active, team } = data;
-
-    currentUser.setKey( 'team', team );
-    currentUser.setKey( 'isAdmin', active );
-  } else {
-    currentUser.setKey( 'isAdmin', 'false' );
+  if ( !exp ) {
+    return true;
   }
+
+  const expTime = Number.parseInt( exp as unknown as string || '', 10 );
+
+  return Number.isNaN( expTime ) || expTime < Date.now() / 1000;
 };
 
-/**
- * Checks whether the current user is authenticated using Cognito/Okta.
- */
-export const isLoggedIn = async () => {
+const makeAdminVerificationFn = ( roles: TUserRole[] ): TPermissionVerificationFn => async ( redirect: string ) => {
+  const email = currentUser.get().email || '';
+  let authenticated = false;
+
   try {
-    const user = await Auth.currentAuthenticatedUser();
+    const response = await buildQuery( 'admin/get', { username: email }, 'POST' );
+    const { data } = await response.json();
+    const { role } = data;
 
-    if ( user ) {
-      // Add the required data from the id token to the current user store.
-      await setUserFromToken( user?.signInUserSession?.idToken?.payload );
+    authenticated = roles.includes( role );
 
-      return true;
-    }
-  } catch ( err ) {
-    console.log( err );
+    // eslint-disable-next-line no-empty
+  } catch ( err ) {}
+
+  if ( !authenticated ) {
+    window.location.assign( redirect );
   }
-
-  return false;
 };
 
-/**
- * Initiates a federated Okta login through Cognito. If successful,
- * updates the current user store with the relevant data.
- */
-export const handleAdminLogin = async () => {
-  Auth.federatedSignIn( {
-    provider: import.meta.env.PUBLIC_COGNITO_OKTA_PROVIDER_NAME,
-  } );
-};
+const partnerVerificationFn: TPermissionVerificationFn = async ( redirect: string ) => {
+  const email = currentUser.get().email || '';
+  let authenticated = false;
 
-export const signOut = () => {
   try {
-    Auth.signOut();
-    clearCurrentUser();
-  } catch ( err ) {
-    console.log( 'error signing out', err );
+    const response = await fetch( `${constructUrl( 'guest' )}?id=${email}` );
+    const { data } = await response.json();
+    const { role } = data;
+
+    authenticated = role === 'guest admin';
+
+  // eslint-disable-next-line no-empty
+  } catch ( err ) {}
+
+  if ( !authenticated ) {
+    window.location.assign( redirect );
   }
 };
+
+// ////////////////////////////////////////////////////////////////////////////
+// Implementation
+// ////////////////////////////////////////////////////////////////////////////
+export const isLoggedIn = ( additionalCheck?: boolean ) => !userIsExpired() && ( additionalCheck ?? true );
+
+export const userIsExternalPartner = () => {
+  const { role } = currentUser.get();
+
+  return role === 'guest admin';
+};
+
+export const userIsAdmin = () => {
+  const { role } = currentUser.get();
+
+  return role === 'super admin' || role === 'admin';
+};
+
+export const userIsSuperAdmin = () => {
+  const { role } = currentUser.get();
+
+  return role === 'super admin';
+};
+
+export const isLoggedInAsSuperAdmin = () => isLoggedIn( userIsSuperAdmin() );
+
+export const isLoggedInAsAdmin = () => isLoggedIn( userIsAdmin() );
+
+export const isLoggedInAsExternalPartner = () => isLoggedIn( userIsExternalPartner() );
 
 /**
  * Checks whether the current user is authenticated and if not,
- * redirects them to the admin login page.
+ * redirects them to the specified page.
  */
-export const adminOnlyPage = async () => {
-  const authenticated = await isLoggedIn();
+const protectPage = (
+  immediateUxProtectionFn: TImmediateUxProtectionFn,
+  redirect: string,
+  permissionVerificationFn?: TPermissionVerificationFn,
+) => () => {
+  // Returns quickly to redirect well-formed users
+  const authenticated = immediateUxProtectionFn();
 
   if ( !authenticated ) {
-    window.location.replace( '/admin' );
+    window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
   }
+
+  // Returns async to catch malicious users tryign to bypass normal login rules
+  permissionVerificationFn && permissionVerificationFn( redirect );
 };
+
+export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin', 'admin'] ) );
+export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin'] ) );
+export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partnerLogin', partnerVerificationFn );
+export const loggedInOnlyPage = protectPage( isLoggedIn, 'login' );

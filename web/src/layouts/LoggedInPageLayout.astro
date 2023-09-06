@@ -9,14 +9,14 @@ const { title } = Astro.props;
 ---
 
 <script>
-  import { adminOnlyPage, userIsAdmin } from '../utils/auth';
+  import { loggedInOnlyPage, isLoggedIn } from '../utils/auth';
 
-  adminOnlyPage();
+  loggedInOnlyPage();
 
   const content = document.getElementById('page-content');
   const error = document.getElementById('error');
 
-  if (content && userIsAdmin() ) {
+  if (content && isLoggedIn() ) {
     content.style.display = 'block';
   } else if (error) {
     error.style.display = 'block';
@@ -24,7 +24,7 @@ const { title } = Astro.props;
 </script>
 
 <BaseLayout title={title}>
-  <span id="error">Sorry, you do not have access to this page</span>
+  <span id="error">Please login access to this page</span>
   <div id="page-content">
     <slot />
   </div>

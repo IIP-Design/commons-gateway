@@ -4,15 +4,20 @@ import type { FC } from 'react';
 import style from './ToggleSwitch.module.scss';
 
 interface IToggleSwitchProps {
-  readonly id: string
-  readonly active: boolean
-  readonly callback: ( toggled: boolean, id: string ) => void
+  readonly id: string;
+  readonly active: boolean;
+  readonly toggleable?: boolean;
+  readonly callback: ( toggled: boolean, id: string ) => void;
 }
 
-const ToggleSwitch: FC<IToggleSwitchProps> = ( { id, active, callback } ) => {
+const ToggleSwitch: FC<IToggleSwitchProps> = ( { id, active, toggleable, callback } ) => {
   const [toggled, setToggled] = useState( active );
 
   const handleToggle = () => {
+    if( !(toggleable ?? true) ) {
+      return;
+    }
+
     const switched = !toggled;
 
     setToggled( switched );

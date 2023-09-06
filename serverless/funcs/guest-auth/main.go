@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
@@ -45,7 +46,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 
 // AuthenticationHandler manages guest user authentication by either generating a JSON web
 // token for new authentication sessions or verifying an existing token for an ongoing session.
-func AuthenticationHandler(ctx events.APIGatewayProxyRequestContext, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func AuthenticationHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	if err != nil {

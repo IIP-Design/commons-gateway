@@ -6,12 +6,11 @@ import oktaIcon from '/icon_okta.svg';
 ---
 
 <script>
-  import { handleAdminLogin, initializeAmplify, isLoggedIn } from '../utils/auth';
-
-  initializeAmplify();
+  import { isLoggedInAsAdmin } from '../utils/auth';
+  import { handleAdminLogin, handleFederatedLogin } from '../utils/login';
 
   // Bypass authentication screen for authenticated users.
-  const authenticated = await isLoggedIn();
+  const authenticated = isLoggedInAsAdmin() || await handleAdminLogin();
 
   if (authenticated) {
     window.location.assign('/');
@@ -19,7 +18,7 @@ import oktaIcon from '/icon_okta.svg';
 
   const loginBtn = document.getElementById('okta-btn');
 
-  loginBtn?.addEventListener('click', () => handleAdminLogin());
+  loginBtn?.addEventListener('click', handleFederatedLogin);
 </script>
 
 <LoggedOutLayout title="Admin Login">
@@ -29,6 +28,7 @@ import oktaIcon from '/icon_okta.svg';
       {'Log In With Okta'}
     </Button>
   </div>
+  <a href="/login" style="margin-top: 1em;">Or choose a different method</a>
 </LoggedOutLayout>
 
 <style>

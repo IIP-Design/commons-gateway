@@ -1,28 +1,49 @@
 ---
+import { routes } from '../utils/routes';
+
 const { pathname } = new URL(Astro.request.url);
 const currentPath = pathname.replaceAll('/', '');
+const capitalized = ( word: string ) => word.charAt(0).toUpperCase() + word.slice(1);
 ---
 
 <script>
-  import { signOut } from '../utils/auth';
+  import currentUser from '../stores/current-user';
+  import { logout } from '../utils/login';
+
+  const userRole = currentUser.get().role;
+
+  const navList = document.getElementsByClassName('filterable-link');
+  for( const entry of navList ) {
+    const roleData = entry.getAttribute( 'data-roles' );
+    if( roleData ) {
+      const roles = roleData.split( '-' );
+      if( userRole && !roles.includes( userRole ) ) {
+        (entry as HTMLElement).style.display = 'none';;
+      }
+    }
+  }
 
   const signOutBtn = document.getElementById('sign-out-hamburger');
-
-  signOutBtn?.addEventListener('click', () => signOut());
+  signOutBtn?.addEventListener('click', logout);
 </script>
 
 <nav class="nav-links">
-  <!-- TODO: Replace with filtered list from user role -->
-  <ul>
-    <li>
-      <a class={currentPath === '' ? 'active' : ''} href="/">Home</a>
-    </li>
-    <li>
-      <a class={currentPath === 'teams' ? 'active' : ''} href="/teams">Teams</a>
-    </li>
-    <li>
-      <a class={currentPath === 'upload' ? 'active' : ''} href="/upload/">Upload</a>
-    </li>
+  <ul id="nav-list">
+    {
+      routes.map( ( { href, name, rolesAccessible } ) => {
+        return (
+          <li>
+            <a
+              class={`${currentPath === href ? 'active' : ''} filterable-link`}
+              href={`/${href}`}
+              data-roles={rolesAccessible?.join('-') || ''}
+            >
+              {name || capitalized(href)}
+            </a>
+          </li>
+        )
+      } )
+    }
     <li class="sign-out">
       <button id="sign-out-hamburger" type="button">Sign Out</button>
     </li>

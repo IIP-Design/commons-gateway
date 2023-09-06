@@ -1,14 +1,25 @@
+// ////////////////////////////////////////////////////////////////////////////
+// React Imports
+// ////////////////////////////////////////////////////////////////////////////
 import { useEffect, useState } from 'react';
 import type { FC, FormEvent } from 'react';
 
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
 import BackButton from './BackButton';
 
-import { buildQuery } from '../utils/api';
-import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
 import currentUser from '../stores/current-user';
-import { showError } from '../utils/alert';
+import type { TUserRole } from '../stores/current-user';
+import { showConfirm, showError } from '../utils/alert';
+import { buildQuery, constructUrl } from '../utils/api';
+import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
+import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
 
+// ////////////////////////////////////////////////////////////////////////////
+// Styles and CSS
+// ////////////////////////////////////////////////////////////////////////////
 import '../styles/form.scss';
 import styles from '../styles/button.module.scss';
 
@@ -21,6 +32,7 @@ interface IUserFormData {
   email: string;
   team: string;
   accessEndDate: string;
+  role: Nullable<TUserRole[]>,
 }
 
 interface IUserFormProps {
@@ -33,6 +45,7 @@ const initialState = {
   email: '',
   team: '',
   accessEndDate: getYearMonthDay( new Date() ),
+  role: null,
 };
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -47,7 +60,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
   // Doing so outside of a useEffect hook causes a mismatch in values
   // between the statically rendered portion and the client.
   useEffect( () => {
-    setIsAdmin( currentUser.get().isAdmin === 'true' );
+    setIsAdmin( userIsAdmin() );
   }, [] );
 
   // Generate the teams list.
@@ -139,6 +152,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       givenName: userData.givenName,
       familyName: userData.familyName,
       team: userData.team || currentUser.get().team,
+      role: userData.role,
     };
 
     const invitation = {
@@ -157,6 +171,21 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
         .catch( err => console.error( err ) );
     }
   };
+
+  const handleDeactivate = async () => {
+    const { email, givenName, familyName } = userData;
+    const { isConfirmed } = await showConfirm( `Are you sure you want to deactiate ${givenName} ${familyName}?` );
+    if( !isConfirmed ) {
+      return;
+    }
+
+    const { ok } = await fetch( `${constructUrl( 'guest' )}?id=${email}`, { method: 'DELETE' } );
+    if( !ok ) {
+      showError( 'Unable to deactivate user' );
+    } else {
+      window.location.assign( '/' );
+    }
+  }
 
   return (
     <form onSubmit={ handleSubmit }>
@@ -223,12 +252,24 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       </div>
       <div style={ { textAlign: 'center' } }>
         <button
-          className={ styles.btn }
-          id="login-btn"
+          className={ `${styles.btn} ${styles["spaced-btn"]}` }
+          id="update-btn"
           type="submit"
         >
           { user ? 'Update User' : 'Invite User' }
         </button>
+        {
+          user ?
+            <button
+              className={ `${styles["btn-light"]} ${styles["spaced-btn"]}` }
+              id="deactivate-btn"
+              type="button"
+              onClick={handleDeactivate}
+            >
+              Deactivate User
+            </button>
+            : null
+        }
         <BackButton showConfirmDialog />
       </div>
     </form>

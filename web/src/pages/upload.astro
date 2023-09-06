@@ -1,7 +1,7 @@
 ---
 import Button from '../components/Button.astro';
 import File from '../components/File.astro';
-import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import LoggedInPageLayout from '../layouts/LoggedInPageLayout.astro';
 import PageContainer from '../layouts/PageContainer.astro';
 
 const title = 'Submit Files';
@@ -27,7 +27,7 @@ const title = 'Submit Files';
   submitButton?.addEventListener('click', submitHandler);
 </script>
 
-<AdminPageLayout title={title}>
+<LoggedInPageLayout title={title}>
   <PageContainer title={title}>
     <p class="section-header"><strong>Upload video or photo files <span>*</span></strong></p>
     <div class="drop-zone" id="drop-zone">
@@ -38,10 +38,10 @@ const title = 'Submit Files';
 
     <p class="section-header"><strong>Description <span>*</span></strong></p>
     <p>Include a point of contact email in case questions arise.</p>
-    <textarea id="description-text"></textarea>
+    <textarea id="description-text" aria-label="Enter uploaded media metadata"></textarea>
     <Button id="upload-files-btn" type="submit">Submit</Button>
   </PageContainer>
-</AdminPageLayout>
+</LoggedInPageLayout>
 
 <style>
   p,

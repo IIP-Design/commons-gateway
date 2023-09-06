@@ -9,6 +9,7 @@ import { showError } from '../utils/alert';
 
 import style from '../styles/table.module.scss';
 import btnStyle from '../styles/button.module.scss';
+import { userIsSuperAdmin } from '../utils/auth';
 
 const TeamTable: FC = () => {
   // Set the high and low ends of the view toggle.
@@ -24,6 +25,8 @@ const TeamTable: FC = () => {
   // State used when add/editing a team.
   const [editing, setEditing] = useState( '' );
   const [newName, setNewName] = useState( '' );
+
+  const [canEdit] = useState( userIsSuperAdmin() );
 
   useEffect( () => {
     // Retrieve the full list of teams from the API.
@@ -162,13 +165,15 @@ const TeamTable: FC = () => {
 
   return (
     <div className={ style.container }>
-      <button
-        className={ `${style['add-btn']} ${btnStyle.btn}` }
-        type="button"
-        onClick={ addNewTeam }
-      >
-        + New Team
-      </button>
+      { canEdit &&
+        <button
+          className={ `${style['add-btn']} ${btnStyle.btn}` }
+          type="button"
+          onClick={ addNewTeam }
+        >
+          + New Team
+        </button>
+      }
       <div>
         <div className={ style.controls }>
           <span>{ renderCountWidget( teamCount, viewCount, viewOffset ) }</span>
@@ -205,16 +210,19 @@ const TeamTable: FC = () => {
           <tbody>
             { teamList && ( teamList.map( team => (
               <tr key={ team.id }>
-                <td>
-                  { editing === team.id && (
-                    <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } />
-                  ) }
-                  { editing !== team.id && (
-                    <button className={ style['pagination-btn'] } disabled={ editing !== '' } style={ { textAlign: 'left' } } type="button" onClick={ () => editTeam( team.id, team.name ) }>
-                      { team.name }
-                    </button>
-                  ) }
-                </td>
+                { canEdit ?
+                  <td>
+                    { editing === team.id && (
+                      <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } aria-label="Team Name" />
+                    ) }
+                    { editing !== team.id && (
+                      <button className={ style['pagination-btn'] } disabled={ editing !== '' } style={ { textAlign: 'left' } } type="button" onClick={ () => editTeam( team.id, team.name ) }>
+                        { team.name }
+                      </button>
+                    ) }
+                  </td>
+                  : <td>{ team.name }</td>
+                }
                 <td>
                   { editing === team.id && (
                     <div className={ btnStyle['btn-pair'] }>
@@ -223,7 +231,7 @@ const TeamTable: FC = () => {
                     </div>
                   ) }
                   { editing !== team.id && (
-                    <ToggleSwitch active={ team.active } callback={ handleStatusToggle } id={ team.id } />
+                    <ToggleSwitch active={ team.active } callback={handleStatusToggle} toggleable={canEdit} id={ team.id } />
                   ) }
                 </td>
               </tr>

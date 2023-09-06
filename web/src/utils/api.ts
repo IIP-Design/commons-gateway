@@ -1,26 +1,20 @@
 // The URL for the API Gateway.
 const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
 
-type TActions = 'create' | 'confirm';
-type TMethods = 'GET' | 'POST';
+// ////////////////////////////////////////////////////////////////////////////
+// Types and Interfaces
+// ////////////////////////////////////////////////////////////////////////////
+export type TActions = 'create' | 'confirm';
+export type TMethods = 'GET' | 'POST';
 
-/** The values that can be sent to the server. */
-interface IFetchBody {
-  action?: TActions
-  active?: boolean
-  expiration?: string
-  hash?: string
-  team?: string
-  teamName?: string
-  username?: string
-  inviter?: string,
-  invitee?: {
-    email?: string,
-    givenName?: string,
-    familyName?: string,
-    team?: string,
-  },
-}
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+// ////////////////////////////////////////////////////////////////////////////
+export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}`;
+
+// ////////////////////////////////////////////////////////////////////////////
+// API Functions
+// ////////////////////////////////////////////////////////////////////////////
 
 /**
  * Helper function to consistently construct the API requests.
@@ -28,7 +22,8 @@ interface IFetchBody {
  * @param body The data to be sent to the API.
  * @param method The HTTP request method (if not provided defaults to POST).
  */
-export const buildQuery = async ( endpoint: string, body: IFetchBody | null, method?: TMethods ) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const buildQuery = async ( endpoint: string, body: Nullable<Record<string, any>>, method?: TMethods ) => {
   let opts = {
     headers: {
       'Content-Type': 'application/json',
@@ -43,37 +38,5 @@ export const buildQuery = async ( endpoint: string, body: IFetchBody | null, met
     };
   }
 
-  return (
-    fetch( `${API_ENDPOINT}/${endpoint}`, opts )
-  );
-};
-
-/**
- * Retrieves the salt value used to hash the user's password.
- * @param username The name of the user to look up.
- * @returns The salt value (if the user exits).
- */
-export const passTheSalt = async ( username: string ) => {
-  const response = await buildQuery( 'creds/salt', { username } );
-  const { data } = await response.json();
-
-  return data;
-};
-
-/**
- * Send the locally generated password hash to the server to authenticate user and request access.
- * @param action Whether to initiate a authenticated session or confirm an existing session.
- * @param hash The locally generated password hash.
- * @param username The email of the user attempting to log in.
- */
-export const submitHash = async ( action: TActions, hash: string, username: string ) => {
-  const response = await buildQuery( 'guest/auth', {
-    action,
-    hash,
-    username,
-  } );
-
-  const res = await response.json();
-
-  console.log( res );
+  return fetch( constructUrl( endpoint ), opts );
 };

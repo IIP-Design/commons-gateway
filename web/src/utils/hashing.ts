@@ -21,7 +21,7 @@ const generateKey = ( password: string ) => {
  * @param salt A random salt value to add to the hash.
  * @returns The hashed password and salt combination.
  */
-export const deriveHash = async ( password: string, salt: string ) => {
+export const derivePasswordHash = async ( password: string, salt: string ) => {
   const enc = new TextEncoder();
 
   const keyMaterial = await generateKey( password );

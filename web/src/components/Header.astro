@@ -11,13 +11,11 @@ const { centered } = Astro.props;
 ---
 
 <script>
-  import { signOut } from '../utils/auth';
+  import { logout } from '../utils/login';
 
   const signOutBtn = document.getElementById('sign-out');
 
-  signOutBtn?.addEventListener('click', () => {
-    signOut();
-  });
+  signOutBtn?.addEventListener('click', logout);
 </script>
 
 <header>
