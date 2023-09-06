@@ -6,6 +6,7 @@ import currentUser from '../stores/current-user';
 import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { selectSlice } from '../utils/arrays';
+import { userIsSuperAdmin } from '../utils/auth';
 import { renderCountWidget, setIntermediatePagination } from '../utils/pagination';
 
 import style from '../styles/table.module.scss';
@@ -22,7 +23,7 @@ const UserTable: FC = () => {
   const [teams, setTeams] = useState( [] );
 
   useEffect( () => {
-    const body = currentUser.get().isAdmin === 'true' ? {} : { team: currentUser.get().team };
+    const body = userIsSuperAdmin() ? {} : { team: currentUser.get().team };
 
     const getUsers = async () => {
       const response = await buildQuery( 'guests', body );
@@ -121,7 +122,7 @@ const UserTable: FC = () => {
             { userList && ( userList.map( user => (
               <tr key={ user.email }>
                 <td>
-                  <a href={ `/user?id=${user.email}` } style={ { padding: '0.3rem' } }>
+                  <a href={ `/editUser?id=${user.email}` } style={ { padding: '0.3rem' } }>
                     { `${user.givenName} ${user.familyName}` }
                   </a>
                 </td>
