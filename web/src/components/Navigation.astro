@@ -16,7 +16,7 @@ const capitalized = ( word: string ) => word.charAt(0).toUpperCase() + word.slic
   for( const entry of navList ) {
     const roleData = entry.getAttribute( 'data-roles' );
     if( roleData ) {
-      const roles = roleData.split( ' ' );
+      const roles = roleData.split( '-' );
       if( userRole && !roles.includes( userRole ) ) {
         (entry as HTMLElement).style.display = 'none';;
       }
@@ -36,7 +36,7 @@ const capitalized = ( word: string ) => word.charAt(0).toUpperCase() + word.slic
             <a
               class={`${currentPath === href ? 'active' : ''} filterable-link`}
               href={`/${href}`}
-              data-roles={rolesAccessible?.join(' ') || ''}
+              data-roles={rolesAccessible?.join('-') || ''}
             >
               {name || capitalized(href)}
             </a>

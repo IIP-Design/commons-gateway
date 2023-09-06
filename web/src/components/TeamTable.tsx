@@ -213,7 +213,7 @@ const TeamTable: FC = () => {
                 { canEdit ?
                   <td>
                     { editing === team.id && (
-                      <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } />
+                      <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } aria-label="Team Name" />
                     ) }
                     { editing !== team.id && (
                       <button className={ style['pagination-btn'] } disabled={ editing !== '' } style={ { textAlign: 'left' } } type="button" onClick={ () => editTeam( team.id, team.name ) }>

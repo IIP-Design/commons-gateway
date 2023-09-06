@@ -113,7 +113,7 @@ const protectPage = (
   permissionVerificationFn && permissionVerificationFn( redirect );
 };
 
-export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['admin'] ) );
+export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin'] ) );
 export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['admin', 'super admin'] ) );
 export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partnerLogin', partnerVerificationFn );
 export const loggedInOnlyPage = protectPage( isLoggedIn, 'login' );
