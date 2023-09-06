@@ -10,10 +10,11 @@ export const routes: IRoute[] = [
   {
     href: '',
     name: 'Home',
+    rolesAccessible: [ 'admin', 'super admin' ]
   },
   {
     href: 'teams',
-    rolesAccessible: [ 'admin', 'super admin' ],
+    rolesAccessible: [ 'super admin' ],
   },
   {
     href: 'upload',

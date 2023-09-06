@@ -10,7 +10,7 @@ const { class: classes, id, promptText, buttonText } = Astro.props;
 ---
 
 <div style="display: inline;">
-    {promptText}
+    <label for={id}>{promptText}</label>
     <input
         class:list={[classes]}
         id={id || ''}
