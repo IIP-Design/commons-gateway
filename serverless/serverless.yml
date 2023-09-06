@@ -10,7 +10,7 @@ plugins:
 params:
   default:
     deployment: dev
-    rollback: true
+    rollback: false
   prod:
     deployment: prod
     rollback: false
@@ -23,8 +23,12 @@ provider:
       name: CommonsGatewayLambdaRole-${opt:stage}
       statements:
         - Effect: Allow
-          Action: 'rds-db:connect'
-          Resource: !GetAtt RDSProxy.DBProxyArn
+          Action: rds-db:connect
+          Resource: !Join
+            - ''
+            - - 'arn:aws:rds-db:${aws:region}:${aws:accountId}:dbuser:'
+              - !Select [6, !Split [':', !GetAtt RDSProxy.DBProxyArn]]
+              - /*
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
@@ -52,6 +56,8 @@ resources:
   - ${file(./config/resources/vpc.yml)}
   - ${file(./config/resources/rds.yml)}
   - ${file(./config/resources/proxy.yml)}
+  - ${file(./config/resources/s3.yml)}
+  - ${file(./config/resources/cloudfront.yml)}
 
 # Defines how the functions are deployed. To reduce the functions
 # size for each Lambda, we package them independently. This requires
@@ -71,8 +77,7 @@ functions:
       - http:
           path: /admin/create
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admin-create'
@@ -85,8 +90,7 @@ functions:
       - http:
           path: /admin/get
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admin-get'
@@ -99,8 +103,7 @@ functions:
       - http:
           path: /admins
           method: get
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admins-get'
@@ -113,8 +116,7 @@ functions:
       - http:
           path: /guest/auth
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/guest-auth'
@@ -174,8 +176,7 @@ functions:
       - http:
           path: /guests
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/guests-get'
@@ -196,8 +197,7 @@ functions:
       - http:
           path: /team/create
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/team-create'
@@ -236,8 +236,7 @@ functions:
       - http:
           path: /creds/salt
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/creds-salt'
@@ -250,8 +249,7 @@ functions:
       - http:
           path: /creds/provision
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/creds-provision'
@@ -264,8 +262,7 @@ functions:
       - http:
           path: /upload
           method: post
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/upload-metadata'
@@ -278,13 +275,12 @@ functions:
       - http:
           path: /upload
           method: get
-          cors:
-            origin: ${file(./config/${param:deployment}.json):allowedOrigins}
+          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - 'funcs/upload-presigned-url/dist/index.cjs'
     environment:
-      S3_UPLOAD_BUCKET: s3uploader-s3uploadbucket-8qfrclyi5f2f # TODO - Parameterize
+      S3_UPLOAD_BUCKET: commons-gateway-${opt:stage}-upload
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler

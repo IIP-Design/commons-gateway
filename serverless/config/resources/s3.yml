@@ -1,0 +1,21 @@
+Resources:
+  # Target bucket for user uploads - scanned by ClamAV.
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: commons-gateway-${opt:stage}-upload
+
+  # Bucket where successfully scanned files end up.
+  CleanBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: commons-gateway-${opt:stage}-clean
+
+  # Bucket from which static site is served.
+  StaticSiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: commons-gateway-${opt:stage}-web
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
