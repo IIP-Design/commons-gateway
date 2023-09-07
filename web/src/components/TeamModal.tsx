@@ -1,22 +1,45 @@
+// ////////////////////////////////////////////////////////////////////////////
+// React Imports
+// ////////////////////////////////////////////////////////////////////////////
 import { useState } from 'react';
 import type{ FC } from 'react';
 
+// ////////////////////////////////////////////////////////////////////////////
+// 3PP Imports
+// ////////////////////////////////////////////////////////////////////////////
 import Modal from 'react-modal';
+
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
 import { buildQuery } from '../utils/api';
 import { showError } from '../utils/alert';
 import ToggleSwitch from './ToggleSwitch/ToggleSwitch';
 
-import style from '../styles/table.module.scss';
+// ////////////////////////////////////////////////////////////////////////////
+// Styles and CSS
+// ////////////////////////////////////////////////////////////////////////////
+import 'bootstrap/dist/css/bootstrap.css';
+
 import btnStyle from '../styles/button.module.scss';
 
+// ////////////////////////////////////////////////////////////////////////////
+// Interfaces and Types
+// ////////////////////////////////////////////////////////////////////////////
 interface ITeamModalProps {
   team?: ITeam;
   setTeams: React.Dispatch<React.SetStateAction<ITeam[]>>;
   anchor: string | JSX.Element;
 }
 
+// ////////////////////////////////////////////////////////////////////////////
+// Config
+// ////////////////////////////////////////////////////////////////////////////
 Modal.setAppElement( document.getElementById('root') as HTMLElement);
 
+// ////////////////////////////////////////////////////////////////////////////
+// Implementation
+// ////////////////////////////////////////////////////////////////////////////
 export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITeamModalProps ) => {
   // Team Setup
   const [ localTeam, setTeam ] = useState<Partial<ITeam>>( team || { active: true } );
@@ -33,6 +56,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
     setTeam( { ...localTeam, [key]: value } );
   };
 
+  // Update Team
   const handleSubmit = async () => {
     const { name, id, active } = localTeam;
     if( !name ) {
@@ -71,6 +95,21 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
     }
   }
 
+  // Styles
+  const modalStyle = {
+    content: {
+      height: "fit-content",
+      width: "fit-content",
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px",
+    },
+  };
+
   return (
     <>
       <a onClick={openModal}>{anchor}</a>
@@ -78,26 +117,42 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel="Example Modal"
+        style={modalStyle}
       >
-        <h1>{ localTeam.id ? `Update Team ${localTeam.name}` : "Add a new Team" }</h1>
+        <h1>{ localTeam.id ? `Update ${localTeam.name}` : "Add a New Team" }</h1>
+        <label className="d-block mt-2">Team Name</label>
         <input
+          className="d-block"
           style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } }
           type="text"
           value={ localTeam.name || '' }
           onChange={ e => handleUpdate( 'name', e.target.value ) }
           aria-label="Team Name"
         />
-        { localTeam.id && <ToggleSwitch
-          active={ localTeam.active ?? false }
-          callback={ e => handleUpdate( 'active', e ) }
-          id={ localTeam.id }
-        /> }
-        <button
-          className={ `${style['add-btn']} ${btnStyle.btn}` }
-          onClick={closeModal}
-        >
-          Back
-        </button>
+        {
+          localTeam.id &&
+            <div className="d-block my-2">
+              <ToggleSwitch
+                active={ localTeam.active ?? false }
+                callback={ e => handleUpdate( 'active', e ) }
+                id={ localTeam.id }
+              />
+            </div>
+        }
+        <div className="mt-2">
+          <button
+            className={ `${btnStyle.btn} ${btnStyle['spaced-btn']}` }
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
+          <button
+            className={ `${btnStyle.btn} ${btnStyle['spaced-btn']} ${btnStyle['back-btn']} ` }
+            onClick={closeModal}
+          >
+            Cancel
+          </button>
+        </div>
       </Modal>
     </>
   );
