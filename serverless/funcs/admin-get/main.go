@@ -14,18 +14,17 @@ import (
 
 // GetAdminHandler handles the request to retrieve a single admin user based on email address.
 func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	parsed, err := data.ParseBodyData(event.Body)
+	username := event.QueryStringParameters["username"]
 
-	if err != nil {
-		return msgs.SendServerError(err)
+	if username == "" {
+		return msgs.SendServerError(errors.New("user name not provided"))
 	}
 
-	username := parsed.Username
+	// Ensure the user exists doesn't already have access.
+	exists, err := data.CheckForExistingUser(username, "admins")
 
-	active, err := admins.CheckForActiveAdmin(username)
-
-	if err != nil || !active {
-		return msgs.SendServerError(errors.New("user not and active admin"))
+	if err != nil || !exists {
+		return msgs.SendServerError(errors.New("user is not an admin"))
 	}
 
 	admin, err := admins.RetrieveAdmin(username)

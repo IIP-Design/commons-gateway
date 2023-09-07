@@ -84,12 +84,12 @@ functions:
   adminGet:
     name: gateway-${opt:stage}-admin-get
     handler: bin/admin-get
-    description: Retrieve an individual admin users.
+    description: Retrieve an individual admin user.
     runtime: go1.x
     events:
       - http:
-          path: /admin/get
-          method: post
+          path: /admin
+          method: get
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
