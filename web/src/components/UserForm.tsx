@@ -174,18 +174,20 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
 
   const handleDeactivate = async () => {
     const { email, givenName, familyName } = userData;
-    const { isConfirmed } = await showConfirm( `Are you sure you want to deactiate ${givenName} ${familyName}?` );
-    if( !isConfirmed ) {
+    const { isConfirmed } = await showConfirm( `Are you sure you want to deactivate ${givenName} ${familyName}?` );
+
+    if ( !isConfirmed ) {
       return;
     }
 
     const { ok } = await fetch( `${constructUrl( 'guest' )}?id=${email}`, { method: 'DELETE' } );
-    if( !ok ) {
+
+    if ( !ok ) {
       showError( 'Unable to deactivate user' );
     } else {
       window.location.assign( '/' );
     }
-  }
+  };
 
   return (
     <form onSubmit={ handleSubmit }>
@@ -252,22 +254,24 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       </div>
       <div style={ { textAlign: 'center' } }>
         <button
-          className={ `${styles.btn} ${styles["spaced-btn"]}` }
+          className={ `${styles.btn} ${styles['spaced-btn']}` }
           id="update-btn"
           type="submit"
         >
           { user ? 'Update User' : 'Invite User' }
         </button>
         {
-          user ?
-            <button
-              className={ `${styles["btn-light"]} ${styles["spaced-btn"]}` }
-              id="deactivate-btn"
-              type="button"
-              onClick={handleDeactivate}
-            >
-              Deactivate User
-            </button>
+          user
+            ? (
+              <button
+                className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
+                id="deactivate-btn"
+                type="button"
+                onClick={ handleDeactivate }
+              >
+                Deactivate User
+              </button>
+            )
             : null
         }
         <BackButton showConfirmDialog />
