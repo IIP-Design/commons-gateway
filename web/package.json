@@ -28,12 +28,14 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0",
+    "react-modal": "^3.16.1",
     "sass": "^1.65.1",
     "sweetalert2": "^11.7.27"
   },
   "devDependencies": {
     "@gpa-lab/eslint-config": "^1.6.1",
     "@types/js-cookie": "^3.0.3",
+    "@types/react-modal": "^3.16.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "eslint": "^8.47.0",

@@ -214,7 +214,7 @@ export const Table = <DataType,>({ data, columns, additionalTableClasses }: ITab
   });
 
   const tableClasses = (additionalTableClasses || []).map(c => style[c]).filter(Boolean).join(' ');
-  console.log(tableClasses);
+
   return (
     <div className={style.container}>
       <table className={`${style.table} ${tableClasses}`}>

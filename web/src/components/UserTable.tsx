@@ -7,6 +7,7 @@ import type { FC } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
+import type { ColumnDef } from '@tanstack/react-table';
 import { LiaUserEditSolid } from 'react-icons/lia';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -18,6 +19,7 @@ import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
 import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
+import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -25,8 +27,6 @@ import { getTeamName } from '../utils/team';
 import 'bootstrap/dist/css/bootstrap.css';
 
 import style from '../styles/table.module.scss';
-import type { ColumnDef } from '@tanstack/react-table';
-import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces

@@ -10,6 +10,7 @@ import { showError } from '../utils/alert';
 import style from '../styles/table.module.scss';
 import btnStyle from '../styles/button.module.scss';
 import { userIsSuperAdmin } from '../utils/auth';
+import { TeamModal } from './TeamModal';
 
 const TeamTable: FC = () => {
   // Set the high and low ends of the view toggle.
@@ -20,7 +21,7 @@ const TeamTable: FC = () => {
   const [viewCount, setViewCount] = useState( LOW_VIEW );
   const [viewOffset, setViewOffset] = useState( 0 );
   // State of the full team list.
-  const [teamList, setTeamList] = useState( selectSlice( [], viewCount, viewOffset ) );
+  const [teamList, setTeamList] = useState<ITeam[]>( selectSlice( [], viewCount, viewOffset ) );
   const [teamCount, setTeamCount] = useState( teamList.length );
   // State used when add/editing a team.
   const [editing, setEditing] = useState( '' );
@@ -35,6 +36,7 @@ const TeamTable: FC = () => {
       const { data } = await response.json();
 
       if ( data ) {
+        console.log( data )
         setTeamList( selectSlice( data, viewCount, viewOffset ) );
         setTeamCount( data.length );
       }
@@ -165,15 +167,17 @@ const TeamTable: FC = () => {
 
   return (
     <div className={ style.container }>
-      { canEdit && (
-        <button
-          className={ `${style['add-btn']} ${btnStyle.btn}` }
-          type="button"
-          onClick={ addNewTeam }
-        >
-          + New Team
-        </button>
-      ) }
+      <TeamModal
+        anchor={
+          <button
+            className={ `${style['add-btn']} ${btnStyle.btn}` }
+            type="button"
+          >
+            + New Team
+          </button>
+        }
+        setTeams={setTeamList}
+      />
       <div>
         <div className={ style.controls }>
           <span>{ renderCountWidget( teamCount, viewCount, viewOffset ) }</span>
