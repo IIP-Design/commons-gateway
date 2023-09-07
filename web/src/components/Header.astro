@@ -60,7 +60,12 @@ const { centered } = Astro.props;
 
     &.normal {
       align-items: center;
+      justify-content: space-between;
       padding: 0.5rem;
+
+      @include breakpoint('tablet') {
+        justify-content: flex-start;
+      }
     }
   }
 
