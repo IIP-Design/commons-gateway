@@ -258,7 +258,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           id="update-btn"
           type="submit"
         >
-          { user ? 'Update User' : 'Invite User' }
+          { user ? 'Update' : 'Invite' }
         </button>
         {
           user
@@ -269,12 +269,12 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
                 type="button"
                 onClick={ handleDeactivate }
               >
-                Deactivate User
+                Deactivate Account
               </button>
             )
             : null
         }
-        <BackButton showConfirmDialog />
+        <BackButton text="Cancel" showConfirmDialog />
       </div>
     </form>
   );

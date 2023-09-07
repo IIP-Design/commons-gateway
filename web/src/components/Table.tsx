@@ -114,12 +114,6 @@ export const Filter = ({
       break;
     }
     default:
-      ret = <input
-        type="text"
-        placeholder={`Not searchable`}
-        style={{ width: "100%" }}
-        disabled
-      />;
       break;
   }
 
@@ -223,7 +217,7 @@ export const Table = <DataType,>({ data, columns, additionalTableClasses }: ITab
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th key={header.id} colSpan={header.colSpan}>
+                  <th key={header.id} colSpan={header.colSpan} className="align-top">
                     {header.isPlaceholder ? null : (
                       <div
                         {...{

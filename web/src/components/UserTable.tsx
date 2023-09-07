@@ -35,6 +35,7 @@ interface IUserEntry {
   email: string;
   expiration: string;
   familyName: string;
+  name: string
   givenName: string;
   role: TUserRole;
   team: string;
@@ -46,14 +47,17 @@ interface ITeam {
   name: string;
 }
 
-type WithActiveTag<T> = T & { active: boolean; };
+interface IUserWithUiData extends IUserEntry {
+  name: string;
+  active: boolean;
+};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
 const UserTable: FC = () => {
-  const [users, setUsers] = useState<WithActiveTag<IUserEntry>[]>( [] );
+  const [users, setUsers] = useState<IUserWithUiData[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
@@ -68,6 +72,7 @@ const UserTable: FC = () => {
           data.map( ( user: IUserEntry ) => {
             return {
               ...user,
+              name: `${user.givenName} ${user.familyName}`,
               active: isGuestActive( user.expiration ),
             };
           } )
@@ -91,10 +96,12 @@ const UserTable: FC = () => {
     getTeams();
   }, [] );
 
-  const columns = useMemo<ColumnDef<WithActiveTag<IUserEntry>>[]>(
+  const columns = useMemo<ColumnDef<IUserWithUiData>[]>(
     () => [
-      defaultColumnDef( 'givenName' ),
-      defaultColumnDef( 'familyName' ),
+      {
+        ...defaultColumnDef( 'name' ),
+        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+      },
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'team' ),
@@ -112,13 +119,6 @@ const UserTable: FC = () => {
           );
         },
       },
-      {
-        accessorFn: row => row.email,
-        id: "_edit",
-        cell: info => <a href={`/editUser?id=${info.getValue()}`}><LiaUserEditSolid /></a>,
-        header: () => "Edit",
-        enableSorting: false,
-      }
     ],
     [teams]
   );

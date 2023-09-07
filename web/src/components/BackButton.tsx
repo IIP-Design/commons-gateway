@@ -18,13 +18,14 @@ import styles from '../styles/button.module.scss'
 // ////////////////////////////////////////////////////////////////////////////
 interface IBackButtonProps {
     id?: string;
+    text?: string;
     showConfirmDialog?: boolean;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
-const BackButton: FC<IBackButtonProps> = ( { id, showConfirmDialog }: IBackButtonProps ) => {
+const BackButton: FC<IBackButtonProps> = ( { id, text, showConfirmDialog }: IBackButtonProps ) => {
     const goBack = () => {
         if( showConfirmDialog ) {
             showConfirm( "Are you sure you want to return to the previous page?  You will lose all unsaved progress." )
@@ -36,7 +37,7 @@ const BackButton: FC<IBackButtonProps> = ( { id, showConfirmDialog }: IBackButto
         }
     }
 
-    return <button id={ id || "back-btn"} type="button" onClick={goBack} className={`${styles.btn} ${styles['back-btn']} ${styles['spaced-btn']}`}>Back</button>
+    return <button id={ id || "back-btn"} type="button" onClick={goBack} className={`${styles.btn} ${styles['back-btn']} ${styles['spaced-btn']}`}>{ text || "Back"}</button>
 }
 
 export default BackButton;
