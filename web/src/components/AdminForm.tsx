@@ -245,8 +245,8 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
             value={ adminData.role }
             onChange={ e => handleUpdate( 'role', e.target.value ) }
           >
-            <option value="admin">admin</option>
-            <option value="super admin">super admin</option>
+            <option value="admin">Admin</option>
+            <option value="super admin">Super Admin</option>
           </select>
         </label>
       </div>
@@ -282,7 +282,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
             </button>
           )
         }
-        <BackButton showConfirmDialog />
+        <BackButton text="Cancel" showConfirmDialog />
       </div>
     </form>
   );

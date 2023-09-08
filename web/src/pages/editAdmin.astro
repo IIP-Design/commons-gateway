@@ -1,13 +1,13 @@
 ---
-import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import SuperAdminPageLayout from '../layouts/SuperAdminPageLayout.astro';
 import PageContainer from '../layouts/PageContainer.astro';
 import AdminForm from '../components/AdminForm';
 
 const title = 'Edit Admin User';
 ---
 
-<AdminPageLayout title={title}>
+<SuperAdminPageLayout title={title}>
   <PageContainer narrow title={title}>
     <AdminForm client:load admin />
   </PageContainer>
-</AdminPageLayout>
+</SuperAdminPageLayout>
