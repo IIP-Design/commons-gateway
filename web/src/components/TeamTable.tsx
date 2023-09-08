@@ -26,7 +26,7 @@ const TeamTable: FC = () => {
   const [editing, setEditing] = useState( '' );
   const [newName, setNewName] = useState( '' );
 
-  const [canEdit] = useState( userIsSuperAdmin() );
+  const [canEdit] = useState( userIsSuperAdmin() ); // eslint-disable-line react/hook-use-state
 
   useEffect( () => {
     // Retrieve the full list of teams from the API.
@@ -165,7 +165,7 @@ const TeamTable: FC = () => {
 
   return (
     <div className={ style.container }>
-      { canEdit &&
+      { canEdit && (
         <button
           className={ `${style['add-btn']} ${btnStyle.btn}` }
           type="button"
@@ -173,7 +173,7 @@ const TeamTable: FC = () => {
         >
           + New Team
         </button>
-      }
+      ) }
       <div>
         <div className={ style.controls }>
           <span>{ renderCountWidget( teamCount, viewCount, viewOffset ) }</span>
@@ -210,19 +210,20 @@ const TeamTable: FC = () => {
           <tbody>
             { teamList && ( teamList.map( team => (
               <tr key={ team.id }>
-                { canEdit ?
-                  <td>
-                    { editing === team.id && (
-                      <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } aria-label="Team Name" />
-                    ) }
-                    { editing !== team.id && (
-                      <button className={ style['pagination-btn'] } disabled={ editing !== '' } style={ { textAlign: 'left' } } type="button" onClick={ () => editTeam( team.id, team.name ) }>
-                        { team.name }
-                      </button>
-                    ) }
-                  </td>
-                  : <td>{ team.name }</td>
-                }
+                { canEdit
+                  ? (
+                    <td>
+                      { editing === team.id && (
+                        <input style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } } type="text" value={ newName } onChange={ e => setNewName( e.target.value ) } aria-label="Team Name" />
+                      ) }
+                      { editing !== team.id && (
+                        <button className={ style['pagination-btn'] } disabled={ editing !== '' } style={ { textAlign: 'left' } } type="button" onClick={ () => editTeam( team.id, team.name ) }>
+                          { team.name }
+                        </button>
+                      ) }
+                    </td>
+                  )
+                  : <td>{ team.name }</td> }
                 <td>
                   { editing === team.id && (
                     <div className={ btnStyle['btn-pair'] }>
@@ -231,7 +232,12 @@ const TeamTable: FC = () => {
                     </div>
                   ) }
                   { editing !== team.id && (
-                    <ToggleSwitch active={ team.active } callback={handleStatusToggle} toggleable={canEdit} id={ team.id } />
+                    <ToggleSwitch
+                      active={ team.active }
+                      callback={ handleStatusToggle }
+                      id={ team.id }
+                      toggleable={ canEdit }
+                    />
                   ) }
                 </td>
               </tr>
