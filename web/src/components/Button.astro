@@ -5,11 +5,17 @@ interface Props {
   class?: string;
   id?: string;
   type?: 'button' | 'submit';
+  disabled?: boolean;
 }
 
-const { class: classes, id, type } = Astro.props;
+const { class: classes, id, type, disabled } = Astro.props;
 ---
 
-<button class:list={[classes, styles.btn]} id={id || ''} type={type || 'button'}>
+<button
+  class:list={[classes, styles.btn]}
+  id={id || ''}
+  type={type || 'button'}
+  disabled={disabled ?? false}
+>
   <slot />
 </button>

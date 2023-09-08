@@ -3,12 +3,15 @@ import Button from '../components/Button.astro';
 import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
 
 import '../styles/form.scss';
+import btnStyles from '../styles/button.module.scss';
 ---
 
 <script>
   import { isLoggedInAsExternalPartner } from '../utils/auth';
-  import { showError } from '../utils/alert';
+  import { showError, showInfo } from '../utils/alert';
   import { handlePartnerLogin } from '../utils/login';
+  import { MONITORING_CONSENT_MESSAGE } from '../utils/constants';
+  import btnStyles from '../styles/button.module.scss';
 
   // Bypass authentication screen for authenticated users.
   const authenticated = isLoggedInAsExternalPartner();
@@ -16,8 +19,23 @@ import '../styles/form.scss';
   if (authenticated) {
     window.location.assign('/upload');
   }
+  const submitBtn = document.getElementById('login-btn') as HTMLElement;
 
-  const submitBtn = document.getElementById('login-btn');
+  const consentBox = document.getElementById('consent-check') as HTMLInputElement;
+  consentBox.addEventListener( 'change', function() {
+    const { checked } = this;
+    if( checked ) {
+      submitBtn.removeAttribute('disabled');
+      submitBtn.classList.remove(btnStyles["disabled-btn"])
+    } else {
+      submitBtn.setAttribute('disabled', 'disabled');
+      submitBtn.classList.add(btnStyles["disabled-btn"])
+    }
+  } );
+
+  const consentNotice = document.getElementById('monitoring-consent') as HTMLElement;
+  consentNotice.addEventListener( 'click', () => showInfo( 'Consent to Monitoring', MONITORING_CONSENT_MESSAGE ) );
+
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
   const passInput = document.getElementById('pass-input') as HTMLInputElement;
 
@@ -55,7 +73,11 @@ import '../styles/form.scss';
       Password
       <input id="pass-input" type="password" />
     </label>
+    <label style="display:flex; flex-direction: row; justify-content: center; align-items: center">
+      <input id="consent-check" type="checkbox" style="display: inline; white-space: pre;"/>
+      I acknowledge the&nbsp;<span id="monitoring-consent" class="consent">monitoring consent notice</span>&nbsp;while using this system
+    </label>
   </form>
-  <Button id="login-btn" type="submit">Sign In</Button>
+  <Button id="login-btn" class={btnStyles["disabled-btn"]} type="submit" disabled>Sign In</Button>
   <a href="/login" style="margin-top: 1em;">Or choose a different method</a>
 </LoggedOutLayout>

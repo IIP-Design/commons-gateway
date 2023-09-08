@@ -20,3 +20,5 @@ export const AMPLIFY_CONFIG = {
   },
   federationTarget: 'COGNITO_USER_POOLS',
 };
+
+export const MONITORING_CONSENT_MESSAGE = "You are accessing an official US Government information system!  By entering this system, you acknowledge your responsibility under applicable laws and policies and agree to maintain the security and privacy of all information contained herein. You agree that you will only use this system for authorized purposes. Your activities on the system may be monitored, and unauthorized or illegal behavior may result in criminal prosecution or administrative sanction."
