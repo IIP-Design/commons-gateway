@@ -4,6 +4,13 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: commons-gateway-${opt:stage}-upload
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ${file(./config/${param:deployment}.json):cors.headers}
+            AllowedMethods:
+              - PUT
+            AllowedOrigins: ${file(./config/${param:deployment}.json):cors.origins}
+            Id: commons-gateway-${opt:stage}-upload-cors
 
   # Bucket where successfully scanned files end up.
   CleanBucket:

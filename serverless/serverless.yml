@@ -29,6 +29,15 @@ provider:
             - - 'arn:aws:rds-db:${aws:region}:${aws:accountId}:dbuser:'
               - !Select [6, !Split [':', !GetAtt RDSProxy.DBProxyArn]]
               - /*
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:PutObjectTagging
+          Resource: !Join
+            - ''
+            - - !GetAtt UploadBucket.Arn
+              - /*
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
