@@ -272,7 +272,7 @@ export const Table = <DataType,>({ data, columns, additionalTableClasses }: ITab
           })}
         </tbody>
       </table>
-      {/* { table.getPageCount() > 1 && <PaginationFooter table={table} /> } */}
+      <hr />
       <PaginationFooter table={table} />
     </div>
   );

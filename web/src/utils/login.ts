@@ -60,7 +60,7 @@ export const handleAdminLogin = async () => {
       const { email, exp } = payload;
 
       // Retrieve additional data from the application.
-      const response = await buildQuery( `admin?username=${email}`, null, 'POST' );
+      const response = await buildQuery( `admin?username=${email}`, null, 'GET' );
       const { data } = await response.json();
       const { active, role, team } = data;
 
@@ -72,7 +72,7 @@ export const handleAdminLogin = async () => {
       }
     }
   } catch ( err ) {
-    console.log( err );
+    console.error( err );
   }
 
   return authenticated;
@@ -146,7 +146,7 @@ export const handlePartnerLogin = async ( username: string, password: string ) =
     loginStatus.set( 'loggedIn' );
     authenticated = true;
   } catch ( err ) {
-    console.log( err );
+    console.error( err );
   }
 
   return authenticated;
@@ -172,6 +172,6 @@ export const logout = async () => {
     loginStatus.set( 'loggedOut' );
     window.location.replace( isAdmin ? '/adminLogin' : '/partnerLogin' );
   } catch ( err ) {
-    console.log( 'error signing out', err );
+    console.error( 'error signing out', err );
   }
 };
