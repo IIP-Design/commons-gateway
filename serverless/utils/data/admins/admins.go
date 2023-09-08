@@ -126,3 +126,25 @@ func RetrieveAdmins() ([]map[string]any, error) {
 
 	return admins, err
 }
+
+// UpdateAdmin opens a database connection and updates a given
+// admin user with the provided information.
+// TODO? - Allow for changes to user email? If so we may need
+// to add an id field and set that as the primary key on an admin.
+func UpdateAdmin(admin data.AdminUser) error {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	currentTime := time.Now()
+
+	query :=
+		`UPDATE admins SET first_name = $1, last_name = $2, role = $3, team = $4,
+		 active = $5, date_modified = $6 WHERE email = $7`
+	_, err := pool.Exec(query, admin.NameFirst, admin.NameLast, admin.Role, admin.Team, admin.Active, currentTime, admin.Email)
+
+	if err != nil {
+		logs.LogError(err, "Update Admin Query Error")
+	}
+
+	return err
+}

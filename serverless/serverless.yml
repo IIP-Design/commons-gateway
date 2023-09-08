@@ -98,6 +98,19 @@ functions:
     package:
       patterns:
         - './bin/admin-deactivate'
+  adminUpdate:
+    name: gateway-${opt:stage}-admin-update
+    handler: bin/admin-update
+    description: Update a admin users.
+    runtime: go1.x
+    events:
+      - http:
+          path: /admin
+          method: put
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/admin-update'
   adminGet:
     name: gateway-${opt:stage}-admin-get
     handler: bin/admin-get

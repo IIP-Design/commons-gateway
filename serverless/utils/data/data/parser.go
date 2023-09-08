@@ -111,6 +111,36 @@ func ExtractUser(body string) (User, error) {
 	return user, err
 }
 
+// ExtractAdminUser parses an API Gateway request body returning the data
+// need to modify an existing admin user.
+func ExtractAdminUser(body string) (AdminUser, error) {
+	var admin AdminUser
+
+	userData, err := ExtractUser(body)
+
+	if err != nil {
+		return admin, err
+	}
+
+	admin.Email = userData.Email
+	admin.NameFirst = userData.NameFirst
+	admin.NameLast = userData.NameLast
+	admin.Role = userData.Role
+	admin.Team = userData.Team
+
+	parsed, err := ParseBodyData(body)
+
+	active := parsed.Active
+
+	if err != nil {
+		return admin, err
+	}
+
+	admin.Active = active
+
+	return admin, err
+}
+
 // ExtractGuestUser parses an API Gateway request body returning the data
 // need to modify an existing guest user.
 func ExtractGuestUser(body string) (GuestUser, error) {
