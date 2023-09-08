@@ -148,9 +148,9 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     const expiration = new Date( userData.accessEndDate ).toISOString();
 
     const invitee = {
-      email: userData.email,
-      givenName: userData.givenName,
-      familyName: userData.familyName,
+      email: userData.email.trim(),
+      givenName: userData.givenName.trim(),
+      familyName: userData.familyName.trim(),
       team: userData.team || currentUser.get().team,
       role: userData.role,
     };
