@@ -91,7 +91,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	rows, err := pool.Query(`SELECT email, first_name, last_name, role, team, active FROM admins`)
+	rows, err := pool.Query(`SELECT email, first_name, last_name, role, team, active FROM admins ORDER BY first_name`)
 
 	if err != nil {
 		logs.LogError(err, "Get Admins Query Error")
