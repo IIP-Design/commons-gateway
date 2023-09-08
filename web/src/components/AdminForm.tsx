@@ -9,13 +9,10 @@ import type { FC, FormEvent } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 import BackButton from './BackButton';
 
-import currentUser from '../stores/current-user';
 import type { TUserRole } from '../stores/current-user';
 import { showConfirm, showError } from '../utils/alert';
-import { buildQuery, constructUrl } from '../utils/api';
+import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
-import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
-import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -26,35 +23,35 @@ import styles from '../styles/button.module.scss';
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserFormData {
+interface IAdminFormData {
   givenName: string;
   familyName: string;
   email: string;
   team: string;
-  accessEndDate: string;
-  role: Nullable<TUserRole[]>,
+  role: TUserRole;
+  active: boolean;
 }
 
-interface IUserFormProps {
-  readonly user?: boolean;
+interface IAdminFormProps {
+  readonly admin?: boolean;
 }
 
 const initialState = {
+  active: true,
   givenName: '',
   familyName: '',
   email: '',
   team: '',
-  accessEndDate: getYearMonthDay( new Date() ),
-  role: null,
+  role: 'admin' as TUserRole,
 };
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
 // ////////////////////////////////////////////////////////////////////////////
-const UserForm: FC<IUserFormProps> = ( { user } ) => {
+const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
   const [isAdmin, setIsAdmin] = useState( false );
   const [teamList, setTeamList] = useState( [] );
-  const [userData, setUserData] = useState<IUserFormData>( initialState );
+  const [adminData, setAdminData] = useState<IAdminFormData>( initialState );
 
   // Check whether the user is an admin and set that value in state.
   // Doing so outside of a useEffect hook causes a mismatch in values
@@ -70,61 +67,53 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       const { data } = await response.json();
 
       if ( data ) {
-        // If the user is not an admin user, only allow them to invite users to their own team.
-        const filtered = isAdmin ? data : data.filter( ( t: ITeam ) => t.id === currentUser.get().team );
-
-        setTeamList( filtered );
+        setTeamList( data );
       }
     };
 
     getTeams();
-  }, [isAdmin] );
+  }, [] );
 
   // Initialize the form.
   useEffect( () => {
-    const getUser = async ( id: string ) => {
-      const response = await buildQuery( `guest?id=${id}`, null, 'GET' );
+    const getAdmin = async ( username: string ) => {
+      const response = await buildQuery( `admin?username=${username}`, null, 'GET' );
       const { data } = await response.json();
 
 
       if ( data ) {
-        setUserData( {
+        setAdminData( {
           ...data,
-          accessEndDate: getYearMonthDay( new Date( data.expiration ) ),
+          active: data.active === 'true', // value comes in as a string from lambda
         } );
       }
     };
 
-    if ( user ) {
+    if ( admin ) {
       const urlSearchParams = new URLSearchParams( window.location.search );
       const { id } = Object.fromEntries( urlSearchParams.entries() );
 
-      getUser( id );
+      getAdmin( id );
     }
-  }, [user] );
+  }, [admin] );
 
   /**
    * Updates the user state on changed to the form inputs.
    * @param key The user property being updated.
    */
-  const handleUpdate = ( key: keyof IUserFormData, value?: string|Date ) => {
-    setUserData( { ...userData, [key]: value } );
+  const handleUpdate = ( key: keyof IAdminFormData, value?: string|Date ) => {
+    setAdminData( { ...adminData, [key]: value } );
   };
 
   /**
    * Ensure that the form submissions are valid before sending data to the API.
    */
   const validateSubmission = () => {
-    if ( !userData.email?.match( /^.+@.+$/ ) ) {
+    if ( !adminData.email?.match( /^.+@.+$/ ) ) {
       showError( 'Email address is not valid' );
 
       return false;
-    } if ( !dateSelectionIsValid( userData.accessEndDate ) ) {
-      showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
-
-      return false;
-    } if ( isAdmin && !userData.team ) {
-      // Admin users have the option to set a team, so a team should be
+    } if ( !adminData.team ) {
       showError( 'Please assign this user to a valid team' );
 
       return false;
@@ -144,49 +133,57 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       return;
     }
 
-    // Conversion to iso required by Lambda
-    const expiration = new Date( userData.accessEndDate ).toISOString();
-
-    const invitee = {
-      email: userData.email.trim(),
-      givenName: userData.givenName.trim(),
-      familyName: userData.familyName.trim(),
-      team: userData.team || currentUser.get().team,
-      role: userData.role,
+    const newAdmin = {
+      active: adminData.active,
+      email: adminData.email.trim(),
+      givenName: adminData.givenName.trim(),
+      familyName: adminData.familyName.trim(),
+      team: adminData.team,
+      role: adminData.role,
     };
 
-    const invitation = {
-      inviter: currentUser.get().email,
-      invitee,
-      expiration,
-    };
-
-    if ( user ) {
-      await buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
-        .then( () => window.location.assign( '/' ) )
+    if ( admin ) {
+      await buildQuery( `admin?username=${adminData.email}`, { ...newAdmin }, 'PUT' )
+        .then( () => window.location.assign( '/admins' ) )
         .catch( err => console.error( err ) );
     } else {
-      await buildQuery( 'creds/provision', invitation, 'POST' )
-        .then( () => window.location.assign( '/' ) )
+      await buildQuery( 'admin/create', { ...newAdmin, active: true }, 'POST' )
+        .then( () => window.location.assign( '/admins' ) )
         .catch( err => console.error( err ) );
     }
   };
 
   const handleDeactivate = async () => {
-    const { email, givenName, familyName } = userData;
+    const { email, givenName, familyName } = adminData;
     const { isConfirmed } = await showConfirm( `Are you sure you want to deactivate ${givenName} ${familyName}?` );
 
     if ( !isConfirmed ) {
       return;
     }
 
-    const { ok } = await fetch( `${constructUrl( 'guest' )}?id=${email}`, { method: 'DELETE' } );
+    const { ok } = await buildQuery( `admin?username=${email}`, null, 'DELETE' );
 
     if ( !ok ) {
       showError( 'Unable to deactivate user' );
     } else {
-      window.location.assign( '/' );
+      window.location.assign( '/admins' );
     }
+  };
+
+  const handleReactivate = async () => {
+    const { email, givenName, familyName } = adminData;
+    const { isConfirmed } = await showConfirm( `Are you sure you want to reactivate ${givenName} ${familyName}?` );
+
+    if ( !isConfirmed ) {
+      return;
+    }
+
+    await buildQuery( `admin?username=${email}`, { ...adminData, active: true }, 'PUT' )
+      .then( () => window.location.assign( '/admins' ) )
+      .catch( err => {
+        showError( 'Unable to reactivate user' );
+        console.error( err );
+      } );
   };
 
   return (
@@ -198,7 +195,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
             id="given-name-input"
             type="text"
             required
-            value={ userData.givenName }
+            value={ adminData.givenName }
             onChange={ e => handleUpdate( 'givenName', e.target.value ) }
           />
         </label>
@@ -208,7 +205,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
             id="family-name-input"
             type="text"
             required
-            value={ userData.familyName }
+            value={ adminData.familyName }
             onChange={ e => handleUpdate( 'familyName', e.target.value ) }
           />
         </label>
@@ -220,8 +217,8 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
             id="email-input"
             type="text"
             required
-            disabled={ user } // Email is the primary key for users so we prevent changes for existing users.
-            value={ userData.email }
+            disabled={ admin } // Email is the primary key for users so we prevent changes for existing admins.
+            value={ adminData.email }
             onChange={ e => handleUpdate( 'email', e.target.value ) }
           />
         </label>
@@ -231,7 +228,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
             id="team-input"
             disabled={ !isAdmin }
             required
-            value={ userData.team }
+            value={ adminData.team }
             onChange={ e => handleUpdate( 'team', e.target.value ) }
           >
             <option value="">- Select a team -</option>
@@ -241,15 +238,16 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       </div>
       <div className="field-group">
         <label>
-          <span>Access End Date</span>
-          <input
-            id="date-input"
-            type="date"
-            min={ getYearMonthDay( new Date() ) }
-            max={ getYearMonthDay( addDaysToNow( 60 ) ) }
-            value={ userData.accessEndDate }
-            onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) }
-          />
+          <span>Admin Type</span>
+          <select
+            id="role-input"
+            required
+            value={ adminData.role }
+            onChange={ e => handleUpdate( 'role', e.target.value ) }
+          >
+            <option value="admin">admin</option>
+            <option value="super admin">super admin</option>
+          </select>
         </label>
       </div>
       <div style={ { textAlign: 'center' } }>
@@ -258,21 +256,31 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           id="update-btn"
           type="submit"
         >
-          { user ? 'Update User' : 'Invite User' }
+          { admin ? 'Update Admin User' : 'Add Admin User' }
         </button>
         {
-          user
-            ? (
-              <button
-                className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
-                id="deactivate-btn"
-                type="button"
-                onClick={ handleDeactivate }
-              >
-                Deactivate User
-              </button>
-            )
-            : null
+          admin && adminData.active && (
+            <button
+              className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
+              id="deactivate-btn"
+              type="button"
+              onClick={ handleDeactivate }
+            >
+              Deactivate Admin User
+            </button>
+          )
+        }
+        {
+          admin && !adminData.active && (
+            <button
+              className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
+              id="deactivate-btn"
+              type="button"
+              onClick={ handleReactivate }
+            >
+              Reactivate Admin User
+            </button>
+          )
         }
         <BackButton showConfirmDialog />
       </div>
@@ -280,4 +288,4 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
   );
 };
 
-export default UserForm;
+export default AdminForm;

@@ -1,0 +1,13 @@
+---
+import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import TableContainer from '../layouts/TableContainer.astro';
+import AdminTable from '../components/AdminTable';
+
+const title = 'Administrative Users';
+---
+
+<AdminPageLayout title={title}>
+  <TableContainer btnText="+ New Admin" btnHref="newAdmin" title={title}>
+    <AdminTable client:load />
+  </TableContainer>
+</AdminPageLayout>

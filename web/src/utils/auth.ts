@@ -31,7 +31,7 @@ const makeAdminVerificationFn = ( roles: TUserRole[] ): TPermissionVerificationF
   let authenticated = false;
 
   try {
-    const response = await buildQuery( 'admin/get', { username: email }, 'POST' );
+    const response = await buildQuery( `admin?username=${email}`, null, 'GET' );
     const { data } = await response.json();
     const { role } = data;
 

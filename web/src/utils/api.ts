@@ -5,7 +5,7 @@ const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
 export type TActions = 'create' | 'confirm';
-export type TMethods = 'GET' | 'POST';
+export type TMethods = 'DELETE' | 'GET' | 'POST' | 'PUT';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers

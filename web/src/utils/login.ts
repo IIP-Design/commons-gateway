@@ -60,14 +60,16 @@ export const handleAdminLogin = async () => {
       const { email, exp } = payload;
 
       // Retrieve additional data from the application.
-      const response = await buildQuery( 'admin/get', { username: email }, 'POST' );
+      const response = await buildQuery( `admin?username=${email}`, null, 'POST' );
       const { data } = await response.json();
-      const { role, team } = data;
+      const { active, role, team } = data;
 
       // Add the required data from the id token to the current user store.
-      setCurrentUser( { email, team, role, exp } );
-      loginStatus.set( 'loggedIn' );
-      authenticated = true;
+      if ( active ) {
+        setCurrentUser( { email, team, role, exp } );
+        loginStatus.set( 'loggedIn' );
+        authenticated = true;
+      }
     }
   } catch ( err ) {
     console.log( err );

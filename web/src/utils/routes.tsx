@@ -1,4 +1,4 @@
-import type { TUserRole } from "../stores/current-user";
+import type { TUserRole } from '../stores/current-user';
 
 interface IRoute {
   href: string;
@@ -10,18 +10,21 @@ export const routes: IRoute[] = [
   {
     href: '',
     name: 'Home',
-    rolesAccessible: [ 'admin', 'super admin' ]
+    rolesAccessible: ['admin', 'super admin'],
   },
   {
     href: 'teams',
-    rolesAccessible: [ 'super admin' ],
+    rolesAccessible: ['super admin'],
+  },
+  {
+    href: 'admins',
+    rolesAccessible: ['super admin'],
   },
   {
     href: 'upload',
   },
-]
+];
 
 
-export const filterRoutes = ( userRole: TUserRole ) => {
-  return routes.filter( r => !r.rolesAccessible || r.rolesAccessible.includes( userRole ) );
-}
+export const filterRoutes = ( userRole: TUserRole ) => routes
+  .filter( r => !r.rolesAccessible || r.rolesAccessible.includes( userRole ) );
