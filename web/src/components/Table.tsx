@@ -88,6 +88,7 @@ export const Filter = ({
             ])
           }
           placeholder={`Min`}
+          aria-label={`${titleCase(column.id)} minimum value`}
         />
         <input
           type="number"
@@ -99,6 +100,7 @@ export const Filter = ({
             ])
           }
           placeholder={`Max`}
+          aria-label={`${titleCase(column.id)} maxiumum value`}
         />
       </div>;
       break;
@@ -110,6 +112,7 @@ export const Filter = ({
         onChange={e => column.setFilterValue(e.target.value)}
         placeholder={`Search...`}
         style={{ width: "100%" }}
+        aria-label={`Search ${titleCase(column.id)}`}
       />;
       break;
     }
@@ -170,6 +173,7 @@ export const PaginationFooter = <T,>({ table }: { table: ReactTable<T> }) => {
           className="border p-1 rounded w-16"
           max={table.getPageCount()}
           min={1}
+          aria-label="Go to page"
         />
       </span>
       <select
@@ -179,6 +183,7 @@ export const PaginationFooter = <T,>({ table }: { table: ReactTable<T> }) => {
         }}
         className="form-select form-select-sm d-inline"
         style={{ width: "auto" }}
+        aria-label="Select number of results per page"
       >
         {[10, 20, 30, 40, 50].map(pageSize => (
           <option key={pageSize} value={pageSize}>
