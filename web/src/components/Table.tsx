@@ -28,8 +28,6 @@ import { titleCase } from '../utils/string';
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import 'bootstrap/dist/css/bootstrap.css';
-
 import style from '../styles/table.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -125,43 +123,43 @@ export const Filter = ({
 
 export const PaginationFooter = <T,>({ table }: { table: ReactTable<T> }) => {
   return (
-    <div className="d-flex flex-grow-1 align-items-center justify-content-center">
+    <div className={style['pagination-footer']}>
       <button
-        className="border rounded p-1"
+        className={style['pagination-button']}
         onClick={() => table.setPageIndex(0)}
         disabled={!table.getCanPreviousPage()}
       >
         {'<<'}
       </button>
       <button
-        className="border rounded p-1"
+        className={style['pagination-button']}
         onClick={() => table.previousPage()}
         disabled={!table.getCanPreviousPage()}
       >
         {'<'}
       </button>
       <button
-        className="border rounded p-1"
+        className={style['pagination-button']}
         onClick={() => table.nextPage()}
         disabled={!table.getCanNextPage()}
       >
         {'>'}
       </button>
       <button
-        className="border rounded p-1"
+        className={style['pagination-button']}
         onClick={() => table.setPageIndex(table.getPageCount() - 1)}
         disabled={!table.getCanNextPage()}
       >
         {'>>'}
       </button>
-      <span className="flex items-center px-2">
-        <div className="d-inline">Page</div>
+      <span className={style['go-to-page-container']}>
+        <div style={{display: 'inline'}}>Page</div>
         <strong>
           {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount()}
         </strong>
       </span>
-      <span className="flex items-center px-2">
+      <span className={style['go-to-page-container']}>
         | Go to page:
         <input
           type="number"
@@ -170,7 +168,7 @@ export const PaginationFooter = <T,>({ table }: { table: ReactTable<T> }) => {
             const page = e.target.value ? Number(e.target.value) - 1 : 0
             table.setPageIndex(page)
           }}
-          className="border p-1 rounded w-16"
+          className={style['page-num-select']}
           max={table.getPageCount()}
           min={1}
           aria-label="Go to page"
@@ -181,7 +179,7 @@ export const PaginationFooter = <T,>({ table }: { table: ReactTable<T> }) => {
         onChange={e => {
           table.setPageSize(Number(e.target.value))
         }}
-        className="form-select form-select-sm d-inline"
+        className={style['page-show-select']}
         style={{ width: "auto" }}
         aria-label="Select number of results per page"
       >
@@ -222,15 +220,11 @@ export const Table = <DataType,>({ data, columns, additionalTableClasses }: ITab
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th key={header.id} colSpan={header.colSpan} className="align-top">
+                  <th key={header.id} colSpan={header.colSpan} style={{verticalAlign: 'top'}}>
                     {header.isPlaceholder ? null : (
                       <div
-                        {...{
-                          className: header.column.getCanSort()
-                            ? 'cursor-pointer select-none'
-                            : '',
-                          onClick: header.column.getToggleSortingHandler(),
-                        }}
+                        className={header.column.getCanSort() ? style['sortable-header'] : ''}
+                        onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(
                           header.column.columnDef.header,

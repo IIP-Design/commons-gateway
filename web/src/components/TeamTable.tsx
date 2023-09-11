@@ -8,7 +8,6 @@ import type { FC } from 'react';
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
 import type { ColumnDef } from '@tanstack/react-table';
-import { LiaEditSolid } from 'react-icons/lia';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -49,7 +48,7 @@ const TeamTable: FC = () => {
         ...defaultColumnDef( 'name' ),
         cell: info => (
           <TeamModal
-            anchor={<span style={{cursor:'pointer'}}>{info.getValue() as string} <LiaEditSolid /></span>}
+            anchor={<span style={{cursor:'pointer'}}>{info.getValue() as string}</span>}
             team={info.row.original}
             setTeams={setTeams}
           />
