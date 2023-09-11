@@ -4,6 +4,8 @@ import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
 
 import '../styles/form.scss';
 import btnStyles from '../styles/button.module.scss';
+
+const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
 ---
 
 <script>
@@ -38,12 +40,14 @@ import btnStyles from '../styles/button.module.scss';
 
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
   const passInput = document.getElementById('pass-input') as HTMLInputElement;
+  const tokenInput = document.getElementsByName('cf-turnstile-response') as NodeListOf<HTMLInputElement>;
 
   submitBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
 
     const name = nameInput.value;
     const pass = passInput.value;
+    const token = tokenInput.length ? tokenInput[0].value : null;
 
     if (!name || !pass) {
       if (!name && !pass) {
@@ -54,9 +58,12 @@ import btnStyles from '../styles/button.module.scss';
         showError('Please input a password');
       }
       return;
+    } else if( tokenInput.length && !token ) {
+      showError('Please complete the bot verification widget');
+      return;
     }
 
-    const loggedIn = await handlePartnerLogin( name, pass );
+    const loggedIn = await handlePartnerLogin( name, pass, token || "" );
     if( loggedIn ) {
       window.location.assign('/upload');
     }
@@ -73,6 +80,7 @@ import btnStyles from '../styles/button.module.scss';
       Password
       <input id="pass-input" type="password" />
     </label>
+    { PUBLIC_TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={PUBLIC_TURNSTILE_SITE_KEY}></div> }
     <label style="display:flex; flex-direction: row; justify-content: center; align-items: center">
       <input id="consent-check" type="checkbox" style="display: inline; white-space: pre;"/>
       I acknowledge the&nbsp;<span id="monitoring-consent" class="consent">monitoring consent notice</span>&nbsp;while using this system

@@ -31,6 +31,7 @@ type RequestBodyOptions struct {
 	Invitee  UserBodyOptions `json:"invitee"`
 	Inviter  string          `json:"inviter"`
 	Username string          `json:"username"`
+	Token    string          `json:"token"`
 }
 
 // User represents the properties required to record a user.

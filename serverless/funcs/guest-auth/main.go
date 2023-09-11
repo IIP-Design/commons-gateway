@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/turnstile"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -56,6 +59,17 @@ func AuthenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 	action := parsed.Action
 	clientHash := parsed.Hash
 	username := parsed.Username
+
+	tokenVerSecretKey := os.Getenv("TOKEN_VERIFICATION_SECRET_KEY")
+	if tokenVerSecretKey != "" {
+		token := parsed.Token
+		remoteIp := event.RequestContext.Identity.SourceIP
+		err := turnstile.VerifyToken(token, remoteIp, tokenVerSecretKey)
+		if err != nil {
+			logs.LogError(err, "Turnstile error")
+			return msgs.SendServerError(err)
+		}
+	}
 
 	if action == "create" {
 		return handleGrantAccess(username, clientHash)

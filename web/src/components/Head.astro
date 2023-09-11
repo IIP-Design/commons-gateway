@@ -1,4 +1,6 @@
 ---
+const PUBLIC_TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
 interface Props {
   title: string;
 }
@@ -11,5 +13,6 @@ const { title } = Astro.props;
   <meta name="description" content="Platform for external users to upload content to Commons" />
   <meta name="viewport" content="width=device-width" />
   <link rel="icon" type="image/svg+xml" href="/dos_seal.svg" />
+  { PUBLIC_TURNSTILE_SITE_KEY && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> }
   <title>{title}</title>
 </head>

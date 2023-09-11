@@ -103,11 +103,13 @@ const submitUserPasswordHash = async (
   action: TActions,
   hash: string,
   username: string,
+  token: string,
 ): Promise<Nullable<string>> => {
   const response = await buildQuery( 'guest/auth', {
     action,
     hash,
     username,
+    token,
   } );
 
   const { data } = await response.json();
@@ -121,7 +123,7 @@ const submitUserPasswordHash = async (
   return null;
 };
 
-export const handlePartnerLogin = async ( username: string, password: string ) => {
+export const handlePartnerLogin = async ( username: string, password: string, token: string ) => {
   let authenticated = false;
 
   try {
@@ -130,11 +132,11 @@ export const handlePartnerLogin = async ( username: string, password: string ) =
     if ( !salt ) { return authenticated; }
 
     const localHash = await derivePasswordHash( password, salt );
-    const token = await submitUserPasswordHash( 'create', localHash, username );
+    const jwt = await submitUserPasswordHash( 'create', localHash, username, token );
 
-    if ( !token ) { return authenticated; }
+    if ( !jwt ) { return authenticated; }
 
-    const exp = tokenExpiration( token );
+    const exp = tokenExpiration( jwt );
 
     // Retrieve additional data from the application.
     const response = await fetch( `${constructUrl( 'guest' )}?id=${username}` );
