@@ -24,23 +24,27 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
   const submitBtn = document.getElementById('login-btn') as HTMLElement;
 
   const consentBox = document.getElementById('consent-check') as HTMLInputElement;
-  consentBox.addEventListener( 'change', function() {
+  consentBox.addEventListener('change', function () {
     const { checked } = this;
-    if( checked ) {
+    if (checked) {
       submitBtn.removeAttribute('disabled');
-      submitBtn.classList.remove(btnStyles["disabled-btn"])
+      submitBtn.classList.remove(btnStyles['disabled-btn']);
     } else {
       submitBtn.setAttribute('disabled', 'disabled');
-      submitBtn.classList.add(btnStyles["disabled-btn"])
+      submitBtn.classList.add(btnStyles['disabled-btn']);
     }
-  } );
+  });
 
   const consentNotice = document.getElementById('monitoring-consent') as HTMLElement;
-  consentNotice.addEventListener( 'click', () => showInfo( 'Consent to Monitoring', MONITORING_CONSENT_MESSAGE ) );
+  consentNotice.addEventListener('click', () =>
+    showInfo('Consent to Monitoring', MONITORING_CONSENT_MESSAGE)
+  );
 
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
   const passInput = document.getElementById('pass-input') as HTMLInputElement;
-  const tokenInput = document.getElementsByName('cf-turnstile-response') as NodeListOf<HTMLInputElement>;
+  const tokenInput = document.getElementsByName(
+    'cf-turnstile-response'
+  ) as NodeListOf<HTMLInputElement>;
 
   submitBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -49,7 +53,7 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
     const pass = passInput.value;
 
     // Empty string if not using token in deployment, null if using and missing
-    const token = tokenInput.length ? ( tokenInput[0].value || null ) : "";
+    const token = tokenInput.length ? tokenInput[0].value || null : '';
 
     if (!name || !pass) {
       if (!name && !pass) {
@@ -60,13 +64,14 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
         showError('Please input a password');
       }
       return;
-    } else if( token === null ) { // Token should be there, but is missing
+    } else if (token === null) {
+      // Token should be there, but is missing
       showError('Please complete the bot verification widget');
       return;
     }
 
-    const loggedIn = await handlePartnerLogin( name, pass, token );
-    if( loggedIn ) {
+    const loggedIn = await handlePartnerLogin(name, pass, token);
+    if (loggedIn) {
       window.location.assign('/upload');
     }
   });
@@ -82,12 +87,24 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       Password
       <input id="pass-input" type="password" />
     </label>
-    { PUBLIC_TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={PUBLIC_TURNSTILE_SITE_KEY}></div> }
+    {
+      PUBLIC_TURNSTILE_SITE_KEY && (
+        <div class="cf-turnstile" data-sitekey={PUBLIC_TURNSTILE_SITE_KEY} />
+      )
+    }
     <label style="display:flex; flex-direction: row; justify-content: center; align-items: center">
-      <input id="consent-check" type="checkbox" style="display: inline; white-space: pre;"/>
-      I acknowledge the&nbsp;<button id="monitoring-consent" class={`consent ${btnStyles['link-btn']}`} type="button">monitoring consent notice</button>&nbsp;while using this system
+      <input
+        id="consent-check"
+        type="checkbox"
+        style="display: inline; white-space: pre; margin: 0 0.5rem 0 0"
+      />
+      I acknowledge the&nbsp;<button
+        id="monitoring-consent"
+        class={`consent ${btnStyles['link-btn']}`}
+        type="button">monitoring consent notice</button
+      >&nbsp;while using this system
     </label>
   </form>
-  <Button id="login-btn" class={btnStyles["disabled-btn"]} type="submit" disabled>Sign In</Button>
+  <Button id="login-btn" class={btnStyles['disabled-btn']} type="submit" disabled>Sign In</Button>
   <a href="/login" style="margin-top: 1em;">Or choose a different method</a>
 </LoggedOutLayout>
