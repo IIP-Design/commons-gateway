@@ -19,8 +19,6 @@ import ToggleSwitch from './ToggleSwitch/ToggleSwitch';
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import 'bootstrap/dist/css/bootstrap.css';
-
 import btnStyle from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -112,7 +110,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
   return (
     <>
-      <a onClick={openModal}>{anchor}</a>
+      <button className={btnStyle['link-btn']} onClick={openModal}>{anchor}</button>
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
@@ -120,10 +118,13 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         style={modalStyle}
       >
         <h1>{ localTeam.id ? `Update ${localTeam.name}` : "Add a New Team" }</h1>
-        <label className="d-block mt-2">Team Name</label>
+        <label
+          style={ { margin: '0.5rem 0', display: 'block' } }
+        >
+          Team Name
+        </label>
         <input
-          className="d-block"
-          style={ { maxWidth: '100%', padding: '0.3rem 0.5rem' } }
+          style={ { maxWidth: '100%', padding: '0.3rem 0.5rem', display: 'block' } }
           type="text"
           value={ localTeam.name || '' }
           onChange={ e => handleUpdate( 'name', e.target.value ) }
@@ -131,7 +132,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         />
         {
           localTeam.id &&
-            <div className="d-block my-2">
+            <div style={ { margin: '0.5rem 0', display: 'block' } }>
               <ToggleSwitch
                 active={ localTeam.active ?? false }
                 callback={ e => handleUpdate( 'active', e ) }
@@ -139,7 +140,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
               />
             </div>
         }
-        <div className="mt-2">
+        <div style={ { margin: '0.5rem 0' } }>
           <button
             className={ `${btnStyle.btn} ${btnStyle['spaced-btn']}` }
             onClick={handleSubmit}

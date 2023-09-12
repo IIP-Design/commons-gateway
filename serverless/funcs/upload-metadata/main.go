@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -34,14 +36,69 @@ func parseRequest(body string) (RequestBody, error) {
 	return parsed, err
 }
 
+// retrieveUserId converts an admin or guest id value into a user id value.
+func retrieveUserId(email string, pool *sql.DB) (string, error) {
+	var err error
+	var userId string
+
+	// Check if user exists in the admins table
+	isAdmin, err := data.CheckForExistingUser(email, "admins")
+
+	if err == nil && isAdmin {
+		// Retrieve admin's the user_id from the all_users table
+		err := pool.QueryRow(`SELECT user_id FROM all_users WHERE admin_id = $1`, email).Scan(&userId)
+
+		if err != nil {
+			logs.LogError(err, "Select Admin's User Id Query Error")
+		}
+
+		return userId, err
+	} else if err == nil && !isAdmin {
+		// If not found in admin table, look in the guests table.
+		isGuest, err := data.CheckForExistingUser(email, "guests")
+
+		if err != nil {
+			logs.LogError(err, "Check for Guest Query Error")
+
+			return userId, err
+		}
+
+		if isGuest {
+			// Retrieve the new user id from the all_users table
+			err := pool.QueryRow(`SELECT user_id FROM all_users WHERE guest_id = $1`, email).Scan(&userId)
+
+			if err != nil {
+				logs.LogError(err, "Select Guest's User Id Query Error")
+			}
+		} else {
+			err = errors.New("user is neither an admin nor a guest")
+		}
+
+		return userId, err
+	} else if err != nil {
+		logs.LogError(err, "Check for Admin User Query Error")
+	}
+
+	return userId, err
+}
+
+// createUploadRecord opens a connection to the database and add a new upload record.
 func createUploadRecord(s3Id string, user string, teamId string, fileType string, description string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	currentTime := time.Now()
 
+	id, err := retrieveUserId(user, pool)
+
+	if err != nil {
+		logs.LogError(err, "Retrieve User Id Query Error")
+
+		return err
+	}
+
 	query := "INSERT INTO uploads ( s3_id, user_id, team_id, file_type, description, date_uploaded ) VALUES ( $1, $2, $3, $4, $5, $6 )"
-	_, err := pool.Exec(query, s3Id, user, teamId, fileType, description, currentTime)
+	_, err = pool.Exec(query, s3Id, id, teamId, fileType, description, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Create Upload Record Query Error")

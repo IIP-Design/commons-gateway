@@ -75,31 +75,6 @@
   }
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin: 1rem 0;
-
-  &-btn {
-    border: none;
-    background-color: transparent;
-    font-size: var(--fontSizeSmall);
-    padding: 0 0.5rem;
-
-    &:disabled {
-      cursor: default;
-    }
-
-    @include breakpoint('tablet') {
-      font-size: var(--fontSizeNormal);;
-    }
-  }
-
-  &-intermediate {
-    margin: 0 0.5rem;
-  }
-}
-
 .user-table {
   tr th:nth-child(3),
   tr td:nth-child(3) {
@@ -112,4 +87,51 @@
       display: table-cell;
     }
   }
+}
+
+.pagination-footer {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pagination-button {
+  border: 1px solid #DEE2E6;
+  border-radius: 0.375rem;
+  padding: 0.25rem;
+}
+
+.go-to-page-container {
+  display: flex;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.page-num-select {
+  border: 1px solid #DEE2E6;
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+  margin-left: 0.5rem;
+}
+
+.page-show-select {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: black;
+  background-color: #fff;
+  display: inline;
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
 }
