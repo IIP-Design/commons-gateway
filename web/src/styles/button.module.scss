@@ -48,6 +48,14 @@
   margin: 0.3125em;
 }
 
+.link-btn {
+  background: none!important;
+  border: none;
+  padding: 0!important;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .disabled-btn {
   color: white;
   background-color: darkgray;

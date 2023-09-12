@@ -85,7 +85,7 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
     { PUBLIC_TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={PUBLIC_TURNSTILE_SITE_KEY}></div> }
     <label style="display:flex; flex-direction: row; justify-content: center; align-items: center">
       <input id="consent-check" type="checkbox" style="display: inline; white-space: pre;"/>
-      I acknowledge the&nbsp;<span id="monitoring-consent" class="consent">monitoring consent notice</span>&nbsp;while using this system
+      I acknowledge the&nbsp;<button id="monitoring-consent" class={`consent ${btnStyles['link-btn']}`} type="button">monitoring consent notice</button>&nbsp;while using this system
     </label>
   </form>
   <Button id="login-btn" class={btnStyles["disabled-btn"]} type="submit" disabled>Sign In</Button>
