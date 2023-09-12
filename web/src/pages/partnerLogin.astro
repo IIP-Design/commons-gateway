@@ -47,7 +47,9 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
 
     const name = nameInput.value;
     const pass = passInput.value;
-    const token = tokenInput.length ? tokenInput[0].value : null;
+
+    // Empty string if not using token in deployment, null if using and missing
+    const token = tokenInput.length ? ( tokenInput[0].value || null ) : "";
 
     if (!name || !pass) {
       if (!name && !pass) {
@@ -58,12 +60,12 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
         showError('Please input a password');
       }
       return;
-    } else if( tokenInput.length && !token ) {
+    } else if( token === null ) { // Token should be there, but is missing
       showError('Please complete the bot verification widget');
       return;
     }
 
-    const loggedIn = await handlePartnerLogin( name, pass, token || "" );
+    const loggedIn = await handlePartnerLogin( name, pass, token );
     if( loggedIn ) {
       window.location.assign('/upload');
     }
