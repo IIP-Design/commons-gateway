@@ -40,6 +40,17 @@ export const showSuccess = ( text: string ) => Swal.fire( {
   buttonsStyling: false,
 } );
 
+export const showInfo = ( title: string, text: string ) => Swal.fire( {
+  icon: 'info',
+  title,
+  text,
+  customClass: {
+    confirmButton: ACCEPT_STYLE_CLASSES,
+    popup: alertStyles.text,
+  },
+  buttonsStyling: false,
+} );
+
 export const showConfirm = ( text: string ) => Swal.fire( {
   icon: 'warning',
   title: 'Please confirm your selection',
