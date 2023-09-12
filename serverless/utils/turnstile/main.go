@@ -1,25 +1,3 @@
-// The MIT License (MIT)
-
-// Copyright (c) 2023 CyberMonkey SP. Z O.O.
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package turnstile
 
 import (
@@ -31,10 +9,9 @@ import (
 	"net/url"
 )
 
-type Turnstile struct {
-	Secret       string
-	TurnstileURL string
-}
+const (
+	TurnstileURL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+)
 
 type Response struct {
 	// Success indicates if the challenge was passed
@@ -51,21 +28,13 @@ type Response struct {
 	CData string `json:"cdata"`
 }
 
-func NewTS(secret string) *Turnstile {
-	return &Turnstile{
-		Secret:       secret,
-		TurnstileURL: "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-	}
-}
-
-// Verify verifies a "h-captcha-response" data field, with an optional remote IP set.
-func (t *Turnstile) Verify(response, remoteip string) (*Response, error) {
-	values := url.Values{"secret": {t.Secret}, "response": {response}}
+func verifyToken(secret string, token string, remoteip string) (*Response, error) {
+	values := url.Values{"secret": {secret}, "response": {token}}
 	if remoteip != "" {
 		values.Set("remoteip", remoteip)
 	}
 
-	resp, err := http.PostForm(t.TurnstileURL, values)
+	resp, err := http.PostForm(TurnstileURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP error: %w", err)
 	}
@@ -85,13 +54,12 @@ func (t *Turnstile) Verify(response, remoteip string) (*Response, error) {
 	return &r, nil
 }
 
-func VerifyToken(token string, remoteAddr string, privateKey string) error {
-	ts := NewTS(privateKey)
-	resp, err := ts.Verify(token, remoteAddr)
+func TokenIsValid(token string, remoteIp string, secretKey string) (bool, error) {
+	resp, err := verifyToken(secretKey, token, remoteIp)
 
 	if err != nil || resp == nil || !resp.Success {
-		return err
+		return false, err
 	} else {
-		return nil
+		return true, nil
 	}
 }

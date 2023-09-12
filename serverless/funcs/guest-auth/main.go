@@ -64,8 +64,8 @@ func AuthenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 	if tokenVerSecretKey != "" {
 		token := parsed.Token
 		remoteIp := event.RequestContext.Identity.SourceIP
-		err := turnstile.VerifyToken(token, remoteIp, tokenVerSecretKey)
-		if err != nil {
+		valid, err := turnstile.TokenIsValid(token, remoteIp, tokenVerSecretKey)
+		if !valid || err != nil {
 			logs.LogError(err, "Turnstile error")
 			return msgs.SendServerError(err)
 		}
