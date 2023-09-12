@@ -4,19 +4,15 @@
 import { Amplify, Auth } from 'aws-amplify';
 
 // ////////////////////////////////////////////////////////////////////////////
-// 3PP Imports
-// ////////////////////////////////////////////////////////////////////////////
-import Cookie from 'js-cookie';
-
-// ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import {
+  accessToken,
   clearCurrentUser,
   loginStatus,
   setCurrentUser,
 } from '../stores/current-user';
-import { buildQuery, constructUrl } from './api';
+import { buildQuery } from './api';
 import type { TActions } from './api';
 import { AMPLIFY_CONFIG } from './constants';
 import { derivePasswordHash } from './hashing';
@@ -62,12 +58,14 @@ export const handleAdminLogin = async () => {
       // Retrieve additional data from the application.
       const response = await buildQuery( `admin?username=${email}`, null, 'GET' );
       const { data } = await response.json();
-      const { active, role, team } = data;
+      const { active, role, team, token } = data;
 
       // Add the required data from the id token to the current user store.
       if ( active ) {
         setCurrentUser( { email, team, role, exp } );
         loginStatus.set( 'loggedIn' );
+        accessToken.set( token );
+
         authenticated = true;
       }
     }
@@ -134,18 +132,23 @@ export const handlePartnerLogin = async ( username: string, password: string, to
     const localHash = await derivePasswordHash( password, salt );
     const jwt = await submitUserPasswordHash( 'create', localHash, username, token );
 
-    if ( !jwt ) { return authenticated; }
+    if ( !jwt ) {
+      return authenticated;
+    }
+    accessToken.set( jwt );
+
 
     const exp = tokenExpiration( jwt );
 
     // Retrieve additional data from the application.
-    const response = await fetch( `${constructUrl( 'guest' )}?id=${username}` );
+    const response = await buildQuery( `guest?id=${username}`, null, 'GET' );
     const { data } = await response.json();
     const { role, team } = data;
 
     // Add the required data from the id token to the current user store.
     setCurrentUser( { email: username, team, role, exp } );
     loginStatus.set( 'loggedIn' );
+
     authenticated = true;
   } catch ( err ) {
     console.error( err );
@@ -167,7 +170,7 @@ export const logout = async () => {
     await Auth.signOut();
 
     // Partner signout
-    Cookie.remove( 'token' );
+    accessToken.set( '' );
 
     // Common signout
     clearCurrentUser();

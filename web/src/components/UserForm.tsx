@@ -5,6 +5,11 @@ import { useEffect, useState } from 'react';
 import type { FC, FormEvent } from 'react';
 
 // ////////////////////////////////////////////////////////////////////////////
+// 3PP Imports
+// ////////////////////////////////////////////////////////////////////////////
+import { parse } from 'date-fns';
+
+// ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import BackButton from './BackButton';
@@ -12,7 +17,7 @@ import BackButton from './BackButton';
 import currentUser from '../stores/current-user';
 import type { TUserRole } from '../stores/current-user';
 import { showConfirm, showError } from '../utils/alert';
-import { buildQuery, constructUrl } from '../utils/api';
+import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
@@ -86,11 +91,10 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       const response = await buildQuery( `guest?id=${id}`, null, 'GET' );
       const { data } = await response.json();
 
-
       if ( data ) {
         setUserData( {
           ...data,
-          accessEndDate: getYearMonthDay( new Date( data.expiration ) ),
+          accessEndDate: getYearMonthDay( parse( data.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
         } );
       }
     };
@@ -180,7 +184,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       return;
     }
 
-    const { ok } = await fetch( `${constructUrl( 'guest' )}?id=${email}`, { method: 'DELETE' } );
+    const { ok } = await buildQuery( `guest?id=${email}`, null, 'DELETE' );
 
     if ( !ok ) {
       showError( 'Unable to deactivate user' );

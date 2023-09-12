@@ -5,6 +5,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -16,6 +17,11 @@ import (
 // the response to show only the guests assigned to that team.
 func GetGuestsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	var err error
+
+	_, err = jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
 
 	parsed, err := data.ParseBodyData(event.Body)
 

@@ -7,6 +7,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,6 +18,11 @@ import (
 // It ensures that the required data is present before continuing on to
 // update the team data.
 func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	_, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
 	guest, err := data.ExtractGuestUser(event.Body)
 
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -33,6 +34,11 @@ func deactivateAdmin(email string) error {
 // DeactivateAdminHandler handles the request to deactivate an existing admin.
 // It ensures that the required data is present before continuing on to update the admin data.
 func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	_, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {

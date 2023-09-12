@@ -8,6 +8,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -64,6 +65,11 @@ func handleInvitation(invite data.Invite) error {
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
 func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	_, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {

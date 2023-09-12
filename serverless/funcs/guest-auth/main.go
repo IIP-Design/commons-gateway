@@ -7,6 +7,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/turnstile"
@@ -32,7 +33,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.Response{Body: "Forbidden", StatusCode: 403}, err
 	}
 
-	jwt, err := generateJWT(username, "guest")
+	jwt, err := jwt.FormatJWT(username, "guest")
 
 	if err != nil {
 		return msgs.SendServerError(err)

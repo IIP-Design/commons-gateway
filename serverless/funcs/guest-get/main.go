@@ -6,6 +6,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -14,6 +15,11 @@ import (
 
 // GetGuestHandler handles the request to retrieve a single admin user based on email address.
 func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	_, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest"})
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
 	id := event.QueryStringParameters["id"]
 
 	if id == "" {

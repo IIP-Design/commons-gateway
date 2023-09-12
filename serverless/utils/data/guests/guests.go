@@ -34,7 +34,7 @@ func RetrieveGuest(email string) (map[string]string, error) {
 		"familyName": lastName,
 		"role":       role,
 		"team":       team,
-		"expiration": expiration.String(),
+		"expiration": expiration.Format(time.RFC3339),
 	}
 
 	return guest, err

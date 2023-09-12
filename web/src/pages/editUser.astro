@@ -8,6 +8,6 @@ const title = 'Edit User';
 
 <AdminPageLayout title={title}>
   <PageContainer narrow title={title}>
-    <UserForm client:load user />
+    <UserForm client:only user />
   </PageContainer>
 </AdminPageLayout>
