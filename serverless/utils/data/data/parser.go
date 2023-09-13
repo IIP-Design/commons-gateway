@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"time"
@@ -63,9 +64,11 @@ type GuestInvite struct {
 }
 
 type UploaderUser struct {
-	GuestInvite
-	Inviter string
-	Pending bool
+	GuestUser
+	DateInvited string
+	Proposer    sql.NullString
+	Inviter     sql.NullString
+	Pending     bool
 }
 
 // Team represents the properties required to record a team.

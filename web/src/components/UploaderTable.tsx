@@ -88,8 +88,20 @@ const UserTable: FC = () => {
         ...defaultColumnDef( 'team' ),
         cell: info => getTeamName( info.getValue() as string, teams ),
       },
-      defaultColumnDef( 'proposer' ),
-      defaultColumnDef( 'inviter' ),
+      {
+        ...defaultColumnDef( 'proposer' ),
+        cell: info => {
+          const { String, Valid } = info.getValue() as any;
+          return Valid ? String : null;
+        }
+      },
+      {
+        ...defaultColumnDef( 'inviter' ),
+        cell: info => {
+          const { String, Valid } = info.getValue() as any;
+          return Valid ? String : null;
+        }
+      },
       {
         ...defaultColumnDef( 'active' ),
         cell: info => {
@@ -104,6 +116,7 @@ const UserTable: FC = () => {
       },
       {
         ...defaultColumnDef( 'pending' ),
+        header: 'Status',
         cell: info => {
           const isPending = info.getValue() as boolean;
           return (
