@@ -1,0 +1,473 @@
+<script>
+  const bannerHeader = document.getElementById('gov-banner-header');
+  const bannerControl = document.getElementById('gov-banner-control');
+  const bannerContent = document.getElementById('gov-banner-content');
+
+  bannerControl?.addEventListener('click', () => {
+    // Determine whether the banner should be expanded or contracted.
+    const expandBanner = bannerControl?.getAttribute('aria-expanded') === 'true' ? 'false' : 'true';
+
+    // Toggle the aria-expanded property.
+    bannerControl?.setAttribute('aria-expanded', expandBanner);
+
+    // Toggle the hidden property on the banner content.
+    if (expandBanner === 'true') {
+      bannerContent?.removeAttribute('hidden');
+    } else {
+      bannerContent?.setAttribute('hidden', '');
+    }
+
+    // Add/remove the expanded class on the header (used by the mobile view).
+    if (bannerHeader?.classList.contains('expanded')) {
+      bannerHeader?.classList.remove('expanded');
+    } else {
+      bannerHeader?.classList.add('expanded');
+    }
+  });
+</script>
+
+<section class="banner" aria-label="Official website of the United States government">
+  <div class="accordion" id="">
+    <header class="header" id="gov-banner-header">
+      <div class="inner">
+        <div class="grid-col-auto">
+          <img aria-hidden="true" class="flag" src="/us_flag_small.png" alt="" />
+        </div>
+        <div class="grid-col-fill tablet:grid-col-auto" aria-hidden="true">
+          <p class="header-text">An official website of the United States government</p>
+          <p class="header-action" id="gov-banner-header-action">Here's how you know</p>
+        </div>
+        <button
+          id="gov-banner-control"
+          aria-expanded="false"
+          class="button"
+          aria-controls="gov-banner-content"
+          type="button"
+        >
+          <span class="button-text">Here's how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="content" id="gov-banner-content" hidden>
+      <div class="grid-row grid-gap-lg">
+        <div class="guidance tablet:grid-col-6">
+          <img class="icon" src="/icon-dot-gov.svg" role="img" alt="" aria-hidden="true" />
+          <div class="block-body">
+            <p>
+              <strong>Official websites use .gov</strong><br />A
+              <strong>.gov</strong> website belongs to an official government organization in the United
+              States.
+            </p>
+          </div>
+        </div>
+        <div class="guidance tablet:grid-col-6">
+          <img class="icon" src="/icon-https.svg" role="img" alt="" aria-hidden="true" />
+          <div class="block-body">
+            <p>
+              <strong>Secure .gov websites use HTTPS</strong><br />A
+              <strong>lock</strong> (
+              <span class="icon-lock"
+                ><svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="52"
+                  height="64"
+                  viewBox="0 0 52 64"
+                  class="lock-image"
+                  role="img"
+                  aria-labelledby="banner-lock-description-default"
+                  focusable="false"
+                >
+                  <title id="banner-lock-title-default">Lock</title>
+                  <desc id="banner-lock-description-default">Locked padlock icon</desc>
+                  <path
+                    fill="#000000"
+                    fill-rule="evenodd"
+                    d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
+                  ></path>
+                </svg>
+              </span>) or <strong>https://</strong> means you've safely connected to the .gov website.
+              Share sensitive information only on official, secure websites.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  @use '../styles/breakpoints.scss' as *;
+
+  img {
+    height: auto;
+    border-style: none;
+    max-width: 100%;
+  }
+
+  strong {
+    font-weight: 700;
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  @include breakpoint('mobileonly') {
+    .expanded {
+      padding-right: 3.5rem;
+
+      .header-action {
+        display: none;
+      }
+    }
+  }
+
+  .button {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-weight: 400;
+    margin: 0;
+    text-align: left;
+    left: 0;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    vertical-align: baseline;
+    color: #005ea2;
+    display: block;
+    font-size: 0.8rem;
+    height: auto;
+    line-height: 1.1;
+    padding: 0;
+    text-decoration: none;
+    width: 100%;
+
+    @include breakpoint('tablet') {
+      bottom: auto;
+      left: auto;
+      right: auto;
+      top: auto;
+      display: inline;
+      margin-left: 0.5rem;
+      position: relative;
+      width: auto;
+    }
+
+    @include breakpoint('mobileonly') {
+      &[aria-expanded='true']::before {
+        bottom: 0;
+        top: 0;
+        position: absolute;
+        right: 0;
+        background-color: #e6e6e6;
+        content: '';
+        display: block;
+        height: 3rem;
+        width: 3rem;
+      }
+
+      &[aria-expanded='true']::after {
+        bottom: 0;
+        top: 0;
+        position: absolute;
+        right: 0;
+        background: 0 0;
+        background-color: #005ea2;
+        -webkit-mask-image: url(/close.svg), linear-gradient(transparent, transparent);
+        mask-image: url(/close.svg), linear-gradient(transparent, transparent);
+        -webkit-mask-position: center center;
+        mask-position: center center;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: 1.5rem 1.5rem;
+        mask-size: 1.5rem 1.5rem;
+        background-image: url(/close.svg);
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 1.5rem 1.5rem;
+        display: inline-block;
+        height: 3rem;
+        width: 3rem;
+        content: '';
+        vertical-align: middle;
+        margin-left: 0;
+      }
+    }
+
+    &[aria-expanded='false'],
+    &[aria-expanded='false']:hover {
+      background-image: none;
+      background-repeat: no-repeat;
+    }
+
+    &:focus {
+      outline: 0.25rem solid #2491ff;
+      outline-offset: 0;
+    }
+
+    &:hover {
+      color: #1a4480;
+      text-decoration: none;
+    }
+
+    &-text {
+      position: absolute;
+      left: -999em;
+      right: auto;
+      text-decoration: underline;
+
+      @include breakpoint('tablet') {
+        position: static;
+        display: inline;
+      }
+    }
+  }
+
+  .banner {
+    padding-bottom: 0;
+    line-height: 1.5;
+    background-color: #f0f0f0;
+  }
+
+  .accordion {
+    color: #1b1b1b;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .header {
+    color: #1b1b1b;
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+    min-height: 3rem;
+    font-weight: 400;
+    font-size: 0.8rem;
+    position: relative;
+
+    &-text {
+      margin-bottom: 0;
+      margin-top: 0;
+      font-size: 0.8rem;
+      line-height: 1.1;
+    }
+
+    &-action {
+      color: #005ea2;
+      line-height: 1.1;
+      margin-bottom: 0;
+      margin-top: 2px;
+      text-decoration: underline;
+
+      &::after {
+        background: 0 0;
+        background-color: #005ea2;
+        -webkit-mask-image: url(/expand_more.svg), linear-gradient(transparent, transparent);
+        mask-image: url(/expand_more.svg), linear-gradient(transparent, transparent);
+        -webkit-mask-position: center center;
+        mask-position: center center;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: 1rem 1rem;
+        mask-size: 1rem 1rem;
+        background-image: url(/expand_more.svg);
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 1rem 1rem;
+        display: inline-block;
+        height: 1rem;
+        width: 1rem;
+        content: '';
+        vertical-align: middle;
+        margin-left: 2px;
+        position: absolute;
+      }
+
+      @include breakpoint('tablet') {
+        display: none;
+      }
+    }
+
+    @include breakpoint('tablet') {
+      min-height: 0;
+      padding-bottom: 0.25rem;
+      padding-top: 0.25rem;
+    }
+  }
+
+  .inner {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 64rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding-right: 0;
+
+    @include breakpoint('tablet') {
+      align-items: center;
+    }
+
+    @include breakpoint('desktop') {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  .flag {
+    float: left;
+    margin-right: 0.5rem;
+    width: 1rem;
+
+    @include breakpoint('tablet') {
+      margin-right: 0.5rem;
+      padding-top: 0;
+    }
+  }
+
+  .icon {
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+    width: 2.5rem;
+  }
+
+  .lock-image {
+    height: 1.5ex;
+    width: 1.21875ex;
+  }
+
+  .block-body {
+    flex: 1 1 0%;
+  }
+
+  .content {
+    overflow: visible;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    max-width: 64rem;
+    background-color: transparent;
+    font-size: 1rem;
+    overflow: hidden;
+    padding: 0.25rem 1rem 1rem 0.5rem;
+    width: 100%;
+
+    p:first-child {
+      margin: 0;
+    }
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+
+    @include breakpoint('tablet') {
+      padding-bottom: 1.5rem;
+      padding-left: 1rem;
+      padding-top: 1.5rem;
+    }
+
+    @include breakpoint('desktop') {
+      padding-right: 2rem;
+    }
+  }
+
+  .guidance {
+    display: flex;
+    align-items: flex-start;
+    max-width: 64ex;
+    padding-top: 1rem;
+
+    @include breakpoint('tablet') {
+      padding-top: 0;
+    }
+  }
+
+  [class*='grid-col'] {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .grid-col-auto {
+    flex: 0 1 auto;
+  }
+
+  .grid-col-fill {
+    flex: 1 1 0%;
+    min-width: 1px;
+  }
+
+  .grid-col,
+  .grid-col-auto,
+  .grid-col-fill {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .grid-row.grid-gap-lg {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+
+    > * {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+  }
+
+  .grid-row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  @include breakpoint('tablet') {
+    .tablet\:grid-col-auto {
+      flex: 0 1 auto;
+      width: auto;
+      max-width: 100%;
+    }
+
+    .tablet\:grid-col-6 {
+      flex: 0 1 auto;
+      width: 50%;
+    }
+
+    .button::after {
+      background: 0 0;
+      background-color: #005ea2;
+      -webkit-mask-image: url(/expand_more.svg), linear-gradient(transparent, transparent);
+      mask-image: url(/expand_more.svg), linear-gradient(transparent, transparent);
+      -webkit-mask-position: center center;
+      mask-position: center center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 1rem 1rem;
+      mask-size: 1rem 1rem;
+      background-image: url(/expand_more.svg);
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: 1rem 1rem;
+      display: inline-block;
+      height: 1rem;
+      width: 1rem;
+      content: '';
+      vertical-align: middle;
+      margin-left: 2px;
+      position: absolute;
+    }
+
+    button[aria-expanded='true']::after {
+      content: '';
+      -webkit-mask-image: url(/expand_less.svg), linear-gradient(transparent, transparent);
+      mask-image: url(/expand_less.svg), linear-gradient(transparent, transparent);
+      background-image: url(/expand_less.svg);
+    }
+  }
+</style>
