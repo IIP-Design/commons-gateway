@@ -1,7 +1,7 @@
 import { persistentAtom, persistentMap } from '@nanostores/persistent';
+import type { TUserRole } from '../utils/types';
 
 export type TLoginStatus = 'loggedIn' | 'loggedOut';
-export type TUserRole = 'super admin' | 'admin' | 'guest admin' | 'guest';
 
 export interface ICurrentUser {
   email: string;

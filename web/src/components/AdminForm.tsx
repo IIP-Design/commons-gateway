@@ -9,7 +9,7 @@ import type { FC, FormEvent } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 import BackButton from './BackButton';
 
-import type { TUserRole } from '../stores/current-user';
+import type { TUserRole } from '../utils/types';
 import { showConfirm, showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';

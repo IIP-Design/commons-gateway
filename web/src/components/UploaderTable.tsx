@@ -13,10 +13,9 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import type { IUserEntry, TUserRole, WithUiData } from '../utils/types';
+import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
-import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
 
@@ -24,35 +23,37 @@ import { Table, defaultColumnDef } from './Table';
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import style from '../styles/table.module.scss';
+import { daysUntil } from '../utils/dates';
+import { isGuestActive } from '../utils/guest';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserTableProps {
-  role?: TUserRole;
+interface IUploader extends IUserEntry {
+  dateInvited: string;
+  proposer: string;
+  inviter: string;
+  pending: boolean;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
-const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
-  const [users, setUsers] = useState<WithUiData<IUserEntry>[]>( [] );
+const UserTable: FC = () => {
+  const [users, setUsers] = useState<WithUiData<IUploader>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
-    const body = {
-      ...( userIsSuperAdmin() ? {} : { team: currentUser.get().team } ),
-      ...( role ? { role } : {} ),
-    };
+    const body = { team: currentUser.get().team };
 
     const getUsers = async () => {
-      const response = await buildQuery( 'guests', body );
+      const response = await buildQuery( 'guests/uploaders', body );
       const { data } = await response.json();
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IUserEntry ) => {
+          data.map( ( user: IUploader ) => {
             return {
               ...user,
               name: `${user.givenName} ${user.familyName}`,
@@ -79,17 +80,16 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     getTeams();
   }, [] );
 
-  const columns = useMemo<ColumnDef<WithUiData<IUserEntry>>[]>(
+  const columns = useMemo<ColumnDef<WithUiData<IUploader>>[]>(
     () => [
-      {
-        ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
-      },
+      defaultColumnDef( 'name' ),
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'team' ),
         cell: info => getTeamName( info.getValue() as string, teams ),
       },
+      defaultColumnDef( 'proposer' ),
+      defaultColumnDef( 'inviter' ),
       {
         ...defaultColumnDef( 'active' ),
         cell: info => {
@@ -98,6 +98,18 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
             <span className={ style.status }>
               <span className={ isActive ? style.active : style.inactive } />
               { isActive ? 'Active' : 'Inactive' }
+            </span>
+          );
+        },
+      },
+      {
+        ...defaultColumnDef( 'pending' ),
+        cell: info => {
+          const isPending = info.getValue() as boolean;
+          return (
+            <span className={ style.status }>
+              <span className={ isPending ? style.inactive : style.active } />
+              { isPending ? 'Pending' : 'Approved' }
             </span>
           );
         },

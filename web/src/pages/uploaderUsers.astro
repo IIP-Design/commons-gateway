@@ -1,0 +1,13 @@
+---
+import PartnerPageLayout from '../layouts/PartnerPageLayout.astro';
+import TableContainer from '../layouts/TableContainer.astro';
+import UploaderTable from '../components/UploaderTable';
+
+const title = 'Uploader Users on Your Team';
+---
+
+<PartnerPageLayout title={title}>
+  <TableContainer title={title}>
+    <UploaderTable client:only />
+  </TableContainer>
+</PartnerPageLayout>

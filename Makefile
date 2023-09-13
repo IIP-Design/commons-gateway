@@ -34,6 +34,7 @@ build:
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-get funcs/guest-get/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-update funcs/guest-update/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guests-pending funcs/guests-pending/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
@@ -42,6 +43,7 @@ build:
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-metadata funcs/upload-metadata/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-presigned-url funcs/upload-presigned-url/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/uploader-get funcs/uploader-get/*.go;\
 	cd funcs;\
 	cd email-2fa && npm run zip && cd ../;\
 	cd email-creds && npm run zip && cd ../;\
@@ -88,6 +90,10 @@ local-guests: build
 	cd serverless;\
 	npm run sls -- invoke local -f guestsGet $(DEV_DB_ENV) -p $(EVENT_GUESTS_GET);
 
+local-guests-pending: build
+	cd serverless;\
+	npm run sls -- invoke local -f guestsPending $(DEV_DB_ENV);
+
 local-salt: build
 	cd serverless;\
 	npm run sls -- invoke local -f credsSalt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
@@ -120,3 +126,6 @@ local-upload-presigned-url: build
 	cd serverless;\
 	npm run sls -- invoke local -f uploadPresignedUrl $(DEV_ENV);
 
+local-uploader-get: build
+	cd serverless;\
+	npm run sls -- invoke local -f uploaderGet $(DEV_ENV);

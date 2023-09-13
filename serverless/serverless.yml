@@ -220,6 +220,19 @@ functions:
     package:
       patterns:
         - './bin/guests-get'
+  guestsPending:
+    name: gateway-${opt:stage}-guests-pending
+    handler: bin/guests-pending
+    description: Retrieve a list of pending guest invites.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guests/pending
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/guests-pending'
   initDB:
     name: gateway-${opt:stage}-init-db
     handler: bin/init-db
@@ -321,6 +334,19 @@ functions:
         - './bin/upload-presigned-url'
     environment:
       S3_UPLOAD_BUCKET: commons-gateway-${opt:stage}-upload
+  uploaderGet:
+    name: gateway-${opt:stage}-uploader-get
+    handler: bin/uploader-get
+    description: Return a list of uploaders for a specific team.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guests/uploaders
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/uploader-get'
   email2fa:
     name: gateway-${opt:stage}-email-2fa
     handler: funcs/email-2fa/dist/index.handler

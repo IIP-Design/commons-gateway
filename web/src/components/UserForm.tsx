@@ -15,7 +15,7 @@ import { parse } from 'date-fns';
 import BackButton from './BackButton';
 
 import currentUser from '../stores/current-user';
-import type { TUserRole } from '../stores/current-user';
+import type { TUserRole } from '../utils/types';
 import { showConfirm, showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';

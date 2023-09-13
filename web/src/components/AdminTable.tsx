@@ -12,7 +12,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
-import type { TUserRole } from '../stores/current-user';
+import type { TUserRole, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
@@ -34,15 +34,11 @@ interface IAdminUser {
   team: string;
 }
 
-interface IAdminWithUiData extends IAdminUser {
-  name: string;
-}
-
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 const AdminTable: FC = () => {
-  const [admins, setAdmins] = useState<IAdminWithUiData[]>( [] );
+  const [admins, setAdmins] = useState<WithUiData<IAdminUser>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
@@ -78,7 +74,7 @@ const AdminTable: FC = () => {
     getTeams();
   }, [] );
 
-  const columns = useMemo<ColumnDef<IAdminWithUiData>[]>(
+  const columns = useMemo<ColumnDef<WithUiData<IAdminUser>>[]>(
     () => [
       {
         ...defaultColumnDef( 'name' ),
@@ -107,14 +103,17 @@ const AdminTable: FC = () => {
 
   return (
     <div className={ style.container }>
-      <Table
-        {
-          ...{
-            data: admins,
-            columns,
+      { admins.length ?
+        <Table
+          {
+            ...{
+              data: admins,
+              columns,
+            }
           }
-        }
-      />
+        />
+        : <p>No data to show</p>
+      }
     </div>
   );
 }

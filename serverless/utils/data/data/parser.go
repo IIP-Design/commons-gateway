@@ -55,6 +55,19 @@ type GuestUser struct {
 	User
 }
 
+// GuestInvite extends the GuestUser struct with unique invite properties.
+type GuestInvite struct {
+	DateInvited string
+	Proposer    string
+	GuestUser
+}
+
+type UploaderUser struct {
+	GuestInvite
+	Inviter string
+	Pending bool
+}
+
 // Team represents the properties required to record a team.
 type Team struct {
 	Id     string

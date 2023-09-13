@@ -13,10 +13,9 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import type { IUserEntry, TUserRole, WithUiData } from '../utils/types';
+import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
-import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
 
@@ -24,39 +23,37 @@ import { Table, defaultColumnDef } from './Table';
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import style from '../styles/table.module.scss';
+import { daysUntil } from '../utils/dates';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserTableProps {
-  role?: TUserRole;
+interface IInvite extends IUserEntry {
+  dateInvited: string;
+  proposer: string;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
-const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
-  const [users, setUsers] = useState<WithUiData<IUserEntry>[]>( [] );
+const UserTable: FC = () => {
+  const [users, setUsers] = useState<WithUiData<IInvite>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
-    const body = {
-      ...( userIsSuperAdmin() ? {} : { team: currentUser.get().team } ),
-      ...( role ? { role } : {} ),
-    };
+    const body = userIsSuperAdmin() ? {} : { team: currentUser.get().team };
 
     const getUsers = async () => {
-      const response = await buildQuery( 'guests', body );
+      const response = await buildQuery( 'guests/pending', body );
       const { data } = await response.json();
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IUserEntry ) => {
+          data.map( ( user: IInvite ) => {
             return {
               ...user,
               name: `${user.givenName} ${user.familyName}`,
-              active: isGuestActive( user.expiration ),
             };
           } )
         );
@@ -79,7 +76,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     getTeams();
   }, [] );
 
-  const columns = useMemo<ColumnDef<WithUiData<IUserEntry>>[]>(
+  const columns = useMemo<ColumnDef<WithUiData<IInvite>>[]>(
     () => [
       {
         ...defaultColumnDef( 'name' ),
@@ -90,17 +87,22 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
         ...defaultColumnDef( 'team' ),
         cell: info => getTeamName( info.getValue() as string, teams ),
       },
+      defaultColumnDef( 'proposer' ),
       {
-        ...defaultColumnDef( 'active' ),
-        cell: info => {
-          const isActive = info.getValue() as boolean;
-          return (
-            <span className={ style.status }>
-              <span className={ isActive ? style.active : style.inactive } />
-              { isActive ? 'Active' : 'Inactive' }
-            </span>
-          );
-        },
+        accessorFn: row => row.expiration,
+        id: '_exp',
+        header: 'Days Till Expiration',
+        footer: props => props.column.id,
+        enableSorting: true,
+        cell: info => daysUntil( info.getValue() as string ),
+      },
+      {
+        accessorFn: row => row.dateInvited,
+        id: '_inv',
+        header: 'Days Since Invite',
+        footer: props => props.column.id,
+        enableSorting: true,
+        cell: info => daysUntil( info.getValue() as string ) * -1,
       },
     ],
     [teams]
