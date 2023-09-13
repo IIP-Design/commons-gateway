@@ -1,11 +1,18 @@
-// The URL for the API Gateway.
-const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
+import { accessToken } from '../stores/current-user';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
 export type TActions = 'create' | 'confirm';
 export type TMethods = 'DELETE' | 'GET' | 'POST' | 'PUT';
+
+// ////////////////////////////////////////////////////////////////////////////
+// Config
+// ////////////////////////////////////////////////////////////////////////////
+const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL; // The URL for the API Gateway.
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
@@ -15,6 +22,19 @@ export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}
 // ////////////////////////////////////////////////////////////////////////////
 // API Functions
 // ////////////////////////////////////////////////////////////////////////////
+const buildHeaders = ( token: string, body: Nullable<Record<string, any>> ): HeadersInit => {
+  const headers: HeadersInit = {};
+
+  if( body ) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if( token ) {
+    headers.authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
 
 /**
  * Helper function to consistently construct the API requests.
@@ -25,9 +45,7 @@ export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const buildQuery = async ( endpoint: string, body: Nullable<Record<string, any>>, method?: TMethods ) => {
   let opts = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: buildHeaders( accessToken.get(), body ),
     method: method || 'POST',
   } as RequestInit;
 

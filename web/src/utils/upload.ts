@@ -1,4 +1,9 @@
 // ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
+import { buildQuery } from './api';
+
+// ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
 type TUploadStatus = 'ok' | 'urlFailed' | 'uploadFailed' | 'metadataFailed';
@@ -17,16 +22,13 @@ interface IFileUploadMeta extends IMetadata {
 // ////////////////////////////////////////////////////////////////////////////
 // Config
 // ////////////////////////////////////////////////////////////////////////////
-const API_ENDPOINT = import.meta.env.PUBLIC_SERVERLESS_URL;
 const UPLOAD_ENDPOINT = import.meta.env.UPLOAD_ENDPOINT || 'upload';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
 const getPresignedUrl = async ( contentType: string ) => {
-  const response = await fetch( `${API_ENDPOINT}/${UPLOAD_ENDPOINT}?contentType=${encodeURIComponent( contentType )}`, {
-    method: 'GET',
-  } );
+  const response = await buildQuery( `${UPLOAD_ENDPOINT}?contentType=${encodeURIComponent( contentType )}`, null, 'GET' );
   const { uploadURL, key } = await response.json();
 
   return { uploadURL, key };
@@ -42,13 +44,7 @@ const uploadFile = async ( fqUrl: string, file: File ) => {
 };
 
 const submitFileMetadata = async ( body: IFileUploadMeta ) => {
-  const response = await fetch( `${API_ENDPOINT}/${UPLOAD_ENDPOINT}`, {
-    body: JSON.stringify( body ),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-  } );
+  const response = await buildQuery( UPLOAD_ENDPOINT, body, 'POST' );
 
   return response.status === 200;
 };

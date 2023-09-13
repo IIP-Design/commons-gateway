@@ -82,7 +82,7 @@ const AdminTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+        cell: info => <a href={`/editAdmin?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
       },
       defaultColumnDef( 'email' ),
       {

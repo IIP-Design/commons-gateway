@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -71,6 +72,13 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 		return admin, err
 	}
 
+	jwt, err := jwt.GenerateJWT(username, role)
+
+	if err != nil {
+		logs.LogError(err, "Admin token error")
+		return admin, err
+	}
+
 	admin = map[string]any{
 		"email":      email,
 		"givenName":  first_name,
@@ -78,6 +86,7 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 		"role":       role,
 		"team":       team,
 		"active":     active,
+		"token":      jwt,
 	}
 
 	return admin, err

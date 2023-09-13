@@ -3,7 +3,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
 import type { TUserRole } from '../stores/current-user';
-import { buildQuery, constructUrl } from './api';
+import { buildQuery } from './api';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -50,7 +50,7 @@ const partnerVerificationFn: TPermissionVerificationFn = async ( redirect: strin
   let authenticated = false;
 
   try {
-    const response = await fetch( `${constructUrl( 'guest' )}?id=${email}` );
+    const response = await buildQuery( `guest?id=${email}`, null, 'GET' );
     const { data } = await response.json();
     const { role } = data;
 

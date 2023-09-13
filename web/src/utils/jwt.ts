@@ -1,5 +1,3 @@
-import { parseISO } from 'date-fns';
-
 /**
  * Decode JWT authentication token
  *
@@ -23,7 +21,6 @@ export const decodeJwt = ( token:string ) => {
 
 export const tokenExpiration = ( token: string ) => {
   const { exp } = decodeJwt( token );
-  const dt = parseISO( exp );
 
-  return dt.valueOf() / 1000;
+  return exp;
 };

@@ -7,6 +7,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/turnstile"
@@ -29,10 +30,14 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 	}
 
 	if creds.Hash != clientHash {
-		return msgs.Response{Body: "Forbidden", StatusCode: 403}, err
+		return msgs.SendAuthError(errors.New("forbidden"), 403)
+	} else if creds.Expired {
+		return msgs.SendAuthError(errors.New("credentials expired"), 403)
+	} else if !creds.Approved {
+		return msgs.SendAuthError(errors.New("user is not yet approved"), 403)
 	}
 
-	jwt, err := generateJWT(username, "guest")
+	jwt, err := jwt.FormatJWT(username, "guest")
 
 	if err != nil {
 		return msgs.SendServerError(err)

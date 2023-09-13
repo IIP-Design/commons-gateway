@@ -6,6 +6,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -17,6 +18,11 @@ import (
 // ensures that the required data is present before continuing on to
 // update the team data.
 func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+	if err != nil {
+		return msgs.SendAuthError(err, code)
+	}
+
 	parsed, err := data.ParseBodyData(event.Body)
 
 	active := parsed.Active

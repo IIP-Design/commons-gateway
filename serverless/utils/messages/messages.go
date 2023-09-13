@@ -55,5 +55,41 @@ func SendSuccessMessage() (Response, error) {
 // SendServerError accepts an error and returns it as an API Gateway response with
 // a status code of 500.
 func SendServerError(err error) (Response, error) {
-	return Response{StatusCode: 500}, err
+	return Response{StatusCode: 500}, nil
+}
+
+func statusCodeToBody(statusCode int) string {
+	switch statusCode {
+	case 401:
+		return "unauthorized"
+	case 403:
+		return "forbidden"
+	case 500:
+	default:
+		return "internal error"
+	}
+
+	return "internal error"
+}
+
+func SendAuthError(err error, statusCode int) (Response, error) {
+	var body string
+	if err != nil {
+		body = err.Error()
+	} else {
+		body = statusCodeToBody(statusCode)
+	}
+
+	resp := Response{
+		StatusCode:      statusCode,
+		IsBase64Encoded: false,
+		Body:            body,
+		Headers: map[string]string{
+			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+			"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+			"Access-Control-Allow-Origin":  "*",
+			"Content-Type":                 "text/plain",
+		},
+	}
+	return resp, nil
 }

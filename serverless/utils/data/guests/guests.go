@@ -34,14 +34,14 @@ func RetrieveGuest(email string) (map[string]string, error) {
 		"familyName": lastName,
 		"role":       role,
 		"team":       team,
-		"expiration": expiration.String(),
+		"expiration": expiration.Format(time.RFC3339),
 	}
 
 	return guest, err
 }
 
 // RetrieveGuests opens a database connection and retrieves the full list of admin users.
-func RetrieveGuests(team string) ([]map[string]string, error) {
+func RetrieveGuests(team string, role string) ([]map[string]string, error) {
 	var guests []map[string]string
 	var err error
 	var query string
@@ -83,7 +83,9 @@ func RetrieveGuests(team string) ([]map[string]string, error) {
 			"expiration": guest.Expires,
 		}
 
-		guests = append(guests, guestData)
+		if role == "" || role == guestData["role"] {
+			guests = append(guests, guestData)
+		}
 	}
 
 	if err = rows.Err(); err != nil {

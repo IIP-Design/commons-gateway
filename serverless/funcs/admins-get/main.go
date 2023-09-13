@@ -4,14 +4,19 @@ import (
 	"context"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // GetAdminsHandler handles the request to retrieve a list of all admin users.
-func GetAdminsHandler(ctx context.Context) (msgs.Response, error) {
-	var err error
+func GetAdminsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+	if err != nil {
+		return msgs.SendAuthError(err, code)
+	}
 
 	admins, err := admins.RetrieveAdmins()
 

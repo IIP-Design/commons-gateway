@@ -7,6 +7,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,6 +18,11 @@ import (
 // It ensures that the required data is present before continuing on to
 // update the team data.
 func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+	if err != nil {
+		return msgs.SendAuthError(err, code)
+	}
+
 	admin, err := data.ExtractAdminUser(event.Body)
 
 	if err != nil {
