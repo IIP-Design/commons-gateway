@@ -7,18 +7,14 @@ import { useState } from 'react';
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
 import {
-  Column,
-  Table as ReactTable,
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  ColumnDef,
   flexRender,
   getSortedRowModel,
-  SortingState,
-} from '@tanstack/react-table'
-
+} from '@tanstack/react-table';
+import type { Column, Table as ReactTable, ColumnDef, SortingState } from '@tanstack/react-table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -34,84 +30,82 @@ import style from '../styles/table.module.scss';
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
 type ITableProps<DataType> = {
-  data: DataType[];
-  columns: ColumnDef<DataType>[];
-  additionalTableClasses?: string[];
+  readonly data: DataType[];
+  readonly columns: ColumnDef<DataType>[];
+  readonly additionalTableClasses?: string[];
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-export const defaultColumnDef = <T,>(key: keyof T): ColumnDef<T> => {
-  return {
-    accessorFn: row => row[key],
-    id: key as string,
-    cell: info => info.getValue(),
-    header: () => <span>{titleCase(key as string)}</span>,
-    footer: props => props.column.id,
-    enableSorting: true,
-  }
-};
+export const defaultColumnDef = <T, >( key: keyof T ): ColumnDef<T> => ( {
+  accessorFn: row => row[key],
+  id: key as string,
+  cell: info => info.getValue(),
+  header: () => <span>{ titleCase( key as string ) }</span>,
+  footer: props => props.column.id,
+  enableSorting: true,
+} );
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
-export const Filter = ({
+export const Filter = ( {
   column,
   table,
 }: {
   column: Column<any, any>
   table: ReactTable<any>
-}) => {
-  const skipFiltering = (column.id.startsWith('_'));
+} ) => {
+  const skipFiltering = ( column.id.startsWith( '_' ) );
 
   const firstValue = table
     .getPreFilteredRowModel()
-    .flatRows[0]?.getValue(column.id);
-  const colType = (skipFiltering ? null : typeof firstValue);
+    .flatRows[0]?.getValue( column.id );
+  const colType = ( skipFiltering ? null : typeof firstValue );
   const columnFilterValue = column.getFilterValue();
 
   let ret: JSX.Element | null = null;
 
-  switch (colType) {
-    case "number": {
-      ret = <div>
-        <input
-          type="number"
-          value={(columnFilterValue as [number, number])?.[0] ?? ''}
-          onChange={e =>
-            column.setFilterValue((old: [number, number]) => [
+  switch ( colType ) {
+    case 'number': {
+      ret = (
+        <div>
+          <input
+            type="number"
+            value={ ( columnFilterValue as [number, number] )?.[0] ?? '' }
+            onChange={ e => column.setFilterValue( ( old: [number, number] ) => [
               e.target.value,
               old?.[1],
-            ])
-          }
-          placeholder={`Min`}
-          aria-label={`${titleCase(column.id)} minimum value`}
-        />
-        <input
-          type="number"
-          value={(columnFilterValue as [number, number])?.[1] ?? ''}
-          onChange={e =>
-            column.setFilterValue((old: [number, number]) => [
+            ] ) }
+            placeholder="Min"
+            aria-label={ `${titleCase( column.id )} minimum value` }
+          />
+          <input
+            type="number"
+            value={ ( columnFilterValue as [number, number] )?.[1] ?? '' }
+            onChange={ e => column.setFilterValue( ( old: [number, number] ) => [
               old?.[0],
               e.target.value,
-            ])
-          }
-          placeholder={`Max`}
-          aria-label={`${titleCase(column.id)} maxiumum value`}
-        />
-      </div>;
+            ] ) }
+            placeholder="Max"
+            aria-label={ `${titleCase( column.id )} maximum value` }
+          />
+        </div>
+      );
       break;
     }
-    case "string": {
-      ret = <input
-        type="text"
-        value={(columnFilterValue ?? '') as string}
-        onChange={e => column.setFilterValue(e.target.value)}
-        placeholder={`Search...`}
-        style={{ width: "100%" }}
-        aria-label={`Search ${titleCase(column.id)}`}
-      />;
+    case 'string': {
+      ret = (
+        <input
+          type="text"
+          value={ ( columnFilterValue ?? '' ) as string }
+          onChange={ e => column.setFilterValue( e.target.value ) }
+          placeholder="Search..."
+          style={ { width: '100%' } }
+          aria-label={ `Search ${titleCase( column.id )}` }
+        />
+      );
       break;
     }
     default:
@@ -119,84 +113,88 @@ export const Filter = ({
   }
 
   return ret;
-}
+};
 
-export const PaginationFooter = <T,>({ table }: { table: ReactTable<T> }) => {
-  return (
-    <div className={style['pagination-footer']}>
-      <button
-        className={style['pagination-button']}
-        onClick={() => table.setPageIndex(0)}
-        disabled={!table.getCanPreviousPage()}
-      >
-        {'<<'}
-      </button>
-      <button
-        className={style['pagination-button']}
-        onClick={() => table.previousPage()}
-        disabled={!table.getCanPreviousPage()}
-      >
-        {'<'}
-      </button>
-      <button
-        className={style['pagination-button']}
-        onClick={() => table.nextPage()}
-        disabled={!table.getCanNextPage()}
-      >
-        {'>'}
-      </button>
-      <button
-        className={style['pagination-button']}
-        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-        disabled={!table.getCanNextPage()}
-      >
-        {'>>'}
-      </button>
-      <span className={style['go-to-page-container']}>
-        <div style={{display: 'inline'}}>Page</div>
-        <strong>
-          {table.getState().pagination.pageIndex + 1} of{' '}
-          {table.getPageCount()}
-        </strong>
-      </span>
-      <span className={style['go-to-page-container']}>
-        | Go to page:
-        <input
-          type="number"
-          defaultValue={table.getState().pagination.pageIndex + 1}
-          onChange={e => {
-            const page = e.target.value ? Number(e.target.value) - 1 : 0
-            table.setPageIndex(page)
-          }}
-          className={style['page-num-select']}
-          max={table.getPageCount()}
-          min={1}
-          aria-label="Go to page"
-        />
-      </span>
-      <select
-        value={table.getState().pagination.pageSize}
-        onChange={e => {
-          table.setPageSize(Number(e.target.value))
-        }}
-        className={style['page-show-select']}
-        style={{ width: "auto" }}
-        aria-label="Select number of results per page"
-      >
-        {[10, 20, 30, 40, 50].map(pageSize => (
-          <option key={pageSize} value={pageSize}>
-            Show {pageSize}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
+export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T> } ) => (
+  <div className={ style['pagination-footer'] }>
+    <button
+      className={ style['pagination-button'] }
+      onClick={ () => table.setPageIndex( 0 ) }
+      disabled={ !table.getCanPreviousPage() }
+      type="button"
+    >
+      { '<<' }
+    </button>
+    <button
+      className={ style['pagination-button'] }
+      onClick={ () => table.previousPage() }
+      disabled={ !table.getCanPreviousPage() }
+      type="button"
+    >
+      { '<' }
+    </button>
+    <span className={ style['go-to-page-container'] }>
+      <div style={ { display: 'inline' } }>Page</div>
+      <strong>
+        { `${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}` }
+      </strong>
+    </span>
+    <button
+      className={ style['pagination-button'] }
+      onClick={ () => table.nextPage() }
+      disabled={ !table.getCanNextPage() }
+      type="button"
+    >
+      { '>' }
+    </button>
+    <button
+      className={ style['pagination-button'] }
+      onClick={ () => table.setPageIndex( table.getPageCount() - 1 ) }
+      disabled={ !table.getCanNextPage() }
+      type="button"
+    >
+      { '>>' }
+    </button>
+    <span className={ style['go-to-page-container'] }>
+      { 'Go to page: ' }
+      <input
+        type="number"
+        defaultValue={ table.getState().pagination.pageIndex + 1 }
+        onChange={ e => {
+          const page = e.target.value ? Number( e.target.value ) - 1 : 0;
 
-export const Table = <DataType,>({ data, columns, additionalTableClasses }: ITableProps<DataType>) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
+          table.setPageIndex( page );
+        } }
+        className={ style['page-num-select'] }
+        max={ table.getPageCount() }
+        min={ 1 }
+        aria-label="Go to page"
+      />
+    </span>
+    <select
+      value={ table.getState().pagination.pageSize }
+      onChange={ e => {
+        table.setPageSize( Number( e.target.value ) );
+      } }
+      className={ style['page-show-select'] }
+      style={ { width: 'auto' } }
+      aria-label="Select number of results per page"
+    >
+      { [
+        10, 20, 30, 40, 50,
+      ].map( pageSize => (
+        <option key={ pageSize } value={ pageSize }>
+          { `Show ${pageSize}` }
+        </option>
+      ) ) }
+    </select>
+  </div>
+);
 
-  const table = useReactTable<DataType>({
+export const Table = <DataType, >( { data, columns, additionalTableClasses }: ITableProps<DataType> ) => {
+  const [sorting, setSorting] = useState<SortingState>( [] );
+
+  const table = useReactTable<DataType>( {
     data,
     columns,
     state: {
@@ -208,66 +206,65 @@ export const Table = <DataType,>({ data, columns, additionalTableClasses }: ITab
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  });
+  } );
 
-  const tableClasses = (additionalTableClasses || []).map(c => style[c]).filter(Boolean).join(' ');
+  const tableClasses = ( additionalTableClasses || [] ).map( c => style[c] ).filter( Boolean )
+    .join( ' ' );
 
   return (
-    <div className={style.container}>
-      <table className={`${style.table} ${tableClasses}`}>
+    <div className={ style.container }>
+      <table className={ `${style.table} ${tableClasses}` }>
         <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => {
-                return (
-                  <th key={header.id} colSpan={header.colSpan} style={{verticalAlign: 'top'}}>
-                    {header.isPlaceholder ? null : (
+          { table.getHeaderGroups().map( headerGroup => (
+            <tr key={ headerGroup.id }>
+              { headerGroup.headers.map( header => (
+                <th key={ header.id } colSpan={ header.colSpan } style={ { verticalAlign: 'top' } }>
+                  { header.isPlaceholder
+                    ? null
+                    : (
                       <div
-                        className={header.column.getCanSort() ? style['sortable-header'] : ''}
-                        onClick={header.column.getToggleSortingHandler()}
+                        className={ header.column.getCanSort() ? style['sortable-header'] : '' }
+                        onClick={ header.column.getToggleSortingHandler() }
                       >
-                        {flexRender(
+                        { flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {{
+                          header.getContext(),
+                        ) }
+                        { {
                           asc: ' 🔺',
                           desc: ' 🔻',
-                        }[header.column.getIsSorted() as string] ?? null}
-                        {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null}
+                        }[header.column.getIsSorted() as string] ?? null }
+                        { header.column.getCanFilter()
+                          ? (
+                            <div>
+                              <Filter column={ header.column } table={ table } />
+                            </div>
+                          )
+                          : null }
                       </div>
-                    )}
-                  </th>
-                )
-              })}
+                    ) }
+                </th>
+              ) ) }
             </tr>
-          ))}
+          ) ) }
         </thead>
         <tbody>
-          {table.getRowModel().rows.map(row => {
-            return (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => {
-                  return (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  )
-                })}
-              </tr>
-            )
-          })}
+          { table.getRowModel().rows.map( row => (
+            <tr key={ row.id }>
+              { row.getVisibleCells().map( cell => (
+                <td key={ cell.id }>
+                  { flexRender(
+                    cell.column.columnDef.cell,
+                    cell.getContext(),
+                  ) }
+                </td>
+              ) ) }
+            </tr>
+          ) ) }
         </tbody>
       </table>
       <hr />
-      <PaginationFooter table={table} />
+      <PaginationFooter table={ table } />
     </div>
   );
-}
+};

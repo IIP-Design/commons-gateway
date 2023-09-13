@@ -25,40 +25,42 @@ import btnStyle from '../styles/button.module.scss';
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
 interface ITeamModalProps {
-  team?: ITeam;
-  setTeams: React.Dispatch<React.SetStateAction<ITeam[]>>;
-  anchor: string | JSX.Element;
+  readonly team?: ITeam;
+  readonly setTeams: React.Dispatch<React.SetStateAction<ITeam[]>>;
+  readonly anchor: string | JSX.Element;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Config
 // ////////////////////////////////////////////////////////////////////////////
-Modal.setAppElement( document.getElementById('root') as HTMLElement);
+Modal.setAppElement( document.getElementById( 'root' ) as HTMLElement );
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITeamModalProps ) => {
   // Team Setup
-  const [ localTeam, setTeam ] = useState<Partial<ITeam>>( team || { active: true } );
-  
+  const [localTeam, setLocalTeam] = useState<Partial<ITeam>>( team || { active: true } );
+
   // Modal Setup
-  const [ modalIsOpen, setIsOpen ] = useState( false );
+  const [modalIsOpen, setModalIsOpen] = useState( false );
 
   // Modal Controls
-  const openModal = () => setIsOpen( true );
-  const closeModal = () => setIsOpen( false );
+  const openModal = () => setModalIsOpen( true );
+  const closeModal = () => setModalIsOpen( false );
 
   // Update Controls
   const handleUpdate = ( key: string, value: any ) => {
-    setTeam( { ...localTeam, [key]: value } );
+    setLocalTeam( { ...localTeam, [key]: value } );
   };
 
   // Update Team
   const handleSubmit = async () => {
     const { name, id, active } = localTeam;
-    if( !name ) {
+
+    if ( !name ) {
       showError( 'A team must have a name' );
+
       return;
     }
 
@@ -67,7 +69,6 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
     // If the team is new, send a create request, otherwise send an update request.
     if ( !id ) {
-
       const response = await buildQuery( 'team/create', { teamName: name }, 'POST' );
       const { data, message } = await response.json();
 
@@ -91,33 +92,33 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
     } else {
       closeModal();
     }
-  }
+  };
 
   // Styles
   const modalStyle = {
     content: {
-      height: "fit-content",
-      width: "fit-content",
+      height: 'fit-content',
+      width: 'fit-content',
       top: '50%',
       left: '50%',
       right: 'auto',
       bottom: 'auto',
       marginRight: '-50%',
       transform: 'translate(-50%, -50%)',
-      boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px",
+      boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
     },
   };
 
   return (
     <>
-      <button className={btnStyle['link-btn']} onClick={openModal}>{anchor}</button>
+      <button className={ btnStyle['link-btn'] } onClick={ openModal } type="button">{ anchor }</button>
       <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
+        isOpen={ modalIsOpen }
+        onRequestClose={ closeModal }
         contentLabel="Example Modal"
-        style={modalStyle}
+        style={ modalStyle }
       >
-        <h1>{ localTeam.id ? `Update ${localTeam.name}` : "Add a New Team" }</h1>
+        <h1>{ localTeam.id ? `Update ${localTeam.name}` : 'Add a New Team' }</h1>
         <label
           style={ { margin: '0.5rem 0', display: 'block' } }
         >
@@ -131,25 +132,29 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
           aria-label="Team Name"
         />
         {
-          localTeam.id &&
-            <div style={ { margin: '0.5rem 0', display: 'block' } }>
-              <ToggleSwitch
-                active={ localTeam.active ?? false }
-                callback={ e => handleUpdate( 'active', e ) }
-                id={ localTeam.id }
-              />
-            </div>
+          localTeam.id
+            && (
+              <div style={ { margin: '0.5rem 0', display: 'block' } }>
+                <ToggleSwitch
+                  active={ localTeam.active ?? false }
+                  callback={ e => handleUpdate( 'active', e ) }
+                  id={ localTeam.id }
+                />
+              </div>
+            )
         }
         <div style={ { margin: '0.5rem 0' } }>
           <button
             className={ `${btnStyle.btn} ${btnStyle['spaced-btn']}` }
-            onClick={handleSubmit}
+            onClick={ handleSubmit }
+            type="button"
           >
             Submit
           </button>
           <button
             className={ `${btnStyle.btn} ${btnStyle['spaced-btn']} ${btnStyle['back-btn']} ` }
-            onClick={closeModal}
+            onClick={ closeModal }
+            type="button"
           >
             Cancel
           </button>
@@ -157,4 +162,4 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
       </Modal>
     </>
   );
-}
+};

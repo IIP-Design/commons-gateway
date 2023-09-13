@@ -48,9 +48,9 @@ const TeamTable: FC = () => {
         ...defaultColumnDef( 'name' ),
         cell: info => (
           <TeamModal
-            anchor={<span style={{cursor:'pointer'}}>{info.getValue() as string}</span>}
-            team={info.row.original}
-            setTeams={setTeams}
+            anchor={ <span style={ { cursor: 'pointer' } }>{ info.getValue() as string }</span> }
+            team={ info.row.original }
+            setTeams={ setTeams }
           />
         ),
       },
@@ -58,6 +58,7 @@ const TeamTable: FC = () => {
         ...defaultColumnDef( 'active' ),
         cell: info => {
           const isActive = info.getValue() as boolean;
+
           return (
             <span className={ style.status }>
               <span className={ isActive ? style.active : style.inactive } />
@@ -67,21 +68,20 @@ const TeamTable: FC = () => {
         },
       },
     ],
-    [teams]
+    [teams],
   );
 
   return (
     <div className={ style.container }>
       <TeamModal
-        anchor={
-          <button
+        anchor={ (
+          <span
             className={ `${style['add-btn']} ${btnStyle.btn}` }
-            type="button"
           >
             + New Team
-          </button>
-        }
-        setTeams={setTeams}
+          </span>
+        ) }
+        setTeams={ setTeams }
       />
       <Table
         {
@@ -93,6 +93,6 @@ const TeamTable: FC = () => {
       />
     </div>
   );
-}
+};
 
 export default TeamTable;

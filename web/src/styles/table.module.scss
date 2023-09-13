@@ -102,27 +102,35 @@
 .pagination-button {
   border: 1px solid #DEE2E6;
   border-radius: 0.375rem;
-  padding: 0.25rem;
+  padding: 0.25rem 0.3rem;
+  margin: 0 0.2rem;
 }
 
 .go-to-page-container {
   display: flex;
+  align-items: center;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+
+  &:not(:first-of-type) {
+    border-left: 2px solid var(--blue);
+    margin-left: 0.5rem;
+  }
+
+  > :last-child {
+    margin-left: 0.5rem;
+  }
 }
 
 .page-num-select {
   border: 1px solid #DEE2E6;
   padding: 0.25rem;
   border-radius: 0.375rem;
-  margin-left: 0.5rem;
 }
 
 .page-show-select {
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  padding-left: 0.5rem;
-  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--fontSizeSmall);
   border-radius: 0.375rem;
   font-weight: 400;
   line-height: 1.5;
