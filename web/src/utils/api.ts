@@ -22,6 +22,19 @@ export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}
 // ////////////////////////////////////////////////////////////////////////////
 // API Functions
 // ////////////////////////////////////////////////////////////////////////////
+const buildHeaders = ( token: string, body: Nullable<Record<string, any>> ): HeadersInit => {
+  const headers: HeadersInit = {};
+
+  if( body ) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if( token ) {
+    headers.authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
 
 /**
  * Helper function to consistently construct the API requests.
@@ -31,14 +44,8 @@ export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const buildQuery = async ( endpoint: string, body: Nullable<Record<string, any>>, method?: TMethods ) => {
-  const token = accessToken.get();
-  const tokenHeader = token ? `Bearer ${token}` : undefined;
-
   let opts = {
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: tokenHeader,
-    },
+    headers: buildHeaders( accessToken.get(), body ),
     method: method || 'POST',
   } as RequestInit;
 

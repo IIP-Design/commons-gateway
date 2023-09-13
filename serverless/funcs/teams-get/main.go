@@ -13,11 +13,9 @@ import (
 
 // GetTeamsHandler handles the request to retrieve a list of all the teams.
 func GetTeamsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	var err error
-
-	_, err = jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
 	if err != nil {
-		return msgs.SendServerError(err)
+		return msgs.SendAuthError(err, code)
 	}
 
 	teams, err := teams.RetrieveTeams()

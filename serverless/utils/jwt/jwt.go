@@ -92,17 +92,17 @@ func VerifyJWT(tokenString string, scopes []string) error {
 	return nil
 }
 
-func RequestIsAuthorized(req events.APIGatewayProxyRequest, scopes []string) (bool, error) {
+func RequestIsAuthorized(req events.APIGatewayProxyRequest, scopes []string) (int, error) {
 	authHeader := req.Headers["Authorization"]
 	token, err := ExtractBearerToken(authHeader)
 	if err != nil {
-		return false, err
+		return 401, err
 	}
 
 	err = VerifyJWT(token, scopes)
 	if err != nil {
-		return false, err
+		return 403, err
 	} else {
-		return true, nil
+		return 200, nil
 	}
 }

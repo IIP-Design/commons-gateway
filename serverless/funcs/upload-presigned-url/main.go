@@ -31,9 +31,9 @@ func RandStringBytes(n int) string {
 }
 
 func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	_, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest"})
 	if err != nil {
-		return msgs.SendServerError(err)
+		return msgs.SendAuthError(err, code)
 	}
 
 	rawContentType := event.QueryStringParameters["contentType"]

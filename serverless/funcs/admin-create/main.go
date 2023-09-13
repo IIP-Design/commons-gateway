@@ -34,9 +34,9 @@ func handleAdminCreation(adminData data.User) error {
 // ensures that the required data is present before continuing on to recording
 // the user's email in the list of admins.
 func NewAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	_, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
 	if err != nil {
-		return msgs.SendServerError(err)
+		return msgs.SendAuthError(err, code)
 	}
 
 	admin, err := data.ExtractUser(event.Body)

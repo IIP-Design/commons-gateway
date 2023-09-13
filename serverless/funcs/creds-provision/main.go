@@ -65,9 +65,9 @@ func handleInvitation(invite data.Invite) error {
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
 func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	_, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
 	if err != nil {
-		return msgs.SendServerError(err)
+		return msgs.SendAuthError(err, code)
 	}
 
 	invite, err := data.ExtractInvite(event.Body)

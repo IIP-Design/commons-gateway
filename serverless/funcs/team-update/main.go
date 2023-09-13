@@ -18,9 +18,9 @@ import (
 // ensures that the required data is present before continuing on to
 // update the team data.
 func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	_, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
 	if err != nil {
-		return msgs.SendServerError(err)
+		return msgs.SendAuthError(err, code)
 	}
 
 	parsed, err := data.ParseBodyData(event.Body)

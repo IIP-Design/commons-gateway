@@ -16,11 +16,9 @@ import (
 // If a 'team' argument is provided in the body of the request it will filter
 // the response to show only the guests assigned to that team.
 func GetGuestsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	var err error
-
-	_, err = jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
 	if err != nil {
-		return msgs.SendServerError(err)
+		return msgs.SendAuthError(err, code)
 	}
 
 	parsed, err := data.ParseBodyData(event.Body)
