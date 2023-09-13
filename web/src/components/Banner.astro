@@ -4,25 +4,21 @@
   const bannerContent = document.getElementById('gov-banner-content');
 
   bannerControl?.addEventListener('click', () => {
-    // Check if the banner is already expanded.
-    const isExpanded = bannerControl?.getAttribute('aria-expanded');
-
-    const val = isExpanded === 'true' ? 'false' : 'true';
+    // Determine whether the banner should be expanded or contracted.
+    const expandBanner = bannerControl?.getAttribute('aria-expanded') === 'true' ? 'false' : 'true';
 
     // Toggle the aria-expanded property.
-    bannerControl?.setAttribute('aria-expanded', val);
+    bannerControl?.setAttribute('aria-expanded', expandBanner);
 
     // Toggle the hidden property on the banner content.
-    if (isExpanded === 'true') {
-      bannerContent?.setAttribute('hidden', val);
-    } else {
+    if (expandBanner === 'true') {
       bannerContent?.removeAttribute('hidden');
+    } else {
+      bannerContent?.setAttribute('hidden', '');
     }
 
-    const expanded = bannerHeader?.classList.contains('expanded');
-
     // Add/remove the expanded class on the header (used by the mobile view).
-    if (expanded) {
+    if (bannerHeader?.classList.contains('expanded')) {
       bannerHeader?.classList.remove('expanded');
     } else {
       bannerHeader?.classList.add('expanded');
