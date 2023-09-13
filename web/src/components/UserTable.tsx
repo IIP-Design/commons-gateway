@@ -49,16 +49,23 @@ interface IUserWithUiData extends IUserEntry {
   active: boolean;
 };
 
+interface IUserTableProps {
+  role?: TUserRole;
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
-const UserTable: FC = () => {
+const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
   const [users, setUsers] = useState<IUserWithUiData[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
-    const body = userIsSuperAdmin() ? {} : { team: currentUser.get().team };
+    const body = {
+      ...( userIsSuperAdmin() ? {} : { team: currentUser.get().team } ),
+      ...( role ? { role } : {} ),
+    };
 
     const getUsers = async () => {
       const response = await buildQuery( 'guests', body );

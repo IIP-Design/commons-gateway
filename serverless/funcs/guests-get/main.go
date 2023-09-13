@@ -24,12 +24,13 @@ func GetGuestsHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 	parsed, err := data.ParseBodyData(event.Body)
 
 	team := parsed.TeamId
+	role := parsed.Role
 
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
-	guests, err := guests.RetrieveGuests(team)
+	guests, err := guests.RetrieveGuests(team, role)
 
 	if err != nil {
 		return msgs.SendServerError(err)
