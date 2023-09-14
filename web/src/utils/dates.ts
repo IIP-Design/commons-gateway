@@ -39,5 +39,6 @@ export const dateSelectionIsValid = ( dateStr?: string ) => {
 
 export const daysUntil = ( dateStr: string ) => {
   const dt = new Date( dateStr );
+
   return differenceInDays( dt, new Date() );
 };

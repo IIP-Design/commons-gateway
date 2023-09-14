@@ -40,9 +40,8 @@ interface IUploader extends IUserEntry {
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
-const UserTable: FC = () => {
+const UploaderTable: FC = () => {
   const [users, setUsers] = useState<WithUiData<IUploader>[]>( [] );
-  const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
     const body = { team: currentUser.get().team };
@@ -67,27 +66,10 @@ const UserTable: FC = () => {
     getUsers();
   }, [] );
 
-  useEffect( () => {
-    const getTeams = async () => {
-      const response = await buildQuery( 'teams', null, 'GET' );
-      const { data } = await response.json();
-
-      if ( data ) {
-        setTeams( data );
-      }
-    };
-
-    getTeams();
-  }, [] );
-
   const columns = useMemo<ColumnDef<WithUiData<IUploader>>[]>(
     () => [
       defaultColumnDef( 'name' ),
       defaultColumnDef( 'email' ),
-      {
-        ...defaultColumnDef( 'team' ),
-        cell: info => getTeamName( info.getValue() as string, teams ),
-      },
       {
         ...defaultColumnDef( 'proposer' ),
         cell: info => {
@@ -128,7 +110,7 @@ const UserTable: FC = () => {
         },
       },
     ],
-    [teams]
+    []
   );
 
   return (
@@ -149,4 +131,4 @@ const UserTable: FC = () => {
   );
 }
 
-export default UserTable;
+export default UploaderTable;

@@ -109,14 +109,15 @@ func RetrievePendingInvites(team string) ([]map[string]string, error) {
 	if team == "" {
 		query = `SELECT email, first_name, last_name, role, team, expiration, date_invited, proposer
 			 FROM guests LEFT JOIN invites ON guests.email=invites.invitee
-			 WHERE inviter IS NULL AND proposer IS NOT NULL AND pending=TRUE
+			 WHERE inviter IS NULL AND proposer IS NOT NULL AND pending=TRUE AND expiration >= NOW()
 			 ORDER BY first_name;`
 		rows, err = pool.Query(query)
 	} else {
 		query =
 			`SELECT email, first_name, last_name, role, team, expiration, date_invited, proposer
 			 FROM guests LEFT JOIN invites ON guests.email=invites.invitee
-			 WHERE inviter IS NULL AND proposer IS NOT NULL AND pending=TRUE AND team = $1 ORDER BY first_name;`
+			 WHERE inviter IS NULL AND proposer IS NOT NULL AND pending=TRUE AND expiration >= NOW() AND team = $1
+			 ORDER BY first_name;`
 		rows, err = pool.Query(query, team)
 	}
 
@@ -233,6 +234,21 @@ func UpdateGuest(guest data.GuestUser) error {
 		`UPDATE guests SET first_name = $1, last_name = $2, team = $3,
 		 expiration = $4, date_modified = $5 WHERE email = $6`
 	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, guest.Expires, currentTime, guest.Email)
+
+	if err != nil {
+		logs.LogError(err, "Update Guest Query Error")
+	}
+
+	return err
+}
+
+func AcceptGuest(guest data.AcceptInvite) error {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query :=
+		`UPDATE invites SET inviter = $1, pending = FALSE WHERE invitee = $2`
+	_, err := pool.Exec(query, guest.Inviter, guest.Invitee)
 
 	if err != nil {
 		logs.LogError(err, "Update Guest Query Error")

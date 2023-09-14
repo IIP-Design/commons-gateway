@@ -13,6 +13,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
+import { showError, showTernary } from '../utils/alert';
+import { daysUntil } from '../utils/dates';
 import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
@@ -22,8 +24,8 @@ import { Table, defaultColumnDef } from './Table';
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
+import btnStyle from '../styles/button.module.scss';
 import style from '../styles/table.module.scss';
-import { daysUntil } from '../utils/dates';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -31,6 +33,40 @@ import { daysUntil } from '../utils/dates';
 interface IInvite extends IUserEntry {
   dateInvited: string;
   proposer: string;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+// ////////////////////////////////////////////////////////////////////////////
+const makeClickHandler = ( inviteeEmail: string ) => {
+  const inviterEmail = currentUser.get().email;
+
+  return async () => {
+    const { isConfirmed, isDenied } = await showTernary( '', { confirmButtonText: 'Approve' } );
+    let wasUpdated = false;
+
+    if( isConfirmed ) {
+      const { ok } = await buildQuery( 'guest/approve', { inviteeEmail, inviterEmail }, 'POST' );
+
+      if ( !ok ) {
+        showError( 'Unable to accept invite' );
+      } else {
+        wasUpdated = true;
+      }
+    } else if( isDenied ) {
+      const { ok } = await buildQuery( `guest?id=${inviteeEmail}`, null, 'DELETE' );
+
+      if ( !ok ) {
+        showError( 'Unable to reject invite' );
+      } else {
+        wasUpdated = true;
+      }
+    }
+
+    if( wasUpdated ) {
+      window.location.reload();
+    }
+  };
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -80,7 +116,13 @@ const UserTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+        cell: info => <button
+          className={ btnStyle['link-btn'] }
+          onClick={ makeClickHandler( info.row.getValue( 'email' ) ) }
+          type="button"
+        >
+          { info.getValue() as string }
+        </button>,
       },
       defaultColumnDef( 'email' ),
       {
@@ -120,7 +162,7 @@ const UserTable: FC = () => {
             }
           }
         />
-        : <p>No data to show</p>
+        : <p>No pending invites at this time</p>
       }
     </div>
   );

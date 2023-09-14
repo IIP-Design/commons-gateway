@@ -85,6 +85,11 @@ type Invite struct {
 	Expires time.Time
 }
 
+type AcceptInvite struct {
+	Invitee string `json:"inviteeEmail"`
+	Inviter string `json:"inviterEmail"`
+}
+
 // ParseBodyData converts the serialized JSON string provided in the body
 // of the API Gateway request into a usable data format.
 func ParseBodyData(body string) (RequestBodyOptions, error) {
@@ -222,6 +227,19 @@ func ExtractInvite(body string) (Invite, error) {
 	invite.Invitee.NameLast = lastName
 	invite.Invitee.Team = team
 	invite.Expires = parsedTime
+
+	return invite, err
+}
+
+func ExtractAcceptInvite(body string) (AcceptInvite, error) {
+	var invite AcceptInvite
+
+	b := []byte(body)
+	err := json.Unmarshal(b, &invite)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Unmarshal Invite")
+	}
 
 	return invite, err
 }
