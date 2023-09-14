@@ -17,16 +17,16 @@ import (
 )
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
-func handleInvitation(invite data.Invite) error {
+func handleProposedInvitation(invite data.Invite) error {
 	var err error
 
 	// Ensure inviter is an active admin user.
-	adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
+	active, err := admins.CheckForGuestAdmin(invite.Proposer)
 
 	if err != nil {
 		return err
-	} else if !adminActive {
-		return errors.New("you are not authorized to invite users")
+	} else if !active {
+		return errors.New("you are not authorized to propose user invites")
 	}
 
 	// Ensure invitee doesn't already have access.
@@ -49,7 +49,7 @@ func handleInvitation(invite data.Invite) error {
 	}
 
 	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = invites.SaveInvite(invite.Inviter, invite.Invitee.Email, false)
+	err = invites.SaveInvite(invite.Proposer, invite.Invitee.Email, true)
 
 	if err != nil {
 		return errors.New("something went wrong - saving invite failed")
@@ -62,11 +62,11 @@ func handleInvitation(invite data.Invite) error {
 
 // ProvisionHandler handles the request to grant a guest user temporary credentials. It
 // ensures that the required data is present before continuing on to:
-//  1. Register the invitation
-//  2. Provision credentials for the guest user
+//  1. Register the proposed invitation
+//  2. Provision preliminary credentials for the guest user
 //  3. Initiate the admin and guest user notifications
-func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+func ProposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+	code, err := jwt.RequestIsAuthorized(event, []string{"guest"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}
@@ -77,7 +77,7 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 		return msgs.SendServerError(err)
 	}
 
-	err = handleInvitation(invite)
+	err = handleProposedInvitation(invite)
 
 	if err != nil {
 		return msgs.SendServerError(err)
@@ -87,5 +87,5 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 }
 
 func main() {
-	lambda.Start(ProvisionHandler)
+	lambda.Start(ProposalHandler)
 }

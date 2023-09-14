@@ -7,7 +7,7 @@ import type { FC, FormEvent } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { parse } from 'date-fns';
+import { addDays, parse } from 'date-fns';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -48,8 +48,8 @@ const initialState = {
   givenName: '',
   familyName: '',
   email: '',
-  team: '',
-  accessEndDate: getYearMonthDay( new Date() ),
+  team: currentUser.get().team || '',
+  accessEndDate: getYearMonthDay( addDays( new Date(), 14 ) ),
   role: null,
 };
 
@@ -159,20 +159,32 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       role: userData.role,
     };
 
-    const invitation = {
-      inviter: currentUser.get().email,
-      invitee,
-      expiration,
-    };
+    if( isAdmin ) {
+      if ( user ) {
+        buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
+          .then( () => window.location.assign( '/' ) )
+          .catch( err => console.error( err ) );
+      } else {
+        const invitation = {
+          inviter: currentUser.get().email,
+          invitee,
+          expiration,
+        };
 
-    if ( user ) {
-      await buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
-        .then( () => window.location.assign( '/' ) )
-        .catch( err => console.error( err ) );
+        buildQuery( 'creds/provision', invitation, 'POST' )
+          .then( () => window.location.assign( '/' ) )
+          .catch( err => console.error( err ) );
+      }
     } else {
-      await buildQuery( 'creds/provision', invitation, 'POST' )
-        .then( () => window.location.assign( '/' ) )
-        .catch( err => console.error( err ) );
+      const invitation = {
+        proposer: currentUser.get().email,
+        invitee,
+        expiration,
+      };
+
+      buildQuery( 'creds/propose', invitation, 'POST' )
+      .then( () => window.location.assign( '/uploaderUsers' ) )
+      .catch( err => console.error( err ) );
     }
   };
 
@@ -262,7 +274,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           id="update-btn"
           type="submit"
         >
-          { user ? 'Update' : 'Invite' }
+          { isAdmin ? ( user ? 'Update' : 'Invite' ) : 'Propose' }
         </button>
         {
           user

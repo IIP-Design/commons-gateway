@@ -31,6 +31,7 @@ type RequestBodyOptions struct {
 	Hash     string          `json:"hash"`
 	Invitee  UserBodyOptions `json:"invitee"`
 	Inviter  string          `json:"inviter"`
+	Proposer string          `json:"proposer"`
 	Username string          `json:"username"`
 	Token    string          `json:"token"`
 }
@@ -80,9 +81,10 @@ type Team struct {
 
 // User represents the properties required to record an invite.
 type Invite struct {
-	Invitee User
-	Inviter string
-	Expires time.Time
+	Invitee  User
+	Inviter  string
+	Proposer string
+	Expires  time.Time
 }
 
 type AcceptInvite struct {
@@ -203,6 +205,7 @@ func ExtractInvite(body string) (Invite, error) {
 	parsed, err := ParseBodyData(body)
 
 	admin := parsed.Inviter
+	proposer := parsed.Proposer
 	guest := parsed.Invitee.Email
 	firstName := parsed.Invitee.NameFirst
 	lastName := parsed.Invitee.NameLast
@@ -211,8 +214,10 @@ func ExtractInvite(body string) (Invite, error) {
 
 	if err != nil {
 		return invite, err
-	} else if admin == "" || guest == "" || lastName == "" || firstName == "" || team == "" || expires == "" {
+	} else if guest == "" || lastName == "" || firstName == "" || team == "" || expires == "" {
 		return invite, errors.New("data missing from request")
+	} else if admin == "" && proposer == "" {
+		return invite, errors.New("must supplu admin or proposer")
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, expires)
@@ -222,6 +227,7 @@ func ExtractInvite(body string) (Invite, error) {
 	}
 
 	invite.Inviter = admin
+	invite.Proposer = proposer
 	invite.Invitee.Email = guest
 	invite.Invitee.NameFirst = firstName
 	invite.Invitee.NameLast = lastName

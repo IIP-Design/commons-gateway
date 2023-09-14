@@ -7,9 +7,9 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/turnstile"
 
 	"github.com/aws/aws-lambda-go/events"

@@ -42,7 +42,10 @@ const makeClickHandler = ( inviteeEmail: string ) => {
   const inviterEmail = currentUser.get().email;
 
   return async () => {
-    const { isConfirmed, isDenied } = await showTernary( '', { confirmButtonText: 'Approve' } );
+    const { isConfirmed, isDenied } = await showTernary(
+      'By approving this user they will be allowed to upload media to the Content Commons system until deactivated or their login expires.  Denying access will blacklist this email address indefinitely.',
+      { confirmButtonText: 'Approve' }
+    );
     let wasUpdated = false;
 
     if( isConfirmed ) {

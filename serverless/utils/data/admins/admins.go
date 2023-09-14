@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 )
 
 // CheckForActiveAdmin opens a database connection and checks whether the provided
@@ -22,6 +22,24 @@ func CheckForActiveAdmin(adminEmail string) (bool, error) {
 
 	if err != nil {
 		logs.LogError(err, "Existing Admin Query Error")
+		return active, err
+	}
+
+	return active, err
+}
+
+func CheckForGuestAdmin(email string) (bool, error) {
+	var active bool
+	var err error
+
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query := `SELECT expiration > NOW() AS active FROM guests WHERE email = $1;`
+	err = pool.QueryRow(query, email).Scan(&active)
+
+	if err != nil {
+		logs.LogError(err, "Guest Admin Query Error")
 		return active, err
 	}
 
