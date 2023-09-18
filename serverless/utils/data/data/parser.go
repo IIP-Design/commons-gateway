@@ -38,11 +38,11 @@ type RequestBodyOptions struct {
 
 // User represents the properties required to record a user.
 type User struct {
-	Email     string
-	NameFirst string
-	NameLast  string
-	Role      string
-	Team      string
+	Email     string `json:"email"`
+	NameFirst string `json:"givenName"`
+	NameLast  string `json:"familyName"`
+	Role      string `json:"role"`
+	Team      string `json:"team"`
 }
 
 // AdminUser extends the base User struct with unique admin properties.
