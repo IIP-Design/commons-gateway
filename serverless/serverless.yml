@@ -319,6 +319,8 @@ functions:
     package:
       patterns:
         - './bin/creds-propose'
+    environment:
+      REQUEST_SUPPORT_STAFF_QUEUE_URL: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/contentCommons-support-staff
   credsProvision:
     name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision
@@ -332,6 +334,8 @@ functions:
     package:
       patterns:
         - './bin/creds-provision'
+    environment:
+      PROVISION_CREDS_QUEUE_URL: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/contentCommons-email-creds
   uploadMetadata:
     name: gateway-${opt:stage}-upload-metadata
     handler: bin/upload-metadata

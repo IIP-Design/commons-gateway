@@ -83,6 +83,8 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 		return msgs.SendServerError(err)
 	}
 
+	// TODO: Add email event
+
 	return msgs.SendSuccessMessage()
 }
 

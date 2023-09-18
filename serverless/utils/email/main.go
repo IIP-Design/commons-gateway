@@ -43,7 +43,19 @@ func serialize(data any) (string, error) {
 	return buf.String(), nil
 }
 
-func send(data any, queueUrl string) (string, error) {
+func getQueueUrl(svc *sqs.SQS, queueName string) (string, error) {
+	queueUrlOutput, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{QueueName: aws.String(queueName)})
+
+	if err != nil {
+		return "", err
+	}
+
+	queueUrl := queueUrlOutput.QueueUrl
+
+	return *queueUrl, nil
+}
+
+func SendEvent(data any, queueUrl string) (string, error) {
 	awsRegion := os.Getenv("AWS_REGION")
 
 	sess, err := session.NewSession(&aws.Config{
@@ -70,20 +82,71 @@ func send(data any, queueUrl string) (string, error) {
 	return *result.MessageId, err
 }
 
-func SendProvisionCredsEvent(data ProvisionCredsData) (string, error) {
-	queueUrl := os.Getenv("PROVISION_CREDS_QUEUE")
+func SendEventByName(data any, queueName string) (string, error) {
+	awsRegion := os.Getenv("AWS_REGION")
 
-	return send(data, queueUrl)
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion)},
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	svc := sqs.New(sess)
+
+	serial, err := serialize(data)
+
+	if err != nil {
+		return "", err
+	}
+
+	queueUrl, err := getQueueUrl(svc, queueName)
+
+	if err != nil {
+		return "", err
+	}
+
+	result, err := svc.SendMessage(&sqs.SendMessageInput{
+		MessageBody: aws.String(serial),
+		QueueUrl:    &queueUrl,
+	})
+
+	return *result.MessageId, err
+}
+
+func SendProvisionCredsEvent(data ProvisionCredsData) (string, error) {
+	queueUrl := os.Getenv("PROVISION_CREDS_QUEUE_URL")
+
+	return SendEvent(data, queueUrl)
+}
+
+func SendProvisionCredsEventByName(data ProvisionCredsData) (string, error) {
+	queueName := os.Getenv("PROVISION_CREDS_QUEUE_NAME")
+
+	return SendEventByName(data, queueName)
 }
 
 func SendSupportStaffRequestEvent(data RequestSupportStaffData) (string, error) {
-	queueUrl := os.Getenv("REQUEST_SUPPORT_STAFF_QUEUE")
+	queueUrl := os.Getenv("REQUEST_SUPPORT_STAFF_QUEUE_URL")
 
-	return send(data, queueUrl)
+	return SendEvent(data, queueUrl)
+}
+
+func SendSupportStaffRequestEventByName(data RequestSupportStaffData) (string, error) {
+	queueName := os.Getenv("REQUEST_SUPPORT_STAFF_QUEUE_NAME")
+
+	return SendEventByName(data, queueName)
 }
 
 func Send2FAEvent(data TwoFactorAuthData) (string, error) {
-	queueUrl := os.Getenv("EMAIL_2FA_QUEUE")
+	queueUrl := os.Getenv("EMAIL_2FA_QUEUE_URL")
 
-	return send(data, queueUrl)
+	return SendEvent(data, queueUrl)
+}
+
+func Send2FAEventByName(data TwoFactorAuthData) (string, error) {
+	queueName := os.Getenv("EMAIL_2FA_QUEUE_NAME")
+
+	return SendEventByName(data, queueName)
 }
