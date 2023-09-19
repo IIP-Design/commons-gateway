@@ -20,7 +20,6 @@ type ProvisionCredsData struct {
 }
 
 type RequestSupportStaffData struct {
-	Inviter  data.User `json:"contentCommonsUser"`
 	Proposer data.User `json:"externalTeamLead"`
 	Invitee  data.User `json:"supportStaffuser"`
 	Url      string    `json:"url"`

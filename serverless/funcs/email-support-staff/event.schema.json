@@ -4,7 +4,6 @@
     "description": "Minimum data required to send an email based on a support staff request event",
     "type": "object",
     "properties": {
-        "contentCommonsUser": { "$ref": "#/$defs/user" },
         "externalTeamLead": { "$ref": "#/$defs/user" },
         "supportStaffuser": { "$ref": "#/$defs/user" },
         "url": { "type": "string", "minLength": 11 }

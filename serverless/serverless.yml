@@ -399,11 +399,11 @@ functions:
         - 'funcs/email-creds/dist/index.cjs'
   emailSupportStaff:
     name: gateway-${opt:stage}-email-support-staff
-    handler: funcs/email-support-staff/index.handler
+    handler: bin/email-support-staff
     description: Email a Content Commons user an update on requested support staff.
-    runtime: nodejs18.x
+    runtime: go1.x
     events:
       - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-support-staff
     package:
       patterns:
-        - 'funcs/email-support-staff/dist/index.cjs'
+        - './bin/email-support-staff'

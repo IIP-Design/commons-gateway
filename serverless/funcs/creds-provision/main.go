@@ -8,6 +8,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
+	"github.com/IIP-Design/commons-gateway/utils/email"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
@@ -18,10 +19,8 @@ import (
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
 func handleInvitation(invite data.Invite) error {
-	var err error
-
 	// Ensure inviter is an active admin user.
-	adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
+	inviter, adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
 
 	if err != nil {
 		return err
@@ -55,8 +54,16 @@ func handleInvitation(invite data.Invite) error {
 		return errors.New("something went wrong - saving invite failed")
 	}
 
-	// TODO - email password
 	fmt.Printf("Your password is %s", pass)
+
+	// TODO - email URL
+	_, err = email.SendProvisionCredsEvent(email.ProvisionCredsData{
+		Invitee:     invite.Invitee,
+		Inviter:     inviter,
+		TmpPassword: pass,
+		Url:         "/login",
+	})
+
 	return err
 }
 
@@ -82,8 +89,6 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
-
-	// TODO: Add email event
 
 	return msgs.SendSuccessMessage()
 }

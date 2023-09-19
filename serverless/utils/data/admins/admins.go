@@ -10,40 +10,44 @@ import (
 
 // CheckForActiveAdmin opens a database connection and checks whether the provided
 // user email exists in the `admins` table and has the `active` value set to `true`.
-func CheckForActiveAdmin(adminEmail string) (bool, error) {
+func CheckForActiveAdmin(adminEmail string) (data.User, bool, error) {
 	var active bool
+	var inviter data.User
 	var err error
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := `SELECT active FROM admins WHERE email = $1;`
-	err = pool.QueryRow(query, adminEmail).Scan(&active)
+	query := `SELECT email, first_name, last_name, role, team, active FROM admins WHERE email = $1;`
+	err = pool.QueryRow(query, adminEmail).Scan(
+		&inviter.Email, &inviter.NameFirst, &inviter.NameLast, &inviter.Role, &inviter.Team, &active)
 
 	if err != nil {
 		logs.LogError(err, "Existing Admin Query Error")
-		return active, err
+		return inviter, active, err
 	}
 
-	return active, err
+	return inviter, active, err
 }
 
-func CheckForGuestAdmin(email string) (bool, error) {
+func CheckForGuestAdmin(email string) (data.User, bool, error) {
 	var active bool
+	var proposer data.User
 	var err error
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := `SELECT expiration > NOW() AS active FROM guests WHERE email = $1;`
-	err = pool.QueryRow(query, email).Scan(&active)
+	query := `SELECT email, first_name, last_name, role, team, expiration > NOW() AS active FROM guests WHERE email = $1 AND role='guest admin';`
+	err = pool.QueryRow(query, email).Scan(
+		&proposer.Email, &proposer.NameFirst, &proposer.NameLast, &proposer.Role, &proposer.Team, &active)
 
 	if err != nil {
 		logs.LogError(err, "Guest Admin Query Error")
-		return active, err
+		return proposer, active, err
 	}
 
-	return active, err
+	return proposer, active, err
 }
 
 // CreateAdmin opens a database connection and saves a new administrative user record.

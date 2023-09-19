@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
+	"github.com/IIP-Design/commons-gateway/utils/email"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
@@ -20,8 +20,8 @@ import (
 func handleProposedInvitation(invite data.Invite) error {
 	var err error
 
-	// Ensure inviter is an active admin user.
-	active, err := admins.CheckForGuestAdmin(invite.Proposer)
+	// Ensure proposer is an active admin user.
+	proposer, active, err := admins.CheckForGuestAdmin(invite.Proposer)
 
 	if err != nil {
 		return err
@@ -42,6 +42,7 @@ func handleProposedInvitation(invite data.Invite) error {
 	pass, salt := hashing.GenerateCredentials()
 	hash := hashing.GenerateHash(pass, salt)
 
+	// PASSWORD IS UNRECOVERABLE
 	err = invites.SaveCredentials(invite.Invitee, invite.Expires, hash, salt)
 
 	if err != nil {
@@ -55,8 +56,13 @@ func handleProposedInvitation(invite data.Invite) error {
 		return errors.New("something went wrong - saving invite failed")
 	}
 
-	// TODO - email password
-	fmt.Printf("Your password is %s", pass)
+	// TODO - email URL
+	_, err = email.SendSupportStaffRequestEvent(email.RequestSupportStaffData{
+		Invitee:  invite.Invitee,
+		Proposer: proposer,
+		Url:      "/invites",
+	})
+
 	return err
 }
 
@@ -82,8 +88,6 @@ func ProposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
-
-	// TODO: Add email event
 
 	return msgs.SendSuccessMessage()
 }
