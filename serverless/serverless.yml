@@ -320,7 +320,7 @@ functions:
       patterns:
         - './bin/creds-propose'
     environment:
-      REQUEST_SUPPORT_STAFF_QUEUE_URL: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/contentCommons-support-staff
+      REQUEST_SUPPORT_STAFF_QUEUE_URL: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/contentCommons-email-support-staff
   credsProvision:
     name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision

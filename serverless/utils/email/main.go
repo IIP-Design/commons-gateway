@@ -3,7 +3,10 @@ package email
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -57,26 +60,43 @@ func getQueueUrl(svc *sqs.SQS, queueName string) (string, error) {
 func SendEvent(data any, queueUrl string) (string, error) {
 	awsRegion := os.Getenv("AWS_REGION")
 
+	fmt.Printf("Region: %s\n", awsRegion)
+	fmt.Printf("Queue URL: %s\n", queueUrl)
+
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(awsRegion)},
+		Region:     aws.String(awsRegion),
+		LogLevel:   aws.LogLevel(aws.LogDebugWithRequestErrors | aws.LogDebugWithRequestRetries | aws.LogDebugWithHTTPBody),
+		MaxRetries: aws.Int(2),
+		HTTPClient: &http.Client{
+			Timeout: time.Duration(1 * time.Second),
+		},
+	},
 	)
 
 	if err != nil {
 		return "", err
 	}
+	// fmt.Printf("Session: %s\n", *(sess.Config.Endpoint))
 
 	svc := sqs.New(sess)
+	fmt.Printf("Service ID: %s\n", svc.ServiceID)
 
 	serial, err := serialize(data)
+	fmt.Printf("Serial: %s\n", serial)
 
 	if err != nil {
 		return "", err
 	}
 
-	result, err := svc.SendMessage(&sqs.SendMessageInput{
+	fmt.Println("Config Input")
+	cfg := sqs.SendMessageInput{
 		MessageBody: aws.String(serial),
 		QueueUrl:    &queueUrl,
-	})
+	}
+	fmt.Println("About to send")
+
+	result, err := svc.SendMessage(&cfg)
+	fmt.Printf("MessageId: %s\n", *result.MessageId)
 
 	return *result.MessageId, err
 }

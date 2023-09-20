@@ -182,9 +182,12 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
         expiration,
       };
 
-      buildQuery( 'creds/propose', invitation, 'POST' )
-      .then( () => window.location.assign( '/uploaderUsers' ) )
-      .catch( err => console.error( err ) );
+      try {
+        await buildQuery( 'creds/propose', invitation, 'POST' );
+        // window.location.assign( '/uploaderUsers' );
+      } catch( err: any ) {
+        console.error( err )
+      }
     }
   };
 
