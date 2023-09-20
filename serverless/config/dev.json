@@ -1,5 +1,5 @@
 {
-  "allowedOrigins": "*",
+  "aprimoDomain": "state-sb1",
   "cors": {
     "origins": ["http://localhost:3000", "https://*.gpalab.digital"],
     "headers": [
