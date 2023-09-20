@@ -13,16 +13,16 @@ import (
 )
 
 type AprimoToken struct {
-	Expiration string `json:"expires_in"`
+	Expiration int    `json:"expires_in"`
 	Scope      string `json:"scope"`
 	Token      string `json:"access_token"`
 	Type       string `json:"token_type"`
 }
 
-// getEndpointURL constructs an URL for a given Aprimo API endpoint. Authorization
+// GetEndpointURL constructs an URL for a given Aprimo API endpoint. Authorization
 // is handled by the Aprimo Marketing Operations API, while other operations should
 // be directed to the DAM API by setting the `auth` parameter to `false`.
-func getEndpointURL(endpoint string, auth bool) string {
+func GetEndpointURL(endpoint string, auth bool) string {
 	var url string
 
 	if auth {
@@ -41,7 +41,7 @@ func GetAuthToken() (string, error) {
 	var err error
 	var token string
 
-	endpoint := getEndpointURL("login/connect/token", true)
+	endpoint := GetEndpointURL("login/connect/token", true)
 
 	body := url.Values{}
 	body.Set("grant_type", "client_credentials")

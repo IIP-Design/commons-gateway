@@ -163,6 +163,21 @@ functions:
     package:
       patterns:
         - './bin/admins-get'
+  aprimoCreate:
+    name: gateway-${opt:stage}-aprimo-create
+    handler: bin/aprimo-create-record
+    description: Creates a record in Aprimo which will be used to upload the file.
+    runtime: go1.x
+    events:
+      - s3:
+          bucket: commons-gateway-${opt:stage}-clean
+          event: s3:ObjectCreated:*
+          existing: true
+    package:
+      patterns:
+        - './bin/aprimo-create-record'
+    environment:
+      APRIMO_DOMAIN: ${file(./config/${param:deployment}.json):aprimoDomain}
   guestApprove:
     name: gateway-${opt:stage}-guest-approve
     handler: bin/guest-approve
