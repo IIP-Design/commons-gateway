@@ -160,6 +160,9 @@ functions:
     package:
       patterns:
         - './bin/guest-approve'
+    environment:
+      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
+      AWS_SES_REGION: us-east-1
   guestAuth:
     name: gateway-${opt:stage}-guest-auth
     handler: bin/guest-auth
@@ -320,7 +323,8 @@ functions:
       patterns:
         - './bin/creds-propose'
     environment:
-      REQUEST_SUPPORT_STAFF_QUEUE_URL: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/contentCommons-email-support-staff
+      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
+      AWS_SES_REGION: us-east-1
   credsProvision:
     name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision
@@ -335,7 +339,8 @@ functions:
       patterns:
         - './bin/creds-provision'
     environment:
-      PROVISION_CREDS_QUEUE_URL: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/contentCommons-email-creds
+      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
+      AWS_SES_REGION: us-east-1
   uploadMetadata:
     name: gateway-${opt:stage}-upload-metadata
     handler: bin/upload-metadata
@@ -387,23 +392,3 @@ functions:
     package:
       patterns:
         - 'funcs/email-2fa/dist/index.cjs'
-  emailCreds:
-    name: gateway-${opt:stage}-email-creds
-    handler: funcs/email-creds/dist/index.handler
-    description: Email an invitee their temporary credentials.
-    runtime: nodejs18.x
-    events:
-      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-creds
-    package:
-      patterns:
-        - 'funcs/email-creds/dist/index.cjs'
-  emailSupportStaff:
-    name: gateway-${opt:stage}-email-support-staff
-    handler: bin/email-support-staff
-    description: Email a Content Commons user an update on requested support staff.
-    runtime: go1.x
-    events:
-      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-support-staff
-    package:
-      patterns:
-        - './bin/email-support-staff'

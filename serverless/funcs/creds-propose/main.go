@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
-	"github.com/IIP-Design/commons-gateway/utils/email"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
@@ -30,7 +30,7 @@ func handleProposedInvitation(invite data.Invite) error {
 	}
 
 	// Ensure invitee doesn't already have access.
-	guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
+	_, guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
 
 	if err != nil {
 		return err
@@ -57,7 +57,8 @@ func handleProposedInvitation(invite data.Invite) error {
 	}
 
 	// TODO - email URL
-	_, err = email.SendSupportStaffRequestEvent(email.RequestSupportStaffData{
+	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
+	err = MailProposedCreds(sourceEmail, RequestSupportStaffData{
 		Invitee:  invite.Invitee,
 		Proposer: proposer,
 		Url:      "/invites",

@@ -27,7 +27,7 @@ func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 	}
 
 	// Ensure the user exists doesn't already have access.
-	exists, err := data.CheckForExistingUser(id, "guests")
+	_, exists, err := data.CheckForExistingUser(id, "guests")
 
 	if err != nil || !exists {
 		return msgs.SendServerError(errors.New("user does not exist"))

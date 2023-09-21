@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
-	"github.com/IIP-Design/commons-gateway/utils/email"
+	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
@@ -20,7 +21,7 @@ import (
 // handleInvitation coordinates all the actions associated with inviting a guest user.
 func handleInvitation(invite data.Invite) error {
 	// Ensure inviter is an active admin user.
-	inviter, adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
+	_, adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
 
 	if err != nil {
 		return err
@@ -29,7 +30,7 @@ func handleInvitation(invite data.Invite) error {
 	}
 
 	// Ensure invitee doesn't already have access.
-	guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
+	_, guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
 
 	if err != nil {
 		return err
@@ -57,11 +58,12 @@ func handleInvitation(invite data.Invite) error {
 	fmt.Printf("Your password is %s", pass)
 
 	// TODO - email URL
-	_, err = email.SendProvisionCredsEvent(email.ProvisionCredsData{
+	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
+	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
+	err = provision.MailProvisionedCreds(sourceEmail, provision.ProvisionCredsData{
 		Invitee:     invite.Invitee,
-		Inviter:     inviter,
 		TmpPassword: pass,
-		Url:         "/login",
+		Url:         redirectUrl,
 	})
 
 	return err

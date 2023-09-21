@@ -43,7 +43,7 @@ func retrieveUserId(email string, pool *sql.DB) (string, error) {
 	var userId string
 
 	// Check if user exists in the admins table
-	isAdmin, err := data.CheckForExistingUser(email, "admins")
+	_, isAdmin, err := data.CheckForExistingUser(email, "admins")
 
 	if err == nil && isAdmin {
 		// Retrieve admin's the user_id from the all_users table
@@ -56,7 +56,7 @@ func retrieveUserId(email string, pool *sql.DB) (string, error) {
 		return userId, err
 	} else if err == nil && !isAdmin {
 		// If not found in admin table, look in the guests table.
-		isGuest, err := data.CheckForExistingUser(email, "guests")
+		_, isGuest, err := data.CheckForExistingUser(email, "guests")
 
 		if err != nil {
 			logs.LogError(err, "Check for Guest Query Error")

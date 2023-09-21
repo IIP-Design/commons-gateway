@@ -18,7 +18,7 @@ func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	var err error
 	var credentials creds.CredentialsData
 
-	exists, err := data.CheckForExistingUser(username, "guests")
+	_, exists, err := data.CheckForExistingUser(username, "guests")
 
 	if err != nil {
 		return credentials, err

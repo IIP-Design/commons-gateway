@@ -17,7 +17,7 @@ import (
 func handleAdminCreation(adminData data.User) error {
 	var err error
 
-	isAdmin, err := data.CheckForExistingUser(adminData.Email, "admins")
+	_, isAdmin, err := data.CheckForExistingUser(adminData.Email, "admins")
 
 	if err != nil {
 		return err

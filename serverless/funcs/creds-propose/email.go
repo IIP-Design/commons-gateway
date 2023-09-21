@@ -1,19 +1,14 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/email"
+	email "github.com/IIP-Design/commons-gateway/utils/email/utils"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 )
@@ -22,6 +17,12 @@ const (
 	Subject = "Content Commons Support Staff Request"
 	CharSet = "UTF-8"
 )
+
+type RequestSupportStaffData struct {
+	Proposer data.User `json:"externalTeamLead"`
+	Invitee  data.User `json:"supportStaffuser"`
+	Url      string    `json:"url"`
+}
 
 func getAdmins(team string) ([]data.User, error) {
 	var admins []data.User
@@ -112,33 +113,13 @@ func formatEmail(
 	}
 }
 
-func logSesResult(result *ses.SendEmailOutput, err error, eventId string) {
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ses.ErrCodeMessageRejected:
-				log.Print(ses.ErrCodeMessageRejected, aerr.Error())
-			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				log.Print(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
-			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				log.Print(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
-			default:
-				log.Print(aerr.Error())
-			}
-		} else {
-			log.Print(err.Error())
-		}
-	} else {
-		log.Printf("Sent email with ID %s for event %s", *result.MessageId, eventId)
+func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSupportStaffData) error {
+	if sourceEmail == "" {
+		log.Println("Not configured for sending emails")
+		return nil
 	}
-}
-
-func ProvisionHandler(ctx context.Context, event events.SQSEvent) error {
-	var err error
-	records := event.Records
 
 	region := os.Getenv("AWS_SES_REGION")
-	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(region)},
@@ -147,40 +128,25 @@ func ProvisionHandler(ctx context.Context, event events.SQSEvent) error {
 		return err
 	}
 
-	svc := ses.New(sess)
+	admins, err := getAdmins(supportStaffRequestData.Proposer.Team)
+	if err != nil {
+		return err
+	}
 
-	for _, record := range records {
-		eventMessageId := record.MessageId
-		body := record.Body
+	sesClient := ses.New(sess)
 
-		var supportStaffRequestData email.RequestSupportStaffData
-		err = json.Unmarshal([]byte(body), &supportStaffRequestData)
+	for _, admin := range admins {
+		e := formatEmail(
+			supportStaffRequestData.Proposer,
+			supportStaffRequestData.Invitee,
+			admin,
+			supportStaffRequestData.Url,
+			sourceEmail,
+		)
 
-		if err != nil {
-			logs.LogError(err, fmt.Sprintf("Unable to unmarshal body of message %s", eventMessageId))
-			return err
-		}
-
-		admins, err := getAdmins(supportStaffRequestData.Proposer.Team)
-		if err != nil {
-			return err
-		}
-
-		for _, admin := range admins {
-			email := formatEmail(
-				supportStaffRequestData.Proposer,
-				supportStaffRequestData.Invitee,
-				admin,
-				supportStaffRequestData.Url, sourceEmail)
-
-			result, err := svc.SendEmail(&email)
-			logSesResult(result, err, eventMessageId)
-		}
+		result, err := sesClient.SendEmail(&e)
+		email.LogSesResult(result, err)
 	}
 
 	return nil
-}
-
-func main() {
-	lambda.Start(ProvisionHandler)
 }

@@ -30,7 +30,7 @@ func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	userExists, err := data.CheckForExistingUser(guest.Email, "guests")
+	_, userExists, err := data.CheckForExistingUser(guest.Email, "guests")
 
 	if err != nil {
 		return msgs.SendServerError(err)

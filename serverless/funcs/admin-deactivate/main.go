@@ -46,7 +46,7 @@ func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	exists, err := data.CheckForExistingUser(username, "admins")
+	_, exists, err := data.CheckForExistingUser(username, "admins")
 
 	if err != nil || !exists {
 		return msgs.SendServerError(errors.New("admin does not exist"))

@@ -184,7 +184,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
 
       try {
         await buildQuery( 'creds/propose', invitation, 'POST' );
-        // window.location.assign( '/uploaderUsers' );
+        window.location.assign( '/uploaderUsers' );
       } catch( err: any ) {
         console.error( err )
       }

@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
+	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -27,7 +30,7 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	userExists, err := data.CheckForExistingUser(guest.Invitee, "guests")
+	invitee, userExists, err := data.CheckForExistingUser(guest.Invitee, "guests")
 
 	if err != nil {
 		return msgs.SendServerError(err)
@@ -35,8 +38,24 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendServerError(errors.New("this user has not been invited"))
 	}
 
-	err = guests.AcceptGuest(guest)
+	// Regenerate credentials
+	pass, salt := hashing.GenerateCredentials()
+	hash := hashing.GenerateHash(pass, salt)
 
+	err = guests.AcceptGuest(guest, hash, salt)
+
+	if err != nil {
+		return msgs.SendServerError(err)
+	}
+
+	// TODO - email URL
+	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
+	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
+	err = provision.MailProvisionedCreds(sourceEmail, provision.ProvisionCredsData{
+		Invitee:     invitee,
+		TmpPassword: pass,
+		Url:         redirectUrl,
+	})
 	if err != nil {
 		return msgs.SendServerError(err)
 	}

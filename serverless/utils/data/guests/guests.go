@@ -242,13 +242,21 @@ func UpdateGuest(guest data.GuestUser) error {
 	return err
 }
 
-func AcceptGuest(guest data.AcceptInvite) error {
+func AcceptGuest(guest data.AcceptInvite, hash string, salt string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	query :=
 		`UPDATE invites SET inviter = $1, pending = FALSE WHERE invitee = $2`
 	_, err := pool.Exec(query, guest.Inviter, guest.Invitee)
+
+	if err != nil {
+		logs.LogError(err, "Update Invite Query Error")
+	}
+
+	query =
+		`UPDATE guests SET pass_hash = $1, salt = $2 WHERE email = $3`
+	_, err = pool.Exec(query, hash, salt, guest.Invitee)
 
 	if err != nil {
 		logs.LogError(err, "Update Guest Query Error")

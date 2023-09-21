@@ -30,7 +30,7 @@ func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	adminExists, err := data.CheckForExistingUser(admin.Email, "admins")
+	_, adminExists, err := data.CheckForExistingUser(admin.Email, "admins")
 
 	if err != nil {
 		return msgs.SendServerError(err)
