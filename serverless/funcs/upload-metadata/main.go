@@ -112,7 +112,7 @@ func createUploadRecord(s3Id string, user string, teamId string, fileType string
 // ensures that the required data is present before continuing on to recording
 // the team name and setting it to active.
 func NewUploadHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}

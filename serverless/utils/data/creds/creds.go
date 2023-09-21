@@ -10,6 +10,7 @@ type CredentialsData struct {
 	Salt     string `json:"salt"`
 	Expired  bool   `json:"expired"`
 	Approved bool   `json:"approved"`
+	Role     string `json:"role"`
 }
 
 // RetrieveCredentials
@@ -23,9 +24,10 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 	var salt string
 	var expired bool
 	var approved bool
+	var role string
 
-	query := `SELECT pass_hash, salt, expiration < NOW() AS expired, pending=FALSE AS approved FROM guests LEFT JOIN invites ON guests.email=invites.invitee WHERE email = $1;`
-	err = pool.QueryRow(query, email).Scan(&pass_hash, &salt, &expired, &approved)
+	query := `SELECT pass_hash, salt, expiration < NOW() AS expired, pending=FALSE AS approved, role FROM guests LEFT JOIN invites ON guests.email=invites.invitee WHERE email = $1;`
+	err = pool.QueryRow(query, email).Scan(&pass_hash, &salt, &expired, &approved, &role)
 
 	if err != nil {
 		logs.LogError(err, "Retrieve Credentials Query Error")
@@ -36,6 +38,7 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 		Salt:     salt,
 		Expired:  expired,
 		Approved: approved,
+		Role:     role,
 	}
 
 	return creds, err

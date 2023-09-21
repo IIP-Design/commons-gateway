@@ -35,7 +35,7 @@ func deactivateGuest(email string) error {
 // It ensures that the required data is present before continuing on to
 // update the team data.
 func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}

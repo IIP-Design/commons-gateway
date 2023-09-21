@@ -15,8 +15,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import currentUser from '../stores/current-user';
 import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
-import { userIsSuperAdmin } from '../utils/auth';
-import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -68,7 +66,10 @@ const UploaderTable: FC = () => {
 
   const columns = useMemo<ColumnDef<WithUiData<IUploader>>[]>(
     () => [
-      defaultColumnDef( 'name' ),
+      {
+        ...defaultColumnDef( 'name' ),
+        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+      },
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'proposer' ),

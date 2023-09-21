@@ -37,7 +37,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.SendAuthError(errors.New("user is not yet approved"), 403)
 	}
 
-	jwt, err := jwt.FormatJWT(username, "guest")
+	jwt, err := jwt.FormatJWT(username, creds.Role)
 
 	if err != nil {
 		return msgs.SendServerError(err)

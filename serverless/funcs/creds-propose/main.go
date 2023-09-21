@@ -73,7 +73,7 @@ func handleProposedInvitation(invite data.Invite) error {
 //  2. Provision preliminary credentials for the guest user
 //  3. Initiate the admin and guest user notifications
 func ProposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"guest"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"guest admin"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}

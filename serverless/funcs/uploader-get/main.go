@@ -14,7 +14,7 @@ import (
 
 // GetUploaderHandler handles the request to retrieve a list of uploader guests on the guest admin's team.
 func GetUploaderHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"guest"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"guest admin"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}

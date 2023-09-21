@@ -159,12 +159,12 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       role: userData.role,
     };
 
-    if( isAdmin ) {
-      if ( user ) {
-        buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
-          .then( () => window.location.assign( '/' ) )
-          .catch( err => console.error( err ) );
-      } else {
+    if( user ) {
+      buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
+        .then( () => window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) ) )
+        .catch( err => console.error( err ) );
+    } else {
+      if( isAdmin ) {
         const invitation = {
           inviter: currentUser.get().email,
           invitee,
@@ -174,20 +174,30 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
         buildQuery( 'creds/provision', invitation, 'POST' )
           .then( () => window.location.assign( '/' ) )
           .catch( err => console.error( err ) );
+      } else {
+        const invitation = {
+          proposer: currentUser.get().email,
+          invitee,
+          expiration,
+        };
+
+        try {
+          await buildQuery( 'creds/propose', invitation, 'POST' );
+          window.location.assign( '/uploaderUsers' );
+        } catch( err: any ) {
+          console.error( err )
+        }
+      }
+    }
+
+    if( isAdmin ) {
+      if ( user ) {
+        
+      } else {
+        
       }
     } else {
-      const invitation = {
-        proposer: currentUser.get().email,
-        invitee,
-        expiration,
-      };
-
-      try {
-        await buildQuery( 'creds/propose', invitation, 'POST' );
-        window.location.assign( '/uploaderUsers' );
-      } catch( err: any ) {
-        console.error( err )
-      }
+      
     }
   };
 
@@ -204,7 +214,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     if ( !ok ) {
       showError( 'Unable to deactivate user' );
     } else {
-      window.location.assign( '/' );
+      window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) );
     }
   };
 
@@ -264,6 +274,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           <input
             id="date-input"
             type="date"
+            disabled={ !isAdmin }
             min={ getYearMonthDay( new Date() ) }
             max={ getYearMonthDay( addDaysToNow( 60 ) ) }
             value={ userData.accessEndDate }
@@ -277,7 +288,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           id="update-btn"
           type="submit"
         >
-          { isAdmin ? ( user ? 'Update' : 'Invite' ) : 'Propose' }
+          { user ? 'Update' : ( user ? 'Propose' : 'Invite' ) }
         </button>
         {
           user
