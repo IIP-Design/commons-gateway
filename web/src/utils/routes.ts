@@ -1,4 +1,4 @@
-import type { TUserRole } from '../utils/types';
+import type { TUserRole } from './types';
 
 interface IRoute {
   href: string;
@@ -34,7 +34,6 @@ export const routes: IRoute[] = [
     href: 'upload',
   },
 ];
-
 
 export const filterRoutes = ( userRole: TUserRole ) => routes
   .filter( r => !r.rolesAccessible || r.rolesAccessible.includes( userRole ) );

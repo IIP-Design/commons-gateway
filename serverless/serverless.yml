@@ -384,11 +384,11 @@ functions:
         - './bin/uploader-get'
   email2fa:
     name: gateway-${opt:stage}-email-2fa
-    handler: funcs/email-2fa/dist/index.handler
+    handler: bin/email-2fa
     description: Email an invitee their temporary verification code.
-    runtime: nodejs18.x
+    runtime: go1.x
     events:
       - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-2fa
     package:
       patterns:
-        - 'funcs/email-2fa/dist/index.cjs'
+        - './bin/email-2fa'
