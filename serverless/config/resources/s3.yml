@@ -22,7 +22,4 @@ Resources:
   StaticSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: commons-gateway-${opt:stage}-web
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: 404.html
+      BucketName: commons-gateway-${opt:stage}-site

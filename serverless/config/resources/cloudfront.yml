@@ -82,6 +82,7 @@ Resources:
           - DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
             Id: commons-gateway-${opt:stage}
             OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+            OriginPath: /web
             OriginShield:
               Enabled: false
             S3OriginConfig:
@@ -102,7 +103,7 @@ Resources:
             Action: s3:GetObject
             Principal:
               Service: cloudfront.amazonaws.com
-            Resource: arn:aws:s3:::commons-gateway-${opt:stage}-web/*
+            Resource: arn:aws:s3:::commons-gateway-${opt:stage}-site/*
             Sid: AllowCloudFrontServicePrincipal
             Condition:
               StringEquals:

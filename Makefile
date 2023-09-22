@@ -52,7 +52,7 @@ clean:
 
 deploy: clean build
 	cd serverless; npm run sls -- deploy --stage $(STAGE) --verbose;\
-	aws s3 cp ../web/dist s3://commons-gateway-$(STAGE)-web/ --recursive;
+	aws s3 cp ../web/dist s3://commons-gateway-$(STAGE)-site/web/ --recursive;
 
 dev:
 	cd $(DEV_DIR); docker-compose up -d
