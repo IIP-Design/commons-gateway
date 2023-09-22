@@ -1,0 +1,13 @@
+---
+import AdminPageLayout from '../layouts/AdminPageLayout.astro';
+import TableContainer from '../layouts/TableContainer.astro';
+import InviteTable from '../components/InviteTable';
+
+const title = 'Pending External Partner Invites';
+---
+
+<AdminPageLayout title={title}>
+  <TableContainer title={title}>
+    <InviteTable client:only />
+  </TableContainer>
+</AdminPageLayout>

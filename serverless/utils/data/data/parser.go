@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"time"
@@ -30,17 +31,18 @@ type RequestBodyOptions struct {
 	Hash     string          `json:"hash"`
 	Invitee  UserBodyOptions `json:"invitee"`
 	Inviter  string          `json:"inviter"`
+	Proposer string          `json:"proposer"`
 	Username string          `json:"username"`
 	Token    string          `json:"token"`
 }
 
 // User represents the properties required to record a user.
 type User struct {
-	Email     string
-	NameFirst string
-	NameLast  string
-	Role      string
-	Team      string
+	Email     string `json:"email"`
+	NameFirst string `json:"givenName"`
+	NameLast  string `json:"familyName"`
+	Role      string `json:"role"`
+	Team      string `json:"team"`
 }
 
 // AdminUser extends the base User struct with unique admin properties.
@@ -55,6 +57,21 @@ type GuestUser struct {
 	User
 }
 
+// GuestInvite extends the GuestUser struct with unique invite properties.
+type GuestInvite struct {
+	DateInvited string
+	Proposer    string
+	GuestUser
+}
+
+type UploaderUser struct {
+	GuestUser
+	DateInvited string
+	Proposer    sql.NullString
+	Inviter     sql.NullString
+	Pending     bool
+}
+
 // Team represents the properties required to record a team.
 type Team struct {
 	Id     string
@@ -64,9 +81,15 @@ type Team struct {
 
 // User represents the properties required to record an invite.
 type Invite struct {
-	Invitee User
-	Inviter string
-	Expires time.Time
+	Invitee  User
+	Inviter  string
+	Proposer string
+	Expires  time.Time
+}
+
+type AcceptInvite struct {
+	Invitee string `json:"inviteeEmail"`
+	Inviter string `json:"inviterEmail"`
 }
 
 // ParseBodyData converts the serialized JSON string provided in the body
@@ -182,6 +205,7 @@ func ExtractInvite(body string) (Invite, error) {
 	parsed, err := ParseBodyData(body)
 
 	admin := parsed.Inviter
+	proposer := parsed.Proposer
 	guest := parsed.Invitee.Email
 	firstName := parsed.Invitee.NameFirst
 	lastName := parsed.Invitee.NameLast
@@ -190,8 +214,10 @@ func ExtractInvite(body string) (Invite, error) {
 
 	if err != nil {
 		return invite, err
-	} else if admin == "" || guest == "" || lastName == "" || firstName == "" || team == "" || expires == "" {
+	} else if guest == "" || lastName == "" || firstName == "" || team == "" || expires == "" {
 		return invite, errors.New("data missing from request")
+	} else if admin == "" && proposer == "" {
+		return invite, errors.New("must supplu admin or proposer")
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, expires)
@@ -201,11 +227,25 @@ func ExtractInvite(body string) (Invite, error) {
 	}
 
 	invite.Inviter = admin
+	invite.Proposer = proposer
 	invite.Invitee.Email = guest
 	invite.Invitee.NameFirst = firstName
 	invite.Invitee.NameLast = lastName
 	invite.Invitee.Team = team
 	invite.Expires = parsedTime
+
+	return invite, err
+}
+
+func ExtractAcceptInvite(body string) (AcceptInvite, error) {
+	var invite AcceptInvite
+
+	b := []byte(body)
+	err := json.Unmarshal(b, &invite)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Unmarshal Invite")
+	}
 
 	return invite, err
 }

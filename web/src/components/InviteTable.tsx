@@ -13,50 +13,86 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import type { IUserEntry, TUserRole, WithUiData } from '../utils/types';
+import { showError, showTernary } from '../utils/alert';
+import { daysUntil } from '../utils/dates';
+import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
-import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
+import btnStyle from '../styles/button.module.scss';
 import style from '../styles/table.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserTableProps {
-  role?: TUserRole;
+interface IInvite extends IUserEntry {
+  dateInvited: string;
+  proposer: string;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+// ////////////////////////////////////////////////////////////////////////////
+const makeClickHandler = ( inviteeEmail: string ) => {
+  const inviterEmail = currentUser.get().email;
+
+  return async () => {
+    const { isConfirmed, isDenied } = await showTernary(
+      'By approving this user they will be allowed to upload media to the Content Commons system until deactivated or their login expires.  Denying access will blacklist this email address indefinitely.',
+      { confirmButtonText: 'Approve' }
+    );
+    let wasUpdated = false;
+
+    if( isConfirmed ) {
+      const { ok } = await buildQuery( 'guest/approve', { inviteeEmail, inviterEmail }, 'POST' );
+
+      if ( !ok ) {
+        showError( 'Unable to accept invite' );
+      } else {
+        wasUpdated = true;
+      }
+    } else if( isDenied ) {
+      const { ok } = await buildQuery( `guest?id=${inviteeEmail}`, null, 'DELETE' );
+
+      if ( !ok ) {
+        showError( 'Unable to reject invite' );
+      } else {
+        wasUpdated = true;
+      }
+    }
+
+    if( wasUpdated ) {
+      window.location.reload();
+    }
+  };
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
-const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
-  const [users, setUsers] = useState<WithUiData<IUserEntry>[]>( [] );
+const UserTable: FC = () => {
+  const [users, setUsers] = useState<WithUiData<IInvite>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
 
   useEffect( () => {
-    const body = {
-      ...( userIsSuperAdmin() ? {} : { team: currentUser.get().team } ),
-      ...( role ? { role } : {} ),
-    };
+    const body = userIsSuperAdmin() ? {} : { team: currentUser.get().team };
 
     const getUsers = async () => {
-      const response = await buildQuery( 'guests', body );
+      const response = await buildQuery( 'guests/pending', body );
       const { data } = await response.json();
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IUserEntry ) => {
+          data.map( ( user: IInvite ) => {
             return {
               ...user,
               name: `${user.givenName} ${user.familyName}`,
-              active: isGuestActive( user.expiration ),
             };
           } )
         );
@@ -79,28 +115,39 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     getTeams();
   }, [] );
 
-  const columns = useMemo<ColumnDef<WithUiData<IUserEntry>>[]>(
+  const columns = useMemo<ColumnDef<WithUiData<IInvite>>[]>(
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+        cell: info => <button
+          className={ btnStyle['link-btn'] }
+          onClick={ makeClickHandler( info.row.getValue( 'email' ) ) }
+          type="button"
+        >
+          { info.getValue() as string }
+        </button>,
       },
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'team' ),
         cell: info => getTeamName( info.getValue() as string, teams ),
       },
+      defaultColumnDef( 'proposer' ),
       {
-        ...defaultColumnDef( 'active' ),
-        cell: info => {
-          const isActive = info.getValue() as boolean;
-          return (
-            <span className={ style.status }>
-              <span className={ isActive ? style.active : style.inactive } />
-              { isActive ? 'Active' : 'Inactive' }
-            </span>
-          );
-        },
+        accessorFn: row => row.expiration,
+        id: '_exp',
+        header: 'Days Till Expiration',
+        footer: props => props.column.id,
+        enableSorting: true,
+        cell: info => daysUntil( info.getValue() as string ),
+      },
+      {
+        accessorFn: row => row.dateInvited,
+        id: '_inv',
+        header: 'Days Since Invite',
+        footer: props => props.column.id,
+        enableSorting: true,
+        cell: info => daysUntil( info.getValue() as string ) * -1,
       },
     ],
     [teams]
@@ -118,7 +165,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
             }
           }
         />
-        : <p>No data to show</p>
+        : <p>No pending invites at this time</p>
       }
     </div>
   );

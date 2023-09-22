@@ -13,46 +13,44 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import type { IUserEntry, TUserRole, WithUiData } from '../utils/types';
+import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
-import { userIsSuperAdmin } from '../utils/auth';
-import { isGuestActive } from '../utils/guest';
-import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import style from '../styles/table.module.scss';
+import { daysUntil } from '../utils/dates';
+import { isGuestActive } from '../utils/guest';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserTableProps {
-  role?: TUserRole;
+interface IUploader extends IUserEntry {
+  dateInvited: string;
+  proposer: string;
+  inviter: string;
+  pending: boolean;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 
-const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
-  const [users, setUsers] = useState<WithUiData<IUserEntry>[]>( [] );
-  const [teams, setTeams] = useState<ITeam[]>( [] );
+const UploaderTable: FC = () => {
+  const [users, setUsers] = useState<WithUiData<IUploader>[]>( [] );
 
   useEffect( () => {
-    const body = {
-      ...( userIsSuperAdmin() ? {} : { team: currentUser.get().team } ),
-      ...( role ? { role } : {} ),
-    };
+    const body = { team: currentUser.get().team };
 
     const getUsers = async () => {
-      const response = await buildQuery( 'guests', body );
+      const response = await buildQuery( 'guests/uploaders', body );
       const { data } = await response.json();
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IUserEntry ) => {
+          data.map( ( user: IUploader ) => {
             return {
               ...user,
               name: `${user.givenName} ${user.familyName}`,
@@ -66,20 +64,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     getUsers();
   }, [] );
 
-  useEffect( () => {
-    const getTeams = async () => {
-      const response = await buildQuery( 'teams', null, 'GET' );
-      const { data } = await response.json();
-
-      if ( data ) {
-        setTeams( data );
-      }
-    };
-
-    getTeams();
-  }, [] );
-
-  const columns = useMemo<ColumnDef<WithUiData<IUserEntry>>[]>(
+  const columns = useMemo<ColumnDef<WithUiData<IUploader>>[]>(
     () => [
       {
         ...defaultColumnDef( 'name' ),
@@ -87,8 +72,18 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
       },
       defaultColumnDef( 'email' ),
       {
-        ...defaultColumnDef( 'team' ),
-        cell: info => getTeamName( info.getValue() as string, teams ),
+        ...defaultColumnDef( 'proposer' ),
+        cell: info => {
+          const { String, Valid } = info.getValue() as any;
+          return Valid ? String : null;
+        }
+      },
+      {
+        ...defaultColumnDef( 'inviter' ),
+        cell: info => {
+          const { String, Valid } = info.getValue() as any;
+          return Valid ? String : null;
+        }
       },
       {
         ...defaultColumnDef( 'active' ),
@@ -102,8 +97,21 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
           );
         },
       },
+      {
+        ...defaultColumnDef( 'pending' ),
+        header: 'Status',
+        cell: info => {
+          const isPending = info.getValue() as boolean;
+          return (
+            <span className={ style.status }>
+              <span className={ isPending ? style.inactive : style.active } />
+              { isPending ? 'Pending' : 'Approved' }
+            </span>
+          );
+        },
+      },
     ],
-    [teams]
+    []
   );
 
   return (
@@ -124,4 +132,4 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
   );
 }
 
-export default UserTable;
+export default UploaderTable;

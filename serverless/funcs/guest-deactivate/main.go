@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -35,7 +35,7 @@ func deactivateGuest(email string) error {
 // It ensures that the required data is present before continuing on to
 // update the team data.
 func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}
@@ -47,7 +47,7 @@ func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	exists, err := data.CheckForExistingUser(id, "guests")
+	_, exists, err := data.CheckForExistingUser(id, "guests")
 
 	if err != nil || !exists {
 		return msgs.SendServerError(errors.New("user does not exist"))

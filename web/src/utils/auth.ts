@@ -2,7 +2,7 @@
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import type { TUserRole } from '../stores/current-user';
+import type { TUserRole } from './types';
 import { buildQuery } from './api';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -64,6 +64,26 @@ const partnerVerificationFn: TPermissionVerificationFn = async ( redirect: strin
   }
 };
 
+const jointVerificationFn: TPermissionVerificationFn = async ( redirect: string ) => {
+  const email = currentUser.get().email || '';
+  const userRole = currentUser.get().role || '';
+  let authenticated = false;
+
+  try {
+    const response = await buildQuery( `${userRole === 'guest admin' ? 'guest?id' : 'admin?username'}=${email}`, null, 'GET' );
+    const { data } = await response.json();
+    const { role } = data;
+
+    authenticated = role === userRole;
+
+  // eslint-disable-next-line no-empty
+  } catch ( err ) {}
+
+  if ( !authenticated ) {
+    window.location.assign( redirect );
+  }
+};
+
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
@@ -87,11 +107,19 @@ export const userIsSuperAdmin = () => {
   return role === 'super admin';
 };
 
+export const userIsNotGuest = () => {
+  const { role } = currentUser.get();
+
+  return role !== 'guest';
+};
+
 export const isLoggedInAsSuperAdmin = () => isLoggedIn( userIsSuperAdmin() );
 
 export const isLoggedInAsAdmin = () => isLoggedIn( userIsAdmin() );
 
 export const isLoggedInAsExternalPartner = () => isLoggedIn( userIsExternalPartner() );
+
+export const isLoggedInAsNotGuest = () => isLoggedIn( userIsNotGuest() );
 
 /**
  * Checks whether the current user is authenticated and if not,
@@ -113,6 +141,7 @@ const protectPage = (
   permissionVerificationFn && permissionVerificationFn( redirect );
 };
 
+export const notGuestPage = protectPage( isLoggedInAsNotGuest, 'adminLogin', jointVerificationFn );
 export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin', 'admin'] ) );
 export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin'] ) );
 export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partnerLogin', partnerVerificationFn );

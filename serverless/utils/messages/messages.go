@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -55,7 +56,18 @@ func SendSuccessMessage() (Response, error) {
 // SendServerError accepts an error and returns it as an API Gateway response with
 // a status code of 500.
 func SendServerError(err error) (Response, error) {
-	return Response{StatusCode: 500}, nil
+	log.Println(err.Error())
+	return Response{
+		StatusCode:      500,
+		IsBase64Encoded: false,
+		Body:            err.Error(),
+		Headers: map[string]string{
+			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+			"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+			"Access-Control-Allow-Origin":  "*",
+			"Content-Type":                 "text/plain",
+		},
+	}, nil
 }
 
 func statusCodeToBody(statusCode int) string {

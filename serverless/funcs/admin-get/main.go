@@ -21,7 +21,7 @@ func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 	}
 
 	// Ensure the user exists doesn't already have access.
-	exists, err := data.CheckForExistingUser(username, "admins")
+	_, exists, err := data.CheckForExistingUser(username, "admins")
 
 	if err != nil || !exists {
 		return msgs.SendServerError(errors.New("user is not an admin"))

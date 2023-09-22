@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -43,7 +43,7 @@ func retrieveUserId(email string, pool *sql.DB) (string, error) {
 	var userId string
 
 	// Check if user exists in the admins table
-	isAdmin, err := data.CheckForExistingUser(email, "admins")
+	_, isAdmin, err := data.CheckForExistingUser(email, "admins")
 
 	if err == nil && isAdmin {
 		// Retrieve admin's the user_id from the all_users table
@@ -56,7 +56,7 @@ func retrieveUserId(email string, pool *sql.DB) (string, error) {
 		return userId, err
 	} else if err == nil && !isAdmin {
 		// If not found in admin table, look in the guests table.
-		isGuest, err := data.CheckForExistingUser(email, "guests")
+		_, isGuest, err := data.CheckForExistingUser(email, "guests")
 
 		if err != nil {
 			logs.LogError(err, "Check for Guest Query Error")
@@ -112,7 +112,7 @@ func createUploadRecord(s3Id string, user string, teamId string, fileType string
 // ensures that the required data is present before continuing on to recording
 // the team name and setting it to active.
 func NewUploadHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin"})
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}

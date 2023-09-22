@@ -1,4 +1,4 @@
-import { isAfter, isBefore, addDays, parse } from 'date-fns';
+import { isAfter, isBefore, addDays, parse, differenceInDays } from 'date-fns';
 
 import { MAX_ACCESS_GRANT_DAYS } from './constants';
 
@@ -35,4 +35,10 @@ export const dateSelectionIsValid = ( dateStr?: string ) => {
   const date = parse( dateStr || '', 'yyyy-MM-dd', new Date() );
 
   return date && isAfter( date, now ) && isBefore( date, addDays( now, MAX_ACCESS_GRANT_DAYS ) );
+};
+
+export const daysUntil = ( dateStr: string ) => {
+  const dt = new Date( dateStr );
+
+  return differenceInDays( dt, new Date() );
 };

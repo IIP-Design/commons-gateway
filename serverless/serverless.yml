@@ -147,6 +147,22 @@ functions:
     package:
       patterns:
         - './bin/admins-get'
+  guestApprove:
+    name: gateway-${opt:stage}-guest-approve
+    handler: bin/guest-approve
+    description: Approve an invited guest user.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guest/approve
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/guest-approve'
+    environment:
+      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
+      AWS_SES_REGION: us-east-1
   guestAuth:
     name: gateway-${opt:stage}-guest-auth
     handler: bin/guest-auth
@@ -220,6 +236,19 @@ functions:
     package:
       patterns:
         - './bin/guests-get'
+  guestsPending:
+    name: gateway-${opt:stage}-guests-pending
+    handler: bin/guests-pending
+    description: Retrieve a list of pending guest invites.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guests/pending
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/guests-pending'
   initDB:
     name: gateway-${opt:stage}-init-db
     handler: bin/init-db
@@ -280,6 +309,22 @@ functions:
     package:
       patterns:
         - './bin/creds-salt'
+  credsPropose:
+    name: gateway-${opt:stage}-creds-propose
+    handler: bin/creds-propose
+    description: Records a proposed guest user invitation and generates credentials for this user.
+    runtime: go1.x
+    events:
+      - http:
+          path: /creds/propose
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/creds-propose'
+    environment:
+      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
+      AWS_SES_REGION: us-east-1
   credsProvision:
     name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision
@@ -293,6 +338,9 @@ functions:
     package:
       patterns:
         - './bin/creds-provision'
+    environment:
+      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
+      AWS_SES_REGION: us-east-1
   uploadMetadata:
     name: gateway-${opt:stage}-upload-metadata
     handler: bin/upload-metadata
@@ -321,33 +369,26 @@ functions:
         - './bin/upload-presigned-url'
     environment:
       S3_UPLOAD_BUCKET: commons-gateway-${opt:stage}-upload
+  uploaderGet:
+    name: gateway-${opt:stage}-uploader-get
+    handler: bin/uploader-get
+    description: Return a list of uploaders for a specific team.
+    runtime: go1.x
+    events:
+      - http:
+          path: /guests/uploaders
+          method: post
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/uploader-get'
   email2fa:
     name: gateway-${opt:stage}-email-2fa
-    handler: funcs/email-2fa/dist/index.handler
+    handler: bin/email-2fa
     description: Email an invitee their temporary verification code.
-    runtime: nodejs18.x
+    runtime: go1.x
     events:
       - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-2fa
     package:
       patterns:
-        - 'funcs/email-2fa/dist/index.cjs'
-  emailCreds:
-    name: gateway-${opt:stage}-email-creds
-    handler: funcs/email-creds/dist/index.handler
-    description: Email an invitee their temporary credentials.
-    runtime: nodejs18.x
-    events:
-      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-creds
-    package:
-      patterns:
-        - 'funcs/email-creds/dist/index.cjs'
-  emailSupportStaff:
-    name: gateway-${opt:stage}-email-support-staff
-    handler: funcs/email-support-staff/index.handler
-    description: Email a Content Commons user an update on requested support staff.
-    runtime: nodejs18.x
-    events:
-      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-support-staff
-    package:
-      patterns:
-        - 'funcs/email-support-staff/dist/index.cjs'
+        - './bin/email-2fa'

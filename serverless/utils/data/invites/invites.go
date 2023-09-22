@@ -9,19 +9,21 @@ import (
 
 // saveInvite opens a database connection and records the association between an admin
 // user inviter and a guest user invitee along with the date of the invitation.
-func SaveInvite(adminEmail string, guestEmail string) error {
+func SaveInvite(adminEmail string, guestEmail string, setPending bool) error {
 	var err error
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	// For now all invites will be set to not pending,
-	// will change when invite proposals are introduced
-	pending := false
 	currentTime := time.Now()
 
-	insertInvite := `INSERT INTO invites( invitee, inviter, pending, date_invited ) VALUES ($1, $2, $3, $4);`
-	_, err = pool.Exec(insertInvite, guestEmail, adminEmail, pending, currentTime)
+	if setPending {
+		insertInvite := `INSERT INTO invites( invitee, proposer, pending, date_invited ) VALUES ($1, $2, $3, $4);`
+		_, err = pool.Exec(insertInvite, guestEmail, adminEmail, setPending, currentTime)
+	} else {
+		insertInvite := `INSERT INTO invites( invitee, inviter, pending, date_invited ) VALUES ($1, $2, $3, $4);`
+		_, err = pool.Exec(insertInvite, guestEmail, adminEmail, setPending, currentTime)
+	}
 
 	if err != nil {
 		logs.LogError(err, "Save Invite Query Error")

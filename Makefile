@@ -16,8 +16,6 @@ EVENT_CREDS_PROVISION = ./config/sim-events/creds-provision.json
 EVENT_GUEST_AUTH = ./config/sim-events/guest-auth.json
 EVENT_GUESTS_GET = ./config/sim-events/guests-get.json
 EVENT_EMAIL_2FA = ./config/sim-events/email-2fa.json
-EVENT_EMAIL_CREDS = ./config/sim-events/email-creds.json
-EVENT_EMAIL_SUPPORT_STAFF = ./config/sim-events/email-support-staff.json
 EVENT_TEAM_CREATE = ./config/sim-events/team-create.json
 EVENT_UPLOAD_METADATA = ./config/sim-events/upload-metadata.json
 
@@ -29,23 +27,24 @@ build:
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-update funcs/admin-update/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/email-2fa funcs/email-2fa/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-approve funcs/guest-approve/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-deactivate funcs/guest-deactivate/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-get funcs/guest-get/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-update funcs/guest-update/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guests-get funcs/guests-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guests-pending funcs/guests-pending/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-propose funcs/creds-propose/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/team-create funcs/team-create/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/team-update funcs/team-update/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/teams-get funcs/teams-get/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-metadata funcs/upload-metadata/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-presigned-url funcs/upload-presigned-url/*.go;\
-	cd funcs;\
-	cd email-2fa && npm run zip && cd ../;\
-	cd email-creds && npm run zip && cd ../;\
-	cd email-support-staff && npm run zip && cd ../;
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/uploader-get funcs/uploader-get/*.go;\
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock;\
@@ -88,6 +87,10 @@ local-guests: build
 	cd serverless;\
 	npm run sls -- invoke local -f guestsGet $(DEV_DB_ENV) -p $(EVENT_GUESTS_GET);
 
+local-guests-pending: build
+	cd serverless;\
+	npm run sls -- invoke local -f guestsPending $(DEV_DB_ENV);
+
 local-salt: build
 	cd serverless;\
 	npm run sls -- invoke local -f credsSalt $(DEV_DB_ENV) -p $(EVENT_CREDS_SALT);
@@ -104,14 +107,6 @@ local-email-2fa: build
 	cd serverless;\
 	npm run sls -- invoke local -f email2fa $(DEV_AWS_ENV) -p $(EVENT_EMAIL_2FA);
 
-local-email-creds: build
-	cd serverless;\
-	npm run sls -- invoke local -f emailCreds $(DEV_AWS_ENV) -p $(EVENT_EMAIL_CREDS);
-
-local-email-support-staff: build
-	cd serverless;\
-	npm run sls -- invoke local -f emailSupportStaff $(DEV_ENV) -p $(EVENT_EMAIL_SUPPORT_STAFF);
-
 local-upload-metadata: build
 	cd serverless;\
 	npm run sls -- invoke local -f uploadMetadata $(DEV_AWS_ENV) -p $(EVENT_UPLOAD_METADATA);
@@ -120,3 +115,6 @@ local-upload-presigned-url: build
 	cd serverless;\
 	npm run sls -- invoke local -f uploadPresignedUrl $(DEV_ENV);
 
+local-uploader-get: build
+	cd serverless;\
+	npm run sls -- invoke local -f uploaderGet $(DEV_ENV);

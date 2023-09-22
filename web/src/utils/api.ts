@@ -22,19 +22,21 @@ export const constructUrl = ( endpoint: string ) => `${API_ENDPOINT}/${endpoint}
 // ////////////////////////////////////////////////////////////////////////////
 // API Functions
 // ////////////////////////////////////////////////////////////////////////////
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const buildHeaders = ( token: string, body: Nullable<Record<string, any>> ): HeadersInit => {
   const headers: HeadersInit = {};
 
-  if( body ) {
+  if ( body ) {
     headers['Content-Type'] = 'application/json';
   }
 
-  if( token ) {
+  if ( token ) {
     headers.authorization = `Bearer ${token}`;
   }
 
   return headers;
-}
+};
 
 /**
  * Helper function to consistently construct the API requests.

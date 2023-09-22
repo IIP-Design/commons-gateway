@@ -113,7 +113,7 @@ func switchUploadsUserId(pool *sql.DB) error {
 		}
 
 		// Check if user exists in the admins table
-		isAdmin, err := data.CheckForExistingUser(oldId, "admins")
+		_, isAdmin, err := data.CheckForExistingUser(oldId, "admins")
 
 		if err == nil && isAdmin {
 			var userId string
@@ -142,7 +142,7 @@ func switchUploadsUserId(pool *sql.DB) error {
 			var userId string
 
 			// If not found in admin table, look in the guests table.
-			isGuest, err := data.CheckForExistingUser(oldId, "guests")
+			_, isGuest, err := data.CheckForExistingUser(oldId, "guests")
 
 			if err != nil {
 				logs.LogError(err, "Check for Guest Query Error")

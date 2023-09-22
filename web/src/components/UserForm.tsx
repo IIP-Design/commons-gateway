@@ -7,7 +7,7 @@ import type { FC, FormEvent } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { parse } from 'date-fns';
+import { addDays, parse } from 'date-fns';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -15,7 +15,7 @@ import { parse } from 'date-fns';
 import BackButton from './BackButton';
 
 import currentUser from '../stores/current-user';
-import type { TUserRole } from '../stores/current-user';
+import type { TUserRole } from '../utils/types';
 import { showConfirm, showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
@@ -48,8 +48,8 @@ const initialState = {
   givenName: '',
   familyName: '',
   email: '',
-  team: '',
-  accessEndDate: getYearMonthDay( new Date() ),
+  team: currentUser.get().team || '',
+  accessEndDate: getYearMonthDay( addDays( new Date(), 14 ) ),
   role: null,
 };
 
@@ -159,20 +159,45 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       role: userData.role,
     };
 
-    const invitation = {
-      inviter: currentUser.get().email,
-      invitee,
-      expiration,
-    };
-
-    if ( user ) {
-      await buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
-        .then( () => window.location.assign( '/' ) )
+    if( user ) {
+      buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
+        .then( () => window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) ) )
         .catch( err => console.error( err ) );
     } else {
-      await buildQuery( 'creds/provision', invitation, 'POST' )
-        .then( () => window.location.assign( '/' ) )
-        .catch( err => console.error( err ) );
+      if( isAdmin ) {
+        const invitation = {
+          inviter: currentUser.get().email,
+          invitee,
+          expiration,
+        };
+
+        buildQuery( 'creds/provision', invitation, 'POST' )
+          .then( () => window.location.assign( '/' ) )
+          .catch( err => console.error( err ) );
+      } else {
+        const invitation = {
+          proposer: currentUser.get().email,
+          invitee,
+          expiration,
+        };
+
+        try {
+          await buildQuery( 'creds/propose', invitation, 'POST' );
+          window.location.assign( '/uploaderUsers' );
+        } catch( err: any ) {
+          console.error( err )
+        }
+      }
+    }
+
+    if( isAdmin ) {
+      if ( user ) {
+        
+      } else {
+        
+      }
+    } else {
+      
     }
   };
 
@@ -189,7 +214,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     if ( !ok ) {
       showError( 'Unable to deactivate user' );
     } else {
-      window.location.assign( '/' );
+      window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) );
     }
   };
 
@@ -249,6 +274,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           <input
             id="date-input"
             type="date"
+            disabled={ !isAdmin }
             min={ getYearMonthDay( new Date() ) }
             max={ getYearMonthDay( addDaysToNow( 60 ) ) }
             value={ userData.accessEndDate }
@@ -262,7 +288,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           id="update-btn"
           type="submit"
         >
-          { user ? 'Update' : 'Invite' }
+          { user ? 'Update' : ( user ? 'Propose' : 'Invite' ) }
         </button>
         {
           user

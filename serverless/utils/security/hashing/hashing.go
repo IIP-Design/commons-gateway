@@ -1,4 +1,4 @@
-package main
+package hashing
 
 import (
 	"crypto/sha256"
@@ -16,7 +16,7 @@ func generateRandString(count int) string {
 // generateCredentials creates a random 20 character string to be used as a password
 // as well as a random 10 character string to salt the password when hashing
 // it for storage in the database.
-func generateCredentials() (string, string) {
+func GenerateCredentials() (string, string) {
 	pass := generateRandString(20)
 	salt := generateRandString(10)
 
@@ -27,7 +27,7 @@ func generateCredentials() (string, string) {
 // The salt is appended to the password and the combination is run through 4096 iterations
 // of PBKDF2 using the SHA-256 hashing function. The resulting 32 byte derived key is then
 // encoded as a base64 string for ease of use.
-func generateHash(pass string, salt string) string {
+func GenerateHash(pass string, salt string) string {
 	var iterations = 4096
 	var keyLength = 32
 

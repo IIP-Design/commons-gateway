@@ -7,8 +7,8 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
-	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -30,7 +30,7 @@ func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	adminExists, err := data.CheckForExistingUser(admin.Email, "admins")
+	_, adminExists, err := data.CheckForExistingUser(admin.Email, "admins")
 
 	if err != nil {
 		return msgs.SendServerError(err)

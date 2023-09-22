@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -46,7 +46,7 @@ func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	exists, err := data.CheckForExistingUser(username, "admins")
+	_, exists, err := data.CheckForExistingUser(username, "admins")
 
 	if err != nil || !exists {
 		return msgs.SendServerError(errors.New("admin does not exist"))

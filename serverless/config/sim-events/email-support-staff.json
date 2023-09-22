@@ -1,7 +1,0 @@
-{
-    "Records": [
-        {
-            "body": "{\"contentCommonsUser\": {\"email\": \"ryan.quinn@certusinnovations.com\",\"givenName\": \"Ryan\", \"familyName\": \"Quinn\"},\"externalTeamLead\": {\"email\": \"pidge.holt@contentcommons.test\", \"givenName\": \"Pidge\", \"familyName\": \"Holt\"},\"supportStaffUser\":{\"email\": \"john.q.public@public.com\",\"givenName\": \"John\", \"familyName\": \"Public\"},\"url\":\"https://contentcommons.test/test\"}"
-        }
-    ]
-}
