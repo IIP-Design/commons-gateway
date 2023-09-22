@@ -1,0 +1,27 @@
+{
+  "aprimoDomain": "state",
+  "cors": {
+    "origins": ["https://ccepu.state.gov"],
+    "headers": [
+      "Content-Type",
+      "X-Amz-Date",
+      "Authorization",
+      "X-Api-Key",
+      "X-Amz-Security-Token",
+      "X-Amz-User-Agent",
+      "X-Amzn-Trace-Id"
+    ]
+  },
+  "rds": {
+    "allocatedStorage": "100",
+    "backupRetentionPeriod": 35,
+    "copyTags": true,
+    "instanceClass": "db.r5.xlarge",
+    "deleteBackups": false,
+    "cloudwatchLogs": ["postgresql", "upgrade"],
+    "performanceInsights": true,
+    "maxStorage": 1000,
+    "multiAZ": true,
+    "encrypted": true
+  }
+}
