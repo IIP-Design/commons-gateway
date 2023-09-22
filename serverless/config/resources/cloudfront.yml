@@ -58,6 +58,8 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
+        Aliases:
+          - ${env:ALTERNATE_DOMAIN_NAME}
         Comment: Points to the S3 bucket hosting the Commons Gateway static site.
         DefaultCacheBehavior:
           AllowedMethods:
@@ -84,6 +86,10 @@ Resources:
               Enabled: false
             S3OriginConfig:
               OriginAccessIdentity: '' # Required when using Origin Access Control
+        ViewerCertificate:
+          AcmCertificateArn: ${env:CERTIFICATE_ARN}
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
 
   CloudFrontS3BucketPolicy:
     Type: AWS::S3::BucketPolicy

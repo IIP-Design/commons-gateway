@@ -53,6 +53,8 @@ provider:
     name: gpalab-automatic-deployments-${param:deployment}
   disableRollback: ${param:rollback}
 
+useDotenv: true
+
 custom:
   CIDR: 10.0.0.0/16
   DB_NAME: gateway_${opt:stage}
