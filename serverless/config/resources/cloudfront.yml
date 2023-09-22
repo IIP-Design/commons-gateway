@@ -72,7 +72,7 @@ Resources:
             - EventType: viewer-request
               FunctionARN: !GetAtt CloudFrontFunction.FunctionARN
           TargetOriginId: commons-gateway-${opt:stage}
-          ViewerProtocolPolicy: redirect-to-https
+          ViewerProtocolPolicy: https-only
         DefaultRootObject: index.html
         Enabled: true
         HttpVersion: http2

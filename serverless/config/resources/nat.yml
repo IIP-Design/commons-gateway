@@ -1,5 +1,5 @@
 Resources:
-  SubnetPublic:
+  SubnetPublicA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
@@ -7,7 +7,17 @@ Resources:
       CidrBlock: 10.0.2.0/24
       Tags:
         - Key: Name
-          Value: commons-gateway-${opt:stage}-subnet-public
+          Value: commons-gateway-${opt:stage}-subnet-public-a
+
+  SubnetPublicB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: ${aws:region}b
+      CidrBlock: 10.0.3.0/24
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-subnet-public-b
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -22,24 +32,43 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  ElasticIP:
+  ElasticIPA:
     Type: AWS::EC2::EIP
     DependsOn: VPC
     Properties:
       Domain: vpc
       Tags:
         - Key: Name
-          Value: commons-gateway-${opt:stage}-nat-ip
+          Value: commons-gateway-${opt:stage}-nat-a-ip
 
-  NatGateway:
-    Type: AWS::EC2::NatGateway
+  ElasticIPB:
+    Type: AWS::EC2::EIP
+    DependsOn: VPC
     Properties:
-      AllocationId: !GetAtt ElasticIP.AllocationId
-      ConnectivityType: public
-      SubnetId: !Ref SubnetPublic
+      Domain: vpc
       Tags:
         - Key: Name
-          Value: commons-gateway-${opt:stage}-nat
+          Value: commons-gateway-${opt:stage}-nat-b-ip
+
+  NatGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPA.AllocationId
+      ConnectivityType: public
+      SubnetId: !Ref SubnetPublicA
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-nat-a
+
+  NatGatewayB:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPB.AllocationId
+      ConnectivityType: public
+      SubnetId: !Ref SubnetPublicB
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-nat-b
 
   RouteTablePublic:
     Type: AWS::EC2::RouteTable
@@ -70,11 +99,18 @@ Resources:
         - Key: Name
           Value: commons-gateway-${opt:stage}-private
 
-  RoutePrivate:
+  RoutePrivateA:
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway
+      NatGatewayId: !Ref NatGatewayA
+      RouteTableId: !Ref RouteTablePrivate
+
+  RoutePrivateB:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayB
       RouteTableId: !Ref RouteTablePrivate
 
   SubnetARouteTableAssociation:
