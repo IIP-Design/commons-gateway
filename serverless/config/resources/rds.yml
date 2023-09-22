@@ -7,9 +7,17 @@ Resources:
       MasterUsername: ${self:custom.DB_USER}
       ManageMasterUserPassword: true
       Engine: postgres
-      EngineVersion: "15.3"
-      DBInstanceClass: ${file(./config/${param:deployment}.json):rds.instanceClass}
+      EngineVersion: '15.3'
       AllocatedStorage: ${file(./config/${param:deployment}.json):rds.allocatedStorage}
+      BackupRetentionPeriod: ${file(./config/${param:deployment}.json):rds.backupRetentionPeriod}
+      CopyTagsToSnapshot: ${file(./config/${param:deployment}.json):rds.copyTags}
+      DBInstanceClass: ${file(./config/${param:deployment}.json):rds.instanceClass}
+      DeleteAutomatedBackups: ${file(./config/${param:deployment}.json):rds.deleteBackups}
+      EnableCloudwatchLogsExports: ${file(./config/${param:deployment}.json):rds.cloudwatchLogs}
+      EnablePerformanceInsights: ${file(./config/${param:deployment}.json):rds.performanceInsights}
+      MaxAllocatedStorage: ${file(./config/${param:deployment}.json):rds.maxStorage}
+      MultiAZ: ${file(./config/${param:deployment}.json):rds.multiAZ}
+      StorageEncrypted: ${file(./config/${param:deployment}.json):rds.encrypted}
       StorageType: gp2
       DBSubnetGroupName: !Ref RDSSubnetGroup
       VPCSecurityGroups:
@@ -19,7 +27,7 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupName: commons-gateway-${opt:stage}
-      DBSubnetGroupDescription: "RDS subnet group for the Commons Gateway"
+      DBSubnetGroupDescription: 'RDS subnet group for the Commons Gateway'
       SubnetIds:
         - !Ref SubnetA
         - !Ref SubnetB
