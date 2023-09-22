@@ -2,7 +2,7 @@ Resources:
   RDSInstance:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBInstanceIdentifier: commons-gateway-${opt:stage}
+      DBInstanceIdentifier: commons-gateway-${opt:stage}-db
       DBName: ${self:custom.DB_NAME}
       MasterUsername: ${self:custom.DB_USER}
       ManageMasterUserPassword: true

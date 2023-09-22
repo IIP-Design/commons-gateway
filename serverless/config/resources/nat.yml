@@ -1,10 +1,11 @@
 Resources:
+  # Create two public subnets for redundancy
   SubnetPublicA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
       AvailabilityZone: ${aws:region}a
-      CidrBlock: 10.0.2.0/24
+      CidrBlock: 10.0.3.0/24
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-subnet-public-a
@@ -14,11 +15,12 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       AvailabilityZone: ${aws:region}b
-      CidrBlock: 10.0.3.0/24
+      CidrBlock: 10.0.4.0/24
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-subnet-public-b
 
+  # Create an Internet Gateway for the public subnets.
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -32,6 +34,35 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
+  # Route the public subnets to the Internet Gateway.
+  RouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-public
+
+  RoutePublic:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTablePublic
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      SubnetId: !Ref SubnetPublicA
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      SubnetId: !Ref SubnetPublicB
+
+  # Create two elastic IP addresses, one for each NAT Gateway.
   ElasticIPA:
     Type: AWS::EC2::EIP
     DependsOn: VPC
@@ -50,6 +81,7 @@ Resources:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-b-ip
 
+  # Create two NAT Gateways.
   NatGatewayA:
     Type: AWS::EC2::NatGateway
     Properties:
@@ -70,57 +102,46 @@ Resources:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-b
 
-  RouteTablePublic:
+  # Route the private subnet A to NAT A.
+  RouteTablePrivateA:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: commons-gateway-${opt:stage}-public
-
-  RoutePublic:
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-      RouteTableId: !Ref RouteTablePublic
-
-  PublicSubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref RouteTablePublic
-      SubnetId: !Ref SubnetPublic
-
-  RouteTablePrivate:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: commons-gateway-${opt:stage}-private
+          Value: commons-gateway-${opt:stage}-private-a
 
   RoutePrivateA:
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGatewayA
-      RouteTableId: !Ref RouteTablePrivate
+      RouteTableId: !Ref RouteTablePrivateA
+
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePrivateA
+      SubnetId: !Ref SubnetA
+
+  # Route the private subnet B to NAT B.
+  RouteTablePrivateB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-private-b
 
   RoutePrivateB:
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGatewayB
-      RouteTableId: !Ref RouteTablePrivate
-
-  SubnetARouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref RouteTablePrivate
-      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref RouteTablePrivateB
 
   SubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref RouteTablePrivate
+      RouteTableId: !Ref RouteTablePrivateB
       SubnetId: !Ref SubnetB
