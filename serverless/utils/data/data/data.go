@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	aws_region  = "DB_REGION"
 	db_host     = "DB_HOST"
 	db_name     = "DB_NAME"
 	db_password = "DB_PASSWORD"
@@ -35,6 +36,7 @@ func ConnectToDB() *sql.DB {
 	password := os.Getenv(db_password)
 	port := os.Getenv(db_port)
 	user := os.Getenv(db_user)
+	region := os.Getenv(aws_region)
 
 	var connStr string
 
@@ -44,7 +46,7 @@ func ConnectToDB() *sql.DB {
 		authToken, err := auth.BuildAuthToken(
 			context.TODO(),
 			fmt.Sprintf("%s:%s", host, port),
-			"us-east-1",
+			region,
 			user,
 			cfg.Credentials,
 		)

@@ -55,6 +55,7 @@ provider:
     DB_HOST: ${self:custom.PROXY_ENDPOINT}
     DB_NAME: ${self:custom.DB_NAME}
     DB_PORT: ${self:custom.DB_PORT}
+    DB_REGION: ${env:AWS_REGION}
     DB_USER: ${self:custom.DB_USER}
   deploymentBucket:
     name: gpalab-automatic-deployments-${param:deployment}
