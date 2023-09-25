@@ -1,0 +1,5 @@
+Resources:
+  SQS2FA:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-email-2fa

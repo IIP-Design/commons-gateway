@@ -78,6 +78,7 @@ resources:
   - ${file(./config/resources/s3.yml)}
   - ${file(./config/resources/cloudfront.yml)}
   - ${file(./config/resources/nat.yml)}
+  - ${file(./config/resources/sqs.yml)}
 
 # Defines how the functions are deployed. To reduce the functions
 # size for each Lambda, we package them independently. This requires
@@ -416,7 +417,8 @@ functions:
     description: Email an invitee their temporary verification code.
     runtime: go1.x
     events:
-      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:contentCommons-email-2fa
+      - sqs:
+          arn: !GetAtt SQS2FA.Arn
     package:
       patterns:
         - './bin/email-2fa'
