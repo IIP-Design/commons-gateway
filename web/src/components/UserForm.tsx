@@ -58,6 +58,7 @@ const initialState = {
 // ////////////////////////////////////////////////////////////////////////////
 const UserForm: FC<IUserFormProps> = ( { user } ) => {
   const [isAdmin, setIsAdmin] = useState( false );
+  const [userExists, setUserExists] = useState( false );
   const [teamList, setTeamList] = useState( [] );
   const [userData, setUserData] = useState<IUserFormData>( initialState );
 
@@ -96,6 +97,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           ...data,
           accessEndDate: getYearMonthDay( parse( data.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
         } );
+        setUserExists( true );
       }
     };
 
@@ -274,7 +276,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           <input
             id="date-input"
             type="date"
-            disabled={ !isAdmin }
+            disabled={ !isAdmin && userExists }
             min={ getYearMonthDay( new Date() ) }
             max={ getYearMonthDay( addDaysToNow( 60 ) ) }
             value={ userData.accessEndDate }

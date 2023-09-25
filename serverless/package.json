@@ -12,7 +12,7 @@
     }
   ],
   "devDependencies": {
-    "serverless": "^3.34.0",
+    "serverless": "^3.35.2",
     "serverless-deployment-bucket": "^1.6.0"
   },
   "homepage": "https://iip-design.github.io/commons-gateway/",
@@ -27,6 +27,7 @@
     "url": "https://github.com/IIP-Design/commons-gateway"
   },
   "scripts": {
-    "sls": "serverless"
+    "sls": "serverless",
+    "build:sbom": "npx @cyclonedx/cyclonedx-npm --output-reproducible --output-file sbom.json"
   }
 }
