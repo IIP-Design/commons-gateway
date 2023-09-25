@@ -8,6 +8,9 @@ nav_list:
       - title: Function Reference
         url: serverless/functions
 
+  - title: Setup
+    url: setup
+
   - title: User Types
     url: users
 
