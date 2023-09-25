@@ -68,10 +68,10 @@ func MailProvisionedCreds(sourceEmail string, provisionCredsData ProvisionCredsD
 		return nil
 	}
 
-	region := os.Getenv("AWS_SES_REGION")
+	awsRegion := os.Getenv("AWS_SES_REGION")
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(region),
+		config.WithRegion(awsRegion),
 	)
 	if err != nil {
 		return err

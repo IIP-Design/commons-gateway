@@ -122,27 +122,21 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 		return nil
 	}
 
-	region := os.Getenv("AWS_SES_REGION")
-	log.Printf("Region: %s\n", region)
+	awsRegion := os.Getenv("AWS_SES_REGION")
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(region),
+		config.WithRegion(awsRegion),
 	)
 	if err != nil {
 		return err
 	}
-
-	log.Println(cfg)
 
 	admins, err := getAdmins(supportStaffRequestData.Proposer.Team)
 	if err != nil {
 		return err
 	}
 
-	log.Println(admins)
-
 	sesClient := ses.NewFromConfig(cfg)
-	log.Println("Have SES client")
 
 	for _, admin := range admins {
 		e := formatEmail(
@@ -152,13 +146,11 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 			supportStaffRequestData.Url,
 			sourceEmail,
 		)
-		log.Printf("Email: %s", *e.FromEmailAddress)
 
-		result, err := sesClient.SendEmail(context.TODO(), &e)
+		_, err := sesClient.SendEmail(context.TODO(), &e)
 		if err != nil {
 			log.Println(err.Error())
 		}
-		log.Printf("Message ID: %s\n", *result.MessageId)
 
 	}
 
