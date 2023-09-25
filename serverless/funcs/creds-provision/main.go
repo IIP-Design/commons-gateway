@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
@@ -54,8 +53,6 @@ func handleInvitation(invite data.Invite) error {
 	if err != nil {
 		return errors.New("something went wrong - saving invite failed")
 	}
-
-	fmt.Printf("Your password is %s", pass)
 
 	// TODO - email URL
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")

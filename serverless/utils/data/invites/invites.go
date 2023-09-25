@@ -5,6 +5,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/rs/xid"
 )
 
 // saveInvite opens a database connection and records the association between an admin
@@ -27,6 +28,16 @@ func SaveInvite(adminEmail string, guestEmail string, setPending bool) error {
 
 	if err != nil {
 		logs.LogError(err, "Save Invite Query Error")
+	}
+
+	// Add the guest to the list of all users
+	guid := xid.New()
+
+	insertAllUsers := `INSERT INTO all_users( user_id, guest_id ) VALUES ( $1, $2 );`
+	_, err = pool.Exec(insertAllUsers, guid, guestEmail)
+
+	if err != nil {
+		logs.LogError(err, "Add Guest to All Users Query Error")
 	}
 
 	return err

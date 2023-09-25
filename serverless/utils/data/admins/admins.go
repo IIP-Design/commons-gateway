@@ -6,6 +6,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
+	"github.com/rs/xid"
 )
 
 // CheckForActiveAdmin opens a database connection and checks whether the provided
@@ -61,11 +62,21 @@ func CreateAdmin(adminData data.User) error {
 
 	insertAdmin :=
 		`INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified )
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+		 VALUES ( $1, $2, $3, $4, $5, $6, $7, $8 );`
 	_, err = pool.Exec(insertAdmin, adminData.Email, adminData.NameFirst, adminData.NameLast, adminData.Role, adminData.Team, true, currentTime, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Create Admin Query Error")
+	}
+
+	// Add the admin to the list of all users
+	guid := xid.New()
+
+	insertAllUsers := `INSERT INTO all_users( user_id, admin_id ) VALUES ( $1, $2 );`
+	_, err = pool.Exec(insertAllUsers, guid, adminData.Email)
+
+	if err != nil {
+		logs.LogError(err, "Add Admin to All Users Query Error")
 	}
 
 	return err
