@@ -17,7 +17,7 @@ params:
 
 provider:
   name: aws
-  region: us-east-1
+  region: ${env:AWS_REGION}
   iam:
     role:
       name: CommonsGatewayLambdaRole-${opt:stage}
@@ -170,8 +170,8 @@ functions:
       patterns:
         - './bin/guest-approve'
     environment:
-      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
-      AWS_SES_REGION: us-east-1
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+      AWS_SES_REGION: ${env:AWS_SES_REGION}
   guestAuth:
     name: gateway-${opt:stage}-guest-auth
     handler: bin/guest-auth
@@ -332,8 +332,8 @@ functions:
       patterns:
         - './bin/creds-propose'
     environment:
-      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
-      AWS_SES_REGION: us-east-1
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+      AWS_SES_REGION: ${env:AWS_SES_REGION}
   credsProvision:
     name: gateway-${opt:stage}-creds-provision
     handler: bin/creds-provision
