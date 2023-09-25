@@ -48,7 +48,7 @@ provider:
         - Effect: Allow
           Action:
             - ses:SendEmail
-          Resource: arn:aws:ses:${aws:region}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
+          Resource: arn:aws:ses:${env:AWS_SES_REGION}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
@@ -83,6 +83,7 @@ resources:
   - ${file(./config/resources/cloudfront.yml)}
   - ${file(./config/resources/nat.yml)}
   - ${file(./config/resources/sqs.yml)}
+  - ${file(./config/resources/jump.yml)} # Optional jump server to access resources via SSH, uncomment to apply
 
 # Defines how the functions are deployed. To reduce the functions
 # size for each Lambda, we package them independently. This requires

@@ -1,0 +1,40 @@
+Resources:
+  # Keys that can be used to access the jump server.
+  # Will be stored in AWS Systems Manager parameter store.
+  JumpServerKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyFormat: pem
+      KeyName: commons-gateway-${opt:stage}-jump
+      KeyType: ed25519
+
+  # Security group to manage connections to the jump server. By default,
+  # no ingress is allowed and SSH access should be added manually by IP.
+  JumpServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupName: commons-gateway-${opt:stage}-sg-jump
+      GroupDescription: Allows access to the Commons Gateway jump server.
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-jump
+
+  # The EC2 instance that provides access to the VPC
+  JumpServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ${env:JUMP_AMI}
+      InstanceType: t2.micro
+      KeyName: !Ref JumpServerKeyPair
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          Description: Provides the jump server a public IP address.
+          DeviceIndex: '0'
+          GroupSet:
+            - !Ref JumpServerSecurityGroup
+          SubnetId: !Ref SubnetPublicA
+      Tags:
+        - Key: Name
+          Value: commons-gateway-${opt:stage}-jump
