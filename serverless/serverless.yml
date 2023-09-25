@@ -38,6 +38,13 @@ provider:
             - ''
             - - !GetAtt UploadBucket.Arn
               - /*
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+          Resource: !Join
+            - ''
+            - - !GetAtt StaticSiteBucket.Arn
+              - /seed/*
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
@@ -341,8 +348,26 @@ functions:
       patterns:
         - './bin/creds-provision'
     environment:
-      SOURCE_EMAIL_ADDRESS: ryan@gpalab.digital
-      AWS_SES_REGION: us-east-1
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+      AWS_SES_REGION: ${env:AWS_SES_REGION}
+  seedDB:
+    name: gateway-${opt:stage}-seed-db
+    handler: bin/seed-db
+    description: Read an uploaded seed file and and update the database accordingly.
+    runtime: go1.x
+    events:
+      - s3:
+          bucket: !Ref StaticSiteBucket
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - prefix: seed/
+    package:
+      patterns:
+        - './bin/seed-db'
+    environment:
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+      AWS_SES_REGION: ${env:AWS_SES_REGION}
   uploadMetadata:
     name: gateway-${opt:stage}-upload-metadata
     handler: bin/upload-metadata

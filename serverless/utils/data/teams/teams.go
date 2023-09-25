@@ -83,6 +83,26 @@ func CreateTeam(teamName string) error {
 	return err
 }
 
+// GetTeamIdByName uses a team's name to retrieve it's unique identifier.
+func GetTeamIdByName(teamName string) (string, error) {
+	var err error
+
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	var id string
+
+	query := `SELECT id FROM teams WHERE team_name = $1;`
+	err = pool.QueryRow(query, teamName).Scan(&id)
+
+	if err != nil {
+		logs.LogError(err, "Existing Team by ID Query Error")
+		return "", err
+	}
+
+	return id, err
+}
+
 // UpdateTeam opens a database connection and updates and existing team record.
 func UpdateTeam(teamId string, teamName string, active bool) error {
 	var err error
