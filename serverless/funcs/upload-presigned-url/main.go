@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
-	"math/rand"
+	"math/big"
 	"net/url"
 	"os"
 	"time"
@@ -15,19 +16,28 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+const (
+	LetterBytes  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+	LifetimeSecs = 300
+)
 
-func RandStringBytes(n int) string {
+func RandStringBytes(n int) (string, error) {
+	maxVal := big.NewInt(int64(len(LetterBytes)))
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+		val, err := rand.Int(rand.Reader, maxVal)
+		if err != nil {
+			return "", err
+		}
+		b[i] = LetterBytes[val.Int64()]
 	}
-	return string(b)
+
+	return string(b), nil
 }
 
 func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
@@ -49,32 +59,37 @@ func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyReques
 	var awsRegion = os.Getenv("AWS_REGION")
 	var s3Bucket = os.Getenv("S3_UPLOAD_BUCKET")
 
-	key := RandStringBytes(24)
+	key, err := RandStringBytes(24)
+	if err != nil {
+		logs.LogError(err, "key generation error")
+		return msgs.SendServerError(err)
+	}
 
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(awsRegion)},
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(awsRegion),
 	)
 	if err != nil {
 		logs.LogError(err, "session creation error")
 		return msgs.SendServerError(err)
 	}
 
-	svc := s3.New(sess)
+	svc := s3.NewFromConfig(cfg)
+	presigner := s3.NewPresignClient(svc)
 
-	req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
+	req, err := presigner.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(s3Bucket),
 		Key:         aws.String(key),
 		ContentType: aws.String(contentType),
+	}, func(opts *s3.PresignOptions) {
+		opts.Expires = time.Duration(LifetimeSecs * int64(time.Second))
 	})
-	urlStr, err := req.Presign(300 * time.Second)
-
 	if err != nil {
 		logs.LogError(err, "presigning error")
 		return msgs.SendServerError(err)
 	}
 
 	data := map[string]any{
-		"uploadURL": urlStr,
+		"uploadURL": req.URL,
 		"key":       key,
 	}
 

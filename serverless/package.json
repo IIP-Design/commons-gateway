@@ -1,15 +1,33 @@
 {
   "name": "serverless",
-  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "sls": "serverless"
-  },
+  "version": "0.0.1",
   "author": "U.S. Department of State, Bureau of Global Public Affairs Digital Lab <gpa-lab-devs@fan.gov>",
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IIP-Design/commons-gateway/issues"
+  },
+  "contributors": [
+    {
+      "name": "Ryan Quinn"
+    }
+  ],
   "devDependencies": {
-    "serverless": "^3.34.0",
+    "serverless": "^3.35.2",
     "serverless-deployment-bucket": "^1.6.0"
+  },
+  "homepage": "https://iip-design.github.io/commons-gateway/",
+  "keywords": [
+    "content",
+    "gateway"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IIP-Design/commons-gateway"
+  },
+  "scripts": {
+    "sls": "serverless",
+    "build:sbom": "npx @cyclonedx/cyclonedx-npm --output-reproducible --output-file sbom.json"
   }
 }

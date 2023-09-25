@@ -1,16 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	email "github.com/IIP-Design/commons-gateway/utils/email/utils"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 const (
@@ -91,25 +92,27 @@ func formatEmail(
 	sourceEmail string,
 ) ses.SendEmailInput {
 	return ses.SendEmailInput{
-		Destination: &ses.Destination{
-			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(admin.Email),
+		Destination: &types.Destination{
+			CcAddresses: []string{},
+			ToAddresses: []string{
+				admin.Email,
 			},
 		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
+		Content: &types.EmailContent{
+			Simple: &types.Message{
+				Body: &types.Body{
+					Html: &types.Content{
+						Charset: aws.String(CharSet),
+						Data:    aws.String(formatEmailBody(proposer, invitee, admin, url)),
+					},
+				},
+				Subject: &types.Content{
 					Charset: aws.String(CharSet),
-					Data:    aws.String(formatEmailBody(proposer, invitee, admin, url)),
+					Data:    aws.String(Subject),
 				},
 			},
-			Subject: &ses.Content{
-				Charset: aws.String(CharSet),
-				Data:    aws.String(Subject),
-			},
 		},
-		Source: aws.String(sourceEmail),
+		FromEmailAddress: &sourceEmail,
 	}
 }
 
@@ -119,10 +122,10 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 		return nil
 	}
 
-	region := os.Getenv("AWS_SES_REGION")
+	awsRegion := os.Getenv("AWS_SES_REGION")
 
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region)},
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(awsRegion),
 	)
 	if err != nil {
 		return err
@@ -133,7 +136,7 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 		return err
 	}
 
-	sesClient := ses.New(sess)
+	sesClient := ses.NewFromConfig(cfg)
 
 	for _, admin := range admins {
 		e := formatEmail(
@@ -144,8 +147,11 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 			sourceEmail,
 		)
 
-		result, err := sesClient.SendEmail(&e)
-		email.LogSesResult(result, err)
+		_, err := sesClient.SendEmail(context.TODO(), &e)
+		if err != nil {
+			log.Println(err.Error())
+		}
+
 	}
 
 	return nil

@@ -4,16 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	email "github.com/IIP-Design/commons-gateway/utils/email/utils"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 const (
@@ -43,25 +44,27 @@ func formatEmail(
 	sourceEmail string,
 ) ses.SendEmailInput {
 	return ses.SendEmailInput{
-		Destination: &ses.Destination{
-			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(user.Email),
+		Destination: &types.Destination{
+			CcAddresses: []string{},
+			ToAddresses: []string{
+				user.Email,
 			},
 		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
+		Content: &types.EmailContent{
+			Simple: &types.Message{
+				Body: &types.Body{
+					Html: &types.Content{
+						Charset: aws.String(CharSet),
+						Data:    aws.String(formatEmailBody(user, code)),
+					},
+				},
+				Subject: &types.Content{
 					Charset: aws.String(CharSet),
-					Data:    aws.String(formatEmailBody(user, code)),
+					Data:    aws.String(Subject),
 				},
 			},
-			Subject: &ses.Content{
-				Charset: aws.String(CharSet),
-				Data:    aws.String(Subject),
-			},
 		},
-		Source: aws.String(sourceEmail),
+		FromEmailAddress: &sourceEmail,
 	}
 }
 
@@ -72,14 +75,14 @@ func Email2FAHandler(ctx context.Context, event events.SQSEvent) error {
 	region := os.Getenv("AWS_SES_REGION")
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region)},
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(region),
 	)
 	if err != nil {
 		return err
 	}
 
-	svc := ses.New(sess)
+	sesClient := ses.NewFromConfig(cfg)
 
 	for _, record := range records {
 		eventMessageId := record.MessageId
@@ -95,8 +98,10 @@ func Email2FAHandler(ctx context.Context, event events.SQSEvent) error {
 
 		e := formatEmail(userData.User, userData.Code, sourceEmail)
 
-		result, err := svc.SendEmail(&e)
-		email.LogSesResult(result, err)
+		_, err = sesClient.SendEmail(context.TODO(), &e)
+		if err != nil {
+			log.Println(err.Error())
+		}
 	}
 
 	return nil
