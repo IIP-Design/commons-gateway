@@ -18,16 +18,17 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-func seedDatabaseHandler(ctx context.Context, event events.S3Event) (msgs.Response, error) {
+// seedDatabaseHandler reads a newly uploaded file from S3
+func seedDatabaseHandler(ctx context.Context, event events.S3Event) error {
 	var err error
 
 	sdkConfig, err := config.LoadDefaultConfig(ctx)
 
 	if err != nil {
-		return msgs.SendServerError(err)
+		logs.LogError(err, "Error Loading AWS Config")
+		return err
 	}
 
 	s3Client := s3.NewFromConfig(sdkConfig)
@@ -51,7 +52,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) (msgs.Respon
 
 		if err != nil {
 			logs.LogError(err, "Error Retrieving S3 Object")
-			return msgs.SendServerError(err)
+			return err
 		}
 
 		file := bytes.NewReader(buffer.Bytes())
@@ -66,7 +67,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) (msgs.Respon
 
 			if err != nil {
 				logs.LogError(err, "Error Reading CSV")
-				return msgs.SendServerError(err)
+				return err
 			}
 
 			switch rec[0] {
@@ -77,7 +78,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) (msgs.Respon
 
 				if err != nil {
 					logs.LogError(err, "Admin Creation Error - Team Not Found")
-					return msgs.SendServerError(err)
+					return err
 				}
 
 				admin.Team = team
@@ -90,14 +91,14 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) (msgs.Respon
 
 				if err != nil {
 					logs.LogError(err, "Admin Creation Error")
-					return msgs.SendServerError(err)
+					return err
 				}
 			case "teams":
 				err := teams.CreateTeam(rec[1])
 
 				if err != nil {
 					logs.LogError(err, "Team Creation Error")
-					return msgs.SendServerError(err)
+					return err
 				}
 
 			default:
@@ -106,7 +107,8 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) (msgs.Respon
 		}
 	}
 
-	return msgs.PrepareResponse([]byte("success"))
+	fmt.Println("Successfully seeded the database")
+	return err
 }
 
 func main() {
