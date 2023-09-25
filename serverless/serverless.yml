@@ -45,6 +45,10 @@ provider:
             - ''
             - - !GetAtt StaticSiteBucket.Arn
               - /seed/*
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+          Resource: arn:aws:ses:${aws:region}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
