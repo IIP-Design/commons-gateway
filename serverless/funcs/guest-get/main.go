@@ -15,7 +15,8 @@ import (
 
 // GetGuestHandler handles the request to retrieve a single admin user based on email address.
 func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin"})
+	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin", "guest"})
+
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}
