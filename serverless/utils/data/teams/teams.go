@@ -149,7 +149,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	rows, err := pool.Query(`SELECT id, team_name, active FROM teams ORDER BY team_name`)
+	rows, err := pool.Query(`SELECT id, team_name, active, aprimo_name FROM teams ORDER BY team_name`)
 
 	if err != nil {
 		logs.LogError(err, "Get Teams Query Error")
@@ -160,15 +160,16 @@ func RetrieveTeams() ([]map[string]any, error) {
 
 	for rows.Next() {
 		var team data.Team
-		if err := rows.Scan(&team.Id, &team.Name, &team.Active); err != nil {
+		if err := rows.Scan(&team.Id, &team.Name, &team.Active, &team.AprimoName); err != nil {
 			logs.LogError(err, "Get Teams Query Error")
 			return teams, err
 		}
 
 		teamData := map[string]any{
-			"id":     team.Id,
-			"name":   team.Name,
-			"active": team.Active,
+			"id":         team.Id,
+			"name":       team.Name,
+			"aprimoName": team.AprimoName,
+			"active":     team.Active,
 		}
 
 		teams = append(teams, teamData)
