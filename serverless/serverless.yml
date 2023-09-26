@@ -177,7 +177,7 @@ functions:
       patterns:
         - './bin/aprimo-create-record'
     environment:
-      APRIMO_DOMAIN: ${file(./config/${param:deployment}.json):aprimoDomain}
+      APRIMO_TENANT: ${env:APRIMO_TENANT}
   guestApprove:
     name: gateway-${opt:stage}-guest-approve
     handler: bin/guest-approve
