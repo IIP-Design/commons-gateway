@@ -6,24 +6,20 @@ import '../styles/form.scss';
 ---
 
 <script>
-  import {
-    isLoggedIn,
-    isLoggedInAsAdmin,
-    isLoggedInAsExternalPartner,
-  } from '../utils/auth';
+  import { isLoggedIn, isLoggedInAsAdmin, isLoggedInAsExternalPartner } from '../utils/auth';
 
-  if( isLoggedInAsAdmin() ) {
-    window.location.assign( '/' );
-  } else if( isLoggedInAsExternalPartner() ) {
-    window.location.assign( '/invite' );
-  } else if( isLoggedIn() ) {
-    window.location.assign( '/upload' );
+  if (isLoggedInAsAdmin()) {
+    window.location.assign('/');
+  } else if (isLoggedInAsExternalPartner()) {
+    window.location.assign('/invite');
+  } else if (isLoggedIn()) {
+    window.location.assign('/upload');
   }
 </script>
 
 <LoggedOutLayout title="Content Commons Login">
-  <AnchorButton class="login-btn" href={"/adminLogin"}>Department of State Login</AnchorButton>
-  <AnchorButton class="login-btn" href={"/partnerLogin"}>External Partner Login</AnchorButton>
+  <AnchorButton class="login-btn" href={'/admin-login'}>Department of State Login</AnchorButton>
+  <AnchorButton class="login-btn" href={'/partner-login'}>External Partner Login</AnchorButton>
 </LoggedOutLayout>
 
 <style>

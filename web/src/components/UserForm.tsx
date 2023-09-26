@@ -161,45 +161,43 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       role: userData.role,
     };
 
-    if( user ) {
+    if ( user ) {
       buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
-        .then( () => window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) ) )
+        .then( () => window.location.assign( ( isAdmin ? '/' : '/uploader-users' ) ) )
+        .catch( err => console.error( err ) );
+    } else if ( isAdmin ) {
+      const invitation = {
+        inviter: currentUser.get().email,
+        invitee,
+        expiration,
+      };
+
+      buildQuery( 'creds/provision', invitation, 'POST' )
+        .then( () => window.location.assign( '/' ) )
         .catch( err => console.error( err ) );
     } else {
-      if( isAdmin ) {
-        const invitation = {
-          inviter: currentUser.get().email,
-          invitee,
-          expiration,
-        };
+      const invitation = {
+        proposer: currentUser.get().email,
+        invitee,
+        expiration,
+      };
 
-        buildQuery( 'creds/provision', invitation, 'POST' )
-          .then( () => window.location.assign( '/' ) )
-          .catch( err => console.error( err ) );
-      } else {
-        const invitation = {
-          proposer: currentUser.get().email,
-          invitee,
-          expiration,
-        };
-
-        try {
-          await buildQuery( 'creds/propose', invitation, 'POST' );
-          window.location.assign( '/uploaderUsers' );
-        } catch( err: any ) {
-          console.error( err )
-        }
+      try {
+        await buildQuery( 'creds/propose', invitation, 'POST' );
+        window.location.assign( '/uploader-users' );
+      } catch ( err: any ) {
+        console.error( err );
       }
     }
 
-    if( isAdmin ) {
+    if ( isAdmin ) {
       if ( user ) {
-        
+
       } else {
-        
+
       }
     } else {
-      
+
     }
   };
 
@@ -216,7 +214,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     if ( !ok ) {
       showError( 'Unable to deactivate user' );
     } else {
-      window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) );
+      window.location.assign( ( isAdmin ? '/' : '/uploader-users' ) );
     }
   };
 

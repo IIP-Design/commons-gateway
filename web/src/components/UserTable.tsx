@@ -29,7 +29,7 @@ import style from '../styles/table.module.scss';
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
 interface IUserTableProps {
-  role?: TUserRole;
+  readonly role?: TUserRole;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -52,13 +52,11 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IUserEntry ) => {
-            return {
-              ...user,
-              name: `${user.givenName} ${user.familyName}`,
-              active: isGuestActive( user.expiration ),
-            };
-          } )
+          data.map( ( user: IUserEntry ) => ( {
+            ...user,
+            name: `${user.givenName} ${user.familyName}`,
+            active: isGuestActive( user.expiration ),
+          } ) ),
         );
       }
     };
@@ -83,7 +81,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+        cell: info => <a href={ `/edit-user?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
       },
       defaultColumnDef( 'email' ),
       {
@@ -94,6 +92,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
         ...defaultColumnDef( 'active' ),
         cell: info => {
           const isActive = info.getValue() as boolean;
+
           return (
             <span className={ style.status }>
               <span className={ isActive ? style.active : style.inactive } />
@@ -103,25 +102,26 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
         },
       },
     ],
-    [teams]
+    [teams],
   );
 
   return (
     <div className={ style.container }>
-      { users.length ?
-        <Table
-          {
-            ...{
-              data: users,
-              columns,
-              additionalTableClasses: [ 'user-table' ],
+      { users.length
+        ? (
+          <Table
+            {
+              ...{
+                data: users,
+                columns,
+                additionalTableClasses: ['user-table'],
+              }
             }
-          }
-        />
-        : <p>No data to show</p>
-      }
+          />
+        )
+        : <p>No data to show</p> }
     </div>
   );
-}
+};
 
 export default UserTable;

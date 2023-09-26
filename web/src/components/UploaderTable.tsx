@@ -50,13 +50,11 @@ const UploaderTable: FC = () => {
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IUploader ) => {
-            return {
-              ...user,
-              name: `${user.givenName} ${user.familyName}`,
-              active: isGuestActive( user.expiration ),
-            };
-          } )
+          data.map( ( user: IUploader ) => ( {
+            ...user,
+            name: `${user.givenName} ${user.familyName}`,
+            active: isGuestActive( user.expiration ),
+          } ) ),
         );
       }
     };
@@ -68,27 +66,30 @@ const UploaderTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editUser?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+        cell: info => <a href={ `/edit-user?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
       },
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'proposer' ),
         cell: info => {
           const { String, Valid } = info.getValue() as any;
+
           return Valid ? String : null;
-        }
+        },
       },
       {
         ...defaultColumnDef( 'inviter' ),
         cell: info => {
           const { String, Valid } = info.getValue() as any;
+
           return Valid ? String : null;
-        }
+        },
       },
       {
         ...defaultColumnDef( 'active' ),
         cell: info => {
           const isActive = info.getValue() as boolean;
+
           return (
             <span className={ style.status }>
               <span className={ isActive ? style.active : style.inactive } />
@@ -102,6 +103,7 @@ const UploaderTable: FC = () => {
         header: 'Status',
         cell: info => {
           const isPending = info.getValue() as boolean;
+
           return (
             <span className={ style.status }>
               <span className={ isPending ? style.inactive : style.active } />
@@ -111,25 +113,26 @@ const UploaderTable: FC = () => {
         },
       },
     ],
-    []
+    [],
   );
 
   return (
     <div className={ style.container }>
-      { users.length ?
-        <Table
-          {
-            ...{
-              data: users,
-              columns,
-              additionalTableClasses: [ 'user-table' ],
+      { users.length
+        ? (
+          <Table
+            {
+              ...{
+                data: users,
+                columns,
+                additionalTableClasses: ['user-table'],
+              }
             }
-          }
-        />
-        : <p>No data to show</p>
-      }
+          />
+        )
+        : <p>No data to show</p> }
     </div>
   );
-}
+};
 
 export default UploaderTable;

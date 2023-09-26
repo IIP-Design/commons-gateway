@@ -13,7 +13,7 @@ export const routes: IRoute[] = [
     rolesAccessible: ['admin', 'super admin'],
   },
   {
-    href: 'pendingInvites',
+    href: 'pending-invites',
     name: 'Invites',
     rolesAccessible: ['admin', 'super admin'],
   },
@@ -26,7 +26,7 @@ export const routes: IRoute[] = [
     rolesAccessible: ['super admin'],
   },
   {
-    href: 'uploaderUsers',
+    href: 'uploader-users',
     name: 'Uploaders',
     rolesAccessible: ['guest admin'],
   },

@@ -142,7 +142,7 @@ const protectPage = (
 };
 
 export const notGuestPage = protectPage( isLoggedInAsNotGuest, 'login', jointVerificationFn );
-export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin', 'admin'] ) );
-export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin'] ) );
-export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partnerLogin', partnerVerificationFn );
+export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'admin-login', makeAdminVerificationFn( ['super admin', 'admin'] ) );
+export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'admin-login', makeAdminVerificationFn( ['super admin'] ) );
+export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partner-login', partnerVerificationFn );
 export const loggedInOnlyPage = protectPage( isLoggedIn, 'login' );
