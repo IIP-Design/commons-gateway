@@ -209,6 +209,7 @@ func ExtractInvite(body string) (Invite, error) {
 	guest := parsed.Invitee.Email
 	firstName := parsed.Invitee.NameFirst
 	lastName := parsed.Invitee.NameLast
+	role := parsed.Invitee.Role
 	team := parsed.Invitee.TeamId
 	expires := parsed.Expires
 
@@ -217,7 +218,12 @@ func ExtractInvite(body string) (Invite, error) {
 	} else if guest == "" || lastName == "" || firstName == "" || team == "" || expires == "" {
 		return invite, errors.New("data missing from request")
 	} else if admin == "" && proposer == "" {
-		return invite, errors.New("must supplu admin or proposer")
+		return invite, errors.New("must supply admin or proposer")
+	}
+
+	// Default the role to guest if not provided.
+	if role == "" {
+		role = "guest"
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, expires)
@@ -231,6 +237,7 @@ func ExtractInvite(body string) (Invite, error) {
 	invite.Invitee.Email = guest
 	invite.Invitee.NameFirst = firstName
 	invite.Invitee.NameLast = lastName
+	invite.Invitee.Role = role
 	invite.Invitee.Team = team
 	invite.Expires = parsedTime
 

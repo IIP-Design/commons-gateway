@@ -53,13 +53,12 @@ func SaveCredentials(guest data.User, expires time.Time, hash string, salt strin
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	role := "guest"
 	currentTime := time.Now()
 
 	insertCreds :=
 		`INSERT INTO guests( email, first_name, last_name, role, team, pass_hash, salt, expiration, date_created, date_modified )
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
-	_, err = pool.Exec(insertCreds, guest.Email, guest.NameFirst, guest.NameLast, role, guest.Team, hash, salt, expires, currentTime, currentTime)
+	_, err = pool.Exec(insertCreds, guest.Email, guest.NameFirst, guest.NameLast, guest.Role, guest.Team, hash, salt, expires, currentTime, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Save Credentials Query Error")

@@ -54,7 +54,7 @@ const partnerVerificationFn: TPermissionVerificationFn = async ( redirect: strin
     const { data } = await response.json();
     const { role } = data;
 
-    authenticated = role === 'guest admin';
+    authenticated = role === 'guest admin' || role === 'guest';
 
   // eslint-disable-next-line no-empty
   } catch ( err ) {}
