@@ -111,7 +111,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
   return (
     <>
-      <button className={ btnStyle['link-btn'] } onClick={ openModal } type="button">{ anchor }</button>
+      <button className={ btnStyle['anchor-btn'] } onClick={ openModal } type="button">{ anchor }</button>
       <Modal
         isOpen={ modalIsOpen }
         onRequestClose={ closeModal }

@@ -62,7 +62,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     };
 
     getUsers();
-  }, [] );
+  }, [role] );
 
   useEffect( () => {
     const getTeams = async () => {

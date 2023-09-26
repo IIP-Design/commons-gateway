@@ -56,6 +56,20 @@
   cursor: pointer;
 }
 
+.anchor-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--blueLight);
+  font-size: var(--fontSizeSmall);
+
+  @include breakpoint('tablet') {
+    font-size: var(--fontSizeNormal);
+  }
+}
+
 .disabled-btn {
   color: white;
   background-color: darkgray;

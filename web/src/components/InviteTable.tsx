@@ -44,11 +44,11 @@ const makeClickHandler = ( inviteeEmail: string ) => {
   return async () => {
     const { isConfirmed, isDenied } = await showTernary(
       'By approving this user they will be allowed to upload media to the Content Commons system until deactivated or their login expires.  Denying access will blacklist this email address indefinitely.',
-      { confirmButtonText: 'Approve' }
+      { confirmButtonText: 'Approve' },
     );
     let wasUpdated = false;
 
-    if( isConfirmed ) {
+    if ( isConfirmed ) {
       const { ok } = await buildQuery( 'guest/approve', { inviteeEmail, inviterEmail }, 'POST' );
 
       if ( !ok ) {
@@ -56,7 +56,7 @@ const makeClickHandler = ( inviteeEmail: string ) => {
       } else {
         wasUpdated = true;
       }
-    } else if( isDenied ) {
+    } else if ( isDenied ) {
       const { ok } = await buildQuery( `guest?id=${inviteeEmail}`, null, 'DELETE' );
 
       if ( !ok ) {
@@ -66,11 +66,11 @@ const makeClickHandler = ( inviteeEmail: string ) => {
       }
     }
 
-    if( wasUpdated ) {
+    if ( wasUpdated ) {
       window.location.reload();
     }
   };
-}
+};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
@@ -89,12 +89,10 @@ const UserTable: FC = () => {
 
       if ( data ) {
         setUsers(
-          data.map( ( user: IInvite ) => {
-            return {
-              ...user,
-              name: `${user.givenName} ${user.familyName}`,
-            };
-          } )
+          data.map( ( user: IInvite ) => ( {
+            ...user,
+            name: `${user.givenName} ${user.familyName}`,
+          } ) ),
         );
       }
     };
@@ -119,13 +117,15 @@ const UserTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <button
-          className={ btnStyle['link-btn'] }
-          onClick={ makeClickHandler( info.row.getValue( 'email' ) ) }
-          type="button"
-        >
-          { info.getValue() as string }
-        </button>,
+        cell: info => (
+          <button
+            className={ btnStyle['link-btn'] }
+            onClick={ makeClickHandler( info.row.getValue( 'email' ) ) }
+            type="button"
+          >
+            { info.getValue() as string }
+          </button>
+        ),
       },
       defaultColumnDef( 'email' ),
       {
@@ -150,25 +150,26 @@ const UserTable: FC = () => {
         cell: info => daysUntil( info.getValue() as string ) * -1,
       },
     ],
-    [teams]
+    [teams],
   );
 
   return (
     <div className={ style.container }>
-      { users.length ?
-        <Table
-          {
-            ...{
-              data: users,
-              columns,
-              additionalTableClasses: [ 'user-table' ],
+      { users.length
+        ? (
+          <Table
+            {
+              ...{
+                data: users,
+                columns,
+                additionalTableClasses: ['user-table'],
+              }
             }
-          }
-        />
-        : <p>No pending invites at this time</p>
-      }
+          />
+        )
+        : <p>No pending invites at this time</p> }
     </div>
   );
-}
+};
 
 export default UserTable;
