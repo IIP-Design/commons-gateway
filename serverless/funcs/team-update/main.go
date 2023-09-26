@@ -28,6 +28,7 @@ func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest)
 	active := parsed.Active
 	name := parsed.TeamName
 	team := parsed.TeamId
+	aprimo_name := parsed.AprimoName
 
 	if err != nil {
 		return msgs.SendServerError(err)
@@ -46,7 +47,7 @@ func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest)
 
 	if name != "" {
 		// If both active status and team name provided update full team info.
-		err = teams.UpdateTeam(team, name, active)
+		err = teams.UpdateTeam(team, name, aprimo_name, active)
 	} else {
 		// If only status provided, update status.
 		err = teams.UpdateTeamStatus(team, active)

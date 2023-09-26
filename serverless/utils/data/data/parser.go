@@ -13,13 +13,14 @@ import (
 // JSON object sent to the serverless functions by the API Gateway
 // for operations that update guest or admin users.
 type UserBodyOptions struct {
-	Email     string `json:"email"`
-	Expires   string `json:"expiration"`
-	NameFirst string `json:"givenName"`
-	NameLast  string `json:"familyName"`
-	Role      string `json:"role"`
-	TeamId    string `json:"team"`
-	TeamName  string `json:"teamName"`
+	Email      string `json:"email"`
+	Expires    string `json:"expiration"`
+	NameFirst  string `json:"givenName"`
+	NameLast   string `json:"familyName"`
+	Role       string `json:"role"`
+	TeamId     string `json:"team"`
+	TeamName   string `json:"teamName"`
+	AprimoName string `json:"teamAprimo"`
 }
 
 // RequestBodyOptions represents the possible properties on the body

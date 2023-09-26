@@ -147,7 +147,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
           className={ style.input }
           type="text"
           value={ localTeam.aprimoName || '' }
-          onChange={ e => handleUpdate( 'name', e.target.value ) }
+          onChange={ e => handleUpdate( 'aprimoName', e.target.value ) }
           aria-label="Team Name"
         />
         { localTeam.id && (

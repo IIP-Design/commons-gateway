@@ -94,7 +94,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) error {
 					return err
 				}
 			case "teams":
-				err := teams.CreateTeam(rec[1])
+				err := teams.CreateTeam(rec[1], rec[6])
 
 				if err != nil {
 					logs.LogError(err, "Team Creation Error")

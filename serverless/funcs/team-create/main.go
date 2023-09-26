@@ -15,7 +15,7 @@ import (
 )
 
 // handleTeamCreation coordinates all the actions associated with creating a new team.
-func handleTeamCreation(teamName string) error {
+func handleTeamCreation(teamName string, aprimoName string) error {
 	var err error
 
 	exists, err := teams.CheckForExistingTeam(teamName)
@@ -26,7 +26,7 @@ func handleTeamCreation(teamName string) error {
 		return errors.New("a team with this name already exists")
 	}
 
-	err = teams.CreateTeam(teamName)
+	err = teams.CreateTeam(teamName, aprimoName)
 
 	return err
 }
@@ -43,6 +43,7 @@ func NewTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	parsed, err := data.ParseBodyData(event.Body)
 
 	team := parsed.TeamName
+	aprimo_name := parsed.AprimoName
 
 	if err != nil {
 		return msgs.SendServerError(err)
@@ -51,7 +52,7 @@ func NewTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	err = handleTeamCreation(team)
+	err = handleTeamCreation(team, aprimo_name)
 
 	if err != nil {
 		return msgs.SendServerError(err)
