@@ -19,7 +19,9 @@ export const NavBar = () => {
         {
           filteredRoutes.map( ( { href, name } ) => (
             <li key={ href }>
-              <a className={ currentPath === href ? 'active' : '' } href={ `/${href}` }>{ name || capitalized( href ) }</a>
+              <a className={ currentPath === href ? 'active' : '' } href={ `/${href}` }>
+                { name || capitalized( href ) }
+              </a>
             </li>
           ) )
         }

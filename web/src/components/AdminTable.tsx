@@ -101,7 +101,7 @@ const AdminTable: FC = () => {
   );
 
   return (
-    <div className={ style.container }>
+    <div style={ { display: 'flex' } }>
       { admins.length
         ? (
           <Table
@@ -113,7 +113,7 @@ const AdminTable: FC = () => {
             }
           />
         )
-        : <p>No data to show</p> }
+        : <p className={ style['no-data'] }>No data to show</p> }
     </div>
   );
 };

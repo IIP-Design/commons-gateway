@@ -106,7 +106,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
   );
 
   return (
-    <div className={ style.container }>
+    <div style={ { display: 'flex' } }>
       { users.length
         ? (
           <Table
@@ -119,7 +119,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
             }
           />
         )
-        : <p>No data to show</p> }
+        : <p className={ style['no-data'] }>No data to show</p> }
     </div>
   );
 };

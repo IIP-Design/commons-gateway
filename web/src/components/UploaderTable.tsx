@@ -21,7 +21,6 @@ import { Table, defaultColumnDef } from './Table';
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import style from '../styles/table.module.scss';
-import { daysUntil } from '../utils/dates';
 import { isGuestActive } from '../utils/guest';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -117,7 +116,7 @@ const UploaderTable: FC = () => {
   );
 
   return (
-    <div className={ style.container }>
+    <div style={ { display: 'flex' } }>
       { users.length
         ? (
           <Table
@@ -130,7 +129,7 @@ const UploaderTable: FC = () => {
             }
           />
         )
-        : <p>No data to show</p> }
+        : <p className={ style['no-data'] }>No data to show</p> }
     </div>
   );
 };

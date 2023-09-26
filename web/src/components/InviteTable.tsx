@@ -154,7 +154,7 @@ const UserTable: FC = () => {
   );
 
   return (
-    <div className={ style.container }>
+    <div style={ { display: 'flex' } }>
       { users.length
         ? (
           <Table
@@ -167,7 +167,7 @@ const UserTable: FC = () => {
             }
           />
         )
-        : <p>No pending invites at this time</p> }
+        : <p className={ style['no-data'] }>No pending invites at this time</p> }
     </div>
   );
 };
