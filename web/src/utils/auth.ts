@@ -137,7 +137,7 @@ const protectPage = (
     window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
   }
 
-  // Returns async to catch malicious users tryign to bypass normal login rules
+  // Returns async to catch malicious users trying to bypass normal login rules
   permissionVerificationFn && permissionVerificationFn( redirect );
 };
 

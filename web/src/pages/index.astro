@@ -1,14 +1,14 @@
 ---
 import AdminPageLayout from '../layouts/AdminPageLayout.astro';
 import TableContainer from '../layouts/TableContainer.astro';
-import UserTable from '../components/UserTable';
+import ExternalPartnerTables from '../components/ExternalPartnerTables/ExternalPartnerTables';
 
-const description = `The users listed on this page are the team leads of Content Commons external partners. These team leads help manage the external partner(s) who help provide content to be utilized by Department of State PD personnel.`;
-const title = 'External Partner Team Leads';
+const description = `The users listed on this page are Content Commons external partners. Use the dropdown menu below to choose between external partner and external team leads. External partners can upload files to Content Commons. External team leads have the added ability to propose additional external partners for approval by Department of State personnel.`;
+const title = 'External Partners';
 ---
 
 <AdminPageLayout title={title}>
   <TableContainer btnText="+ New User" btnHref="new-user" desc={description} title={title}>
-    <UserTable client:only role="guest admin" />
+    <ExternalPartnerTables client:only />
   </TableContainer>
 </AdminPageLayout>
