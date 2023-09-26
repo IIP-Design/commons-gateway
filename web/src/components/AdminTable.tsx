@@ -48,18 +48,16 @@ const AdminTable: FC = () => {
 
       if ( data ) {
         setAdmins(
-          data.map( ( user: IAdminUser ) => {
-            return {
-              ...user,
-              name: `${user.givenName} ${user.familyName}`,
-            };
-          } )
+          data.map( ( user: IAdminUser ) => ( {
+            ...user,
+            name: `${user.givenName} ${user.familyName}`,
+          } ) ),
         );
       }
     };
 
     getAdmins();
-}, [] );
+  }, [] );
 
   useEffect( () => {
     const getTeams = async () => {
@@ -78,7 +76,7 @@ const AdminTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={`/editAdmin?id=${info.row.getValue('email')}`}>{info.getValue() as string}</a>,
+        cell: info => <a href={ `/edit-admin?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
       },
       defaultColumnDef( 'email' ),
       {
@@ -89,6 +87,7 @@ const AdminTable: FC = () => {
         ...defaultColumnDef( 'active' ),
         cell: info => {
           const isActive = info.getValue() as boolean;
+
           return (
             <span className={ style.status }>
               <span className={ isActive ? style.active : style.inactive } />
@@ -98,24 +97,25 @@ const AdminTable: FC = () => {
         },
       },
     ],
-    [teams]
+    [teams],
   );
 
   return (
-    <div className={ style.container }>
-      { admins.length ?
-        <Table
-          {
-            ...{
-              data: admins,
-              columns,
+    <div style={ { display: 'flex' } }>
+      { admins.length
+        ? (
+          <Table
+            {
+              ...{
+                data: admins,
+                columns,
+              }
             }
-          }
-        />
-        : <p>No data to show</p>
-      }
+          />
+        )
+        : <p className={ style['no-data'] }>No data to show</p> }
     </div>
   );
-}
+};
 
 export default AdminTable;

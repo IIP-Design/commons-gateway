@@ -1,5 +1,4 @@
 {
-  "allowedOrigins": "*",
   "cors": {
     "origins": ["http://localhost:3000", "https://*.gpalab.digital"],
     "headers": [

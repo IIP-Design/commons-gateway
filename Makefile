@@ -27,6 +27,7 @@ build:
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-update funcs/admin-update/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admins-get funcs/admins-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/aprimo-create-record funcs/aprimo-create-record/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/email-2fa funcs/email-2fa/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-approve funcs/guest-approve/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guest-auth funcs/guest-auth/*.go;\

@@ -2,14 +2,7 @@
 
 .add-btn {
   position: absolute;
-  margin-right: 1rem;
   right: 0;
-  transform: translateY(-0.5rem);
-
-  @include breakpoint('tablet') {
-    margin-right: 3rem;
-    transform: translateY(-6rem);
-  }
 }
 
 .container {
@@ -17,6 +10,11 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.no-data {
+  margin: 4rem auto;
 }
 
 .controls {

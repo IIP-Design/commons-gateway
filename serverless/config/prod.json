@@ -1,5 +1,4 @@
 {
-  "aprimoDomain": "state",
   "cors": {
     "origins": ["https://ccepu.state.gov"],
     "headers": [

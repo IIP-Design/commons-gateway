@@ -54,7 +54,7 @@ const partnerVerificationFn: TPermissionVerificationFn = async ( redirect: strin
     const { data } = await response.json();
     const { role } = data;
 
-    authenticated = role === 'guest admin';
+    authenticated = role === 'guest admin' || role === 'guest';
 
   // eslint-disable-next-line no-empty
   } catch ( err ) {}
@@ -137,12 +137,12 @@ const protectPage = (
     window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
   }
 
-  // Returns async to catch malicious users tryign to bypass normal login rules
+  // Returns async to catch malicious users trying to bypass normal login rules
   permissionVerificationFn && permissionVerificationFn( redirect );
 };
 
 export const notGuestPage = protectPage( isLoggedInAsNotGuest, 'login', jointVerificationFn );
-export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin', 'admin'] ) );
-export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'adminLogin', makeAdminVerificationFn( ['super admin'] ) );
-export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partnerLogin', partnerVerificationFn );
+export const adminOnlyPage = protectPage( isLoggedInAsAdmin, 'admin-login', makeAdminVerificationFn( ['super admin', 'admin'] ) );
+export const superAdminOnlyPage = protectPage( isLoggedInAsAdmin, 'admin-login', makeAdminVerificationFn( ['super admin'] ) );
+export const partnerOnlyPage = protectPage( isLoggedInAsExternalPartner, 'partner-login', partnerVerificationFn );
 export const loggedInOnlyPage = protectPage( isLoggedIn, 'login' );

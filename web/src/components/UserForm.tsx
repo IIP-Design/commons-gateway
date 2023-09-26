@@ -37,7 +37,7 @@ interface IUserFormData {
   email: string;
   team: string;
   accessEndDate: string;
-  role: Nullable<TUserRole[]>,
+  role: TUserRole,
 }
 
 interface IUserFormProps {
@@ -50,7 +50,7 @@ const initialState = {
   email: '',
   team: currentUser.get().team || '',
   accessEndDate: getYearMonthDay( addDays( new Date(), 14 ) ),
-  role: null,
+  role: 'guest' as TUserRole,
 };
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -61,6 +61,8 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
   const [userExists, setUserExists] = useState( false );
   const [teamList, setTeamList] = useState( [] );
   const [userData, setUserData] = useState<IUserFormData>( initialState );
+
+  const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
 
   // Check whether the user is an admin and set that value in state.
   // Doing so outside of a useEffect hook causes a mismatch in values
@@ -161,45 +163,33 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
       role: userData.role,
     };
 
-    if( user ) {
+    if ( user ) {
       buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
-        .then( () => window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) ) )
+        .then( () => window.location.assign( ( isAdmin ? '/' : '/uploader-users' ) ) )
+        .catch( err => console.error( err ) );
+    } else if ( isAdmin ) {
+      const invitation = {
+        inviter: currentUser.get().email,
+        invitee,
+        expiration,
+      };
+
+      buildQuery( 'creds/provision', invitation, 'POST' )
+        .then( () => window.location.assign( '/' ) )
         .catch( err => console.error( err ) );
     } else {
-      if( isAdmin ) {
-        const invitation = {
-          inviter: currentUser.get().email,
-          invitee,
-          expiration,
-        };
+      const invitation = {
+        proposer: currentUser.get().email,
+        invitee,
+        expiration,
+      };
 
-        buildQuery( 'creds/provision', invitation, 'POST' )
-          .then( () => window.location.assign( '/' ) )
-          .catch( err => console.error( err ) );
-      } else {
-        const invitation = {
-          proposer: currentUser.get().email,
-          invitee,
-          expiration,
-        };
-
-        try {
-          await buildQuery( 'creds/propose', invitation, 'POST' );
-          window.location.assign( '/uploaderUsers' );
-        } catch( err: any ) {
-          console.error( err )
-        }
+      try {
+        await buildQuery( 'creds/propose', invitation, 'POST' );
+        window.location.assign( '/uploader-users' );
+      } catch ( err: any ) {
+        console.error( err );
       }
-    }
-
-    if( isAdmin ) {
-      if ( user ) {
-        
-      } else {
-        
-      }
-    } else {
-      
     }
   };
 
@@ -216,7 +206,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     if ( !ok ) {
       showError( 'Unable to deactivate user' );
     } else {
-      window.location.assign( ( isAdmin ? '/' : '/uploaderUsers' ) );
+      window.location.assign( ( isAdmin ? '/' : '/uploader-users' ) );
     }
   };
 
@@ -283,6 +273,19 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
             onChange={ e => handleUpdate( 'accessEndDate', e.target.value ) }
           />
         </label>
+        { isAdmin && (
+          <label>
+            <span>User Role</span>
+            <select
+              id="role-input"
+              required
+              value={ userData.role }
+              onChange={ e => handleUpdate( 'role', e.target.value ) }
+            >
+              { partnerRoles.map( ( { name, value } ) => <option key={ value } value={ value }>{ name }</option> ) }
+            </select>
+          </label>
+        ) }
       </div>
       <div style={ { textAlign: 'center' } }>
         <button
@@ -290,22 +293,18 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
           id="update-btn"
           type="submit"
         >
-          { user ? 'Update' : ( user ? 'Propose' : 'Invite' ) }
+          { user ? 'Update' : ( isAdmin ? 'Invite' : 'Propose' ) }
         </button>
-        {
-          user
-            ? (
-              <button
-                className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
-                id="deactivate-btn"
-                type="button"
-                onClick={ handleDeactivate }
-              >
-                Deactivate Account
-              </button>
-            )
-            : null
-        }
+        { user && (
+          <button
+            className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
+            id="deactivate-btn"
+            type="button"
+            onClick={ handleDeactivate }
+          >
+            Deactivate Account
+          </button>
+        ) }
         <BackButton text="Cancel" showConfirmDialog />
       </div>
     </form>

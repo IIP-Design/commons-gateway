@@ -48,7 +48,7 @@ const TeamTable: FC = () => {
         ...defaultColumnDef( 'name' ),
         cell: info => (
           <TeamModal
-            anchor={ <span style={ { cursor: 'pointer' } }>{ info.getValue() as string }</span> }
+            anchor={ <span>{ info.getValue() as string }</span> }
             team={ info.row.original }
             setTeams={ setTeams }
           />
@@ -68,15 +68,16 @@ const TeamTable: FC = () => {
         },
       },
     ],
-    [teams],
+    [],
   );
 
   return (
-    <div className={ style.container }>
+    <div style={ { display: 'flex', flexDirection: 'column' } }>
       <TeamModal
         anchor={ (
           <span
             className={ `${style['add-btn']} ${btnStyle.btn}` }
+            style={ { fontSize: 'var(--fontSizeSmall)' } }
           >
             + New Team
           </span>

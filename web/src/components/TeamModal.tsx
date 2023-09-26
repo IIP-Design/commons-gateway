@@ -111,7 +111,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
   return (
     <>
-      <button className={ btnStyle['link-btn'] } onClick={ openModal } type="button">{ anchor }</button>
+      <button className={ btnStyle['anchor-btn'] } onClick={ openModal } type="button">{ anchor }</button>
       <Modal
         isOpen={ modalIsOpen }
         onRequestClose={ closeModal }
@@ -131,18 +131,15 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
           onChange={ e => handleUpdate( 'name', e.target.value ) }
           aria-label="Team Name"
         />
-        {
-          localTeam.id
-            && (
-              <div style={ { margin: '0.5rem 0', display: 'block' } }>
-                <ToggleSwitch
-                  active={ localTeam.active ?? false }
-                  callback={ e => handleUpdate( 'active', e ) }
-                  id={ localTeam.id }
-                />
-              </div>
-            )
-        }
+        { localTeam.id && (
+          <div style={ { margin: '0.5rem 0', display: 'block' } }>
+            <ToggleSwitch
+              active={ localTeam.active ?? false }
+              callback={ e => handleUpdate( 'active', e ) }
+              id={ localTeam.id }
+            />
+          </div>
+        ) }
         <div style={ { margin: '0.5rem 0' } }>
           <button
             className={ `${btnStyle.btn} ${btnStyle['spaced-btn']}` }

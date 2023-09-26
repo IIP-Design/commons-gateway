@@ -175,7 +175,7 @@ export const logout = async () => {
     // Common signout
     clearCurrentUser();
     loginStatus.set( 'loggedOut' );
-    window.location.replace( isAdmin ? '/adminLogin' : '/partnerLogin' );
+    window.location.replace( isAdmin ? '/admin-login' : '/partner-login' );
   } catch ( err ) {
     console.error( 'error signing out', err );
   }
