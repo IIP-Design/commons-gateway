@@ -14,7 +14,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 // ////////////////////////////////////////////////////////////////////////////
 import { buildQuery } from '../utils/api';
 import { Table, defaultColumnDef } from './Table';
-import { TeamModal } from './TeamModal';
+import { TeamModal } from './TeamModal/TeamModal';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
