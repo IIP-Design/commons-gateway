@@ -178,6 +178,8 @@ functions:
         - './bin/aprimo-create-record'
     environment:
       APRIMO_TENANT: ${env:APRIMO_TENANT}
+      APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
+      APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
   guestApprove:
     name: gateway-${opt:stage}-guest-approve
     handler: bin/guest-approve
