@@ -77,6 +77,7 @@ const TeamTable: FC = () => {
         anchor={ (
           <span
             className={ `${style['add-btn']} ${btnStyle.btn}` }
+            style={ { fontSize: 'var(--fontSizeSmall)' } }
           >
             + New Team
           </span>
