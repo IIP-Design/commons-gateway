@@ -72,7 +72,7 @@ const TeamTable: FC = () => {
   );
 
   return (
-    <div style={ { display: 'flex', flexDirection: 'column' } }>
+    <div style={ { display: 'flex', flexDirection: 'column', marginBottom: '0.75em' } }>
       <TeamModal
         anchor={ (
           <span

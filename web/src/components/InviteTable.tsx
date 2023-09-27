@@ -154,7 +154,7 @@ const UserTable: FC = () => {
   );
 
   return (
-    <div style={ { display: 'flex' } }>
+    <div style={ { display: 'flex', marginBottom: '0.75em' } }>
       { users.length
         ? (
           <Table

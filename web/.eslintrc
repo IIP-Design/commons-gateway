@@ -6,6 +6,9 @@
     "plugin:astro/recommended"
   ],
   "parser": "@typescript-eslint/parser",
+  "plugins": [
+      "@typescript-eslint"
+  ],
   "rules": {
     "react/jsx-filename-extension": [
       "error",

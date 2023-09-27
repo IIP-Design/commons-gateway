@@ -100,9 +100,15 @@ func RequestIsAuthorized(req events.APIGatewayProxyRequest, scopes []string) (in
 	}
 
 	err = VerifyJWT(token, scopes)
-	if err != nil {
-		return 403, err
-	} else {
+
+	// Everything looks good and client can continue
+	if err == nil {
 		return 200, nil
+		// Token is expired and client should re-login
+	} else if errors.Is(err, jwt.ErrTokenExpired) {
+		return 401, err
+		// Token is invalid and client must be rejected
+	} else {
+		return 403, err
 	}
 }

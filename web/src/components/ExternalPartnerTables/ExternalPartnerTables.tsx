@@ -10,7 +10,7 @@ const ExternalPartnerTables: FC = () => {
 
   return (
     <div>
-      <select className={ style.select } value={ table } onChange={ e => setTable( e.target.value ) }>
+      <select className={ style.select } value={ table } onChange={ e => setTable( e.target.value ) } aria-label="User Type">
         <option value="partners">External Partners</option>
         <option value="leads">External Team Leads</option>
       </select>

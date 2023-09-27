@@ -171,23 +171,29 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
         aria-label="Go to page"
       />
     </span>
-    <select
-      value={ table.getState().pagination.pageSize }
-      onChange={ e => {
-        table.setPageSize( Number( e.target.value ) );
-      } }
-      className={ style['page-show-select'] }
-      style={ { width: 'auto' } }
-      aria-label="Select number of results per page"
-    >
-      { [
-        10, 20, 30, 40, 50,
-      ].map( pageSize => (
-        <option key={ pageSize } value={ pageSize }>
-          { `Show ${pageSize}` }
-        </option>
-      ) ) }
-    </select>
+    <span className={ style['go-to-page-container'] }>
+      { 'Show' }
+      <select
+        value={ table.getState().pagination.pageSize }
+        onChange={ e => {
+          table.setPageSize( Number( e.target.value ) );
+        } }
+        className={ style['page-show-select'] }
+        style={ { width: 'auto', marginLeft: '0.375em', marginRight: '0.375em' } }
+        aria-label="Select number of results per page"
+      >
+        {
+          [ 10, 20, 30, 40, 50 ]
+            .filter( ( val, idx ) => val < table.getFilteredRowModel().rows.length || idx === 0 )
+            .map( pageSize => (
+              <option key={ pageSize } value={ pageSize }>
+                { pageSize }
+              </option>
+            ) )
+        }
+      </select>
+      { 'per page' }
+    </span>
   </div>
 );
 
