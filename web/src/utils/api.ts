@@ -2,6 +2,7 @@
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import { accessToken } from '../stores/current-user';
+import { logout } from './login';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -58,5 +59,12 @@ export const buildQuery = async ( endpoint: string, body: Nullable<Record<string
     };
   }
 
-  return fetch( constructUrl( endpoint ), opts );
+  // 401 means the token is expired, so log out user for UX reasons
+  const response = await fetch( constructUrl( endpoint ), opts );
+
+  if ( response.status === 401 ) {
+    logout();
+  }
+
+  return response;
 };

@@ -101,7 +101,7 @@ const AdminTable: FC = () => {
   );
 
   return (
-    <div style={ { display: 'flex' } }>
+    <div style={ { display: 'flex', marginBottom: '0.75em' } }>
       { admins.length
         ? (
           <Table
