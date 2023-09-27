@@ -37,7 +37,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) error {
 		var partMiBs int64 = 10
 
 		downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
-			d.PartSize = partMiBs * 1024 * 1024
+			d.PartSize = partMiBs * 1024 * 1024 // 10MB per part
 		})
 
 		buffer := manager.NewWriteAtBuffer([]byte{})
