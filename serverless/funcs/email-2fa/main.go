@@ -14,6 +14,7 @@ import (
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -23,34 +24,28 @@ const (
 )
 
 type TwoFactorAuthData struct {
-	Code  string `json:"code"`
-	Email string `json:"email"`
+	Code string    `json:"code"`
+	User data.User `json:"user"`
 }
 
-// func formatEmailBody(user data.User, code string) string {
-// 	return fmt.Sprintf(`<p>%s %s,</p>
-// 		<p>Please use this verification code to complete your sign in:</p>
-// 		<p>%s</p>
-// 		<p>If you did not make this request, please disregard this email. </p>`,
-// 		user.NameFirst, user.NameLast, code)
-// }
-
 // formatEmailBody constructs the body of the 2FA email.
-func formatEmailBody(code string) string {
+func formatEmailBody(user data.User, code string) string {
 	return fmt.Sprintf(
-		`<p>Please use this verification code to complete your sign in:</p>
+		`<p>%s %s,</p>
+		<p>Please use this verification code to complete your sign in:</p>
 		<p>%s</p>
 		<p>If you did not make this request, please disregard this email. </p>`,
-		code)
+		user.NameFirst, user.NameLast, code,
+	)
 }
 
 // formatEmail prepares the email to be sent providing a user with 2FA.
-func formatEmail(email string, code string, sourceEmail string) ses.SendEmailInput {
+func formatEmail(user data.User, code string, sourceEmail string) ses.SendEmailInput {
 	return ses.SendEmailInput{
 		Destination: &types.Destination{
 			CcAddresses: []string{},
 			ToAddresses: []string{
-				email,
+				user.Email,
 			},
 		},
 		Content: &types.EmailContent{
@@ -58,7 +53,7 @@ func formatEmail(email string, code string, sourceEmail string) ses.SendEmailInp
 				Body: &types.Body{
 					Html: &types.Content{
 						Charset: aws.String(CharSet),
-						Data:    aws.String(formatEmailBody(code)),
+						Data:    aws.String(formatEmailBody(user, code)),
 					},
 				},
 				Subject: &types.Content{
@@ -101,7 +96,7 @@ func email2FAHandler(ctx context.Context, event events.SQSEvent) error {
 			return err
 		}
 
-		emailInput := formatEmail(mfaInfo.Email, mfaInfo.Code, sourceEmail)
+		emailInput := formatEmail(mfaInfo.User, mfaInfo.Code, sourceEmail)
 
 		_, err = sesClient.SendEmail(context.TODO(), &emailInput)
 		if err != nil {

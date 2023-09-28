@@ -44,6 +44,23 @@ func registerMfaRequest(requestId xid.ID, code string) error {
 // initiateEmailQueue sends the 2FA code to the SQS queue
 // that manages the the sending of 2FA emails.
 func initiateEmailQueue(username string, code string) error {
+	var err error
+
+	// Retrieve the user data.
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	var user data.User
+
+	query := `SELECT email, first_name, last_name FROM guests WHERE email = $1;`
+	err = pool.QueryRow(query, username).Scan(&user.Email, &user.NameFirst, &user.NameLast)
+
+	if err != nil {
+		logs.LogError(err, "Retrieve User Data Error")
+		return err
+	}
+
+	// Set up AWS configuration needed by SQS client.
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
 	if err != nil {
@@ -53,11 +70,10 @@ func initiateEmailQueue(username string, code string) error {
 
 	client := sqs.NewFromConfig(cfg)
 
-	queue := os.Getenv("EMAIL_QUEUE")
-
-	body := map[string]string{
-		"email": username,
-		"code":  code,
+	// Prepare the message sent by SQS.
+	body := map[string]any{
+		"user": user,
+		"code": code,
 	}
 
 	json, err := json.Marshal(body)
@@ -67,12 +83,15 @@ func initiateEmailQueue(username string, code string) error {
 		return err
 	}
 
+	queue := os.Getenv("EMAIL_QUEUE")
+
 	messageInput := &sqs.SendMessageInput{
 		DelaySeconds: 0,
 		MessageBody:  aws.String(string(json)),
 		QueueUrl:     &queue,
 	}
 
+	// Send the message to SQS.
 	resp, err := client.SendMessage(context.TODO(), messageInput)
 
 	if err != nil {
