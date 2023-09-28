@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -15,6 +16,10 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
+const (
+	PartSize = 10 * 1024 * 1024 // 10MB per part
+)
+
 func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	var err error
 
@@ -26,35 +31,46 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 		return err
 	}
 
+	sdkConfig, err := config.LoadDefaultConfig(ctx)
+
+	if err != nil {
+		logs.LogError(err, "Error Loading AWS Config")
+		return err
+	}
+
+	s3Client := s3.NewFromConfig(sdkConfig)
+	bucket := os.Getenv("SOURCE_BUCKET")
+
+	downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
+		d.PartSize = PartSize
+	})
+
 	for _, message := range event.Records {
 		key := message.Body
-		bucket := os.Getenv("SOURCE_BUCKET")
 
-		sdkConfig, err := config.LoadDefaultConfig(ctx)
+		segment := 0
+		readyToCommit := false
 
-		if err != nil {
-			logs.LogError(err, "Error Loading AWS Config")
-			return err
+		for !readyToCommit {
+			buffer := manager.NewWriteAtBuffer([]byte{})
+			bytesDownloaded, err := downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
+				Bucket: aws.String(bucket),
+				Key:    aws.String(key),
+				Range:  aws.String(fmt.Sprintf("bytes=%d-%d", PartSize*segment, PartSize*(segment+1))),
+			})
+
+			if err != nil {
+				logs.LogError(err, "Error Retrieving S3 Object")
+				return err
+			}
+
+			// Send to Aprimo
+
+			segment += 1
+			readyToCommit = (bytesDownloaded < PartSize)
 		}
 
-		s3Client := s3.NewFromConfig(sdkConfig)
-
-		downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
-			d.PartSize = 10 * 1024 * 1024 // 10MB per part
-		})
-
-		buffer := manager.NewWriteAtBuffer([]byte{})
-
-		_, err = downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(key),
-		})
-
-		if err != nil {
-			logs.LogError(err, "Error Retrieving S3 Object")
-			return err
-		}
-
+		// Commit to Aprimo
 	}
 
 	return err
