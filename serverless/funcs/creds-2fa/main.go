@@ -2,11 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/rs/xid"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -31,6 +37,50 @@ func registerMfaRequest(requestId xid.ID, code string) error {
 	if err != nil {
 		logs.LogError(err, "Save MFA Request Query Error")
 	}
+
+	return err
+}
+
+// initiateEmailQueue sends the 2FA code to the SQS queue
+// that manages the the sending of 2FA emails.
+func initiateEmailQueue(username string, code string) error {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+
+	if err != nil {
+		logs.LogError(err, "Error Loading AWS Config")
+		return err
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	queue := os.Getenv("EMAIL_QUEUE")
+
+	body := map[string]string{
+		"email": username,
+		"code":  code,
+	}
+
+	json, err := json.Marshal(body)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Marshal SQS Body")
+		return err
+	}
+
+	messageInput := &sqs.SendMessageInput{
+		DelaySeconds: 0,
+		MessageBody:  aws.String(string(json)),
+		QueueUrl:     &queue,
+	}
+
+	resp, err := client.SendMessage(context.TODO(), messageInput)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Send Queue Message")
+		return err
+	}
+
+	fmt.Println("Sent message with ID: " + *resp.MessageId)
 
 	return err
 }
@@ -65,6 +115,15 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 
 	if err != nil {
 		logs.LogError(err, "Failed to Generate 2FA Code")
+		return msgs.SendServerError(err)
+	}
+
+	// Email the user their code.
+	err = initiateEmailQueue(username, code)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Send 2FA Code")
+		return msgs.SendAuthError(errors.New("internal error"), 500)
 	}
 
 	// Return the 2FA request id to the application.

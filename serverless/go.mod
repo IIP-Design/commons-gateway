@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.86
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.39.0
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.20.0
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.24.5
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/lib/pq v1.10.9
 	github.com/rs/xid v1.5.0

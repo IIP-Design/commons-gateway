@@ -49,6 +49,10 @@ provider:
           Action:
             - ses:SendEmail
           Resource: arn:aws:ses:${env:AWS_SES_REGION}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource: !GetAtt SQSSend2FA.Arn
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
@@ -362,6 +366,8 @@ functions:
     package:
       patterns:
         - './bin/creds-2fa'
+    environment:
+      EMAIL_QUEUE: !Ref SQSSend2FA
   credsSalt:
     name: gateway-${opt:stage}-creds-retrieve
     handler: bin/creds-salt
@@ -422,9 +428,6 @@ functions:
     package:
       patterns:
         - './bin/seed-db'
-    environment:
-      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
-      AWS_SES_REGION: ${env:AWS_SES_REGION}
   uploadMetadata:
     name: gateway-${opt:stage}-upload-metadata
     handler: bin/upload-metadata
@@ -477,3 +480,6 @@ functions:
     package:
       patterns:
         - './bin/email-2fa'
+    environment:
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+      AWS_SES_REGION: ${env:AWS_SES_REGION}
