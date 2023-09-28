@@ -345,6 +345,23 @@ functions:
     package:
       patterns:
         - './bin/teams-get'
+  creds2FA:
+    name: gateway-${opt:stage}-creds-2fa
+    handler: bin/creds-2fa
+    description: Generate a 2FA code for the guest user.
+    runtime: go1.x
+    events:
+      - http:
+          path: /creds/2fa
+          method: get
+          request:
+            parameters:
+              querystrings:
+                username: true
+          cors: ${file(./config/${param:deployment}.json):cors}
+    package:
+      patterns:
+        - './bin/creds-2fa'
   credsSalt:
     name: gateway-${opt:stage}-creds-retrieve
     handler: bin/creds-salt
