@@ -18,8 +18,8 @@ import (
 func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	var err error
 
-	// Retrieve Aprimo auth token.
-	token, err := aprimo.GetAuthToken()
+	// Retrieve Aprimo auth token.  FIXME: Add back token later
+	_, err = aprimo.GetAuthToken()
 
 	if err != nil {
 		logs.LogError(err, "Unable to Authenticate Error")
