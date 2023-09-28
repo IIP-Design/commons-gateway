@@ -35,6 +35,7 @@ func deactivateAdmin(email string) error {
 // It ensures that the required data is present before continuing on to update the admin data.
 func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
+
 	if err != nil {
 		return msgs.SendAuthError(err, code)
 	}

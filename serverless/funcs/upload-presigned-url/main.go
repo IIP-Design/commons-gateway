@@ -2,16 +2,15 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
-	"math/big"
 	"net/url"
 	"os"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/randstr"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -22,23 +21,8 @@ import (
 )
 
 const (
-	LetterBytes  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 	LifetimeSecs = 300
 )
-
-func RandStringBytes(n int) (string, error) {
-	maxVal := big.NewInt(int64(len(LetterBytes)))
-	b := make([]byte, n)
-	for i := range b {
-		val, err := rand.Int(rand.Reader, maxVal)
-		if err != nil {
-			return "", err
-		}
-		b[i] = LetterBytes[val.Int64()]
-	}
-
-	return string(b), nil
-}
 
 func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin", "guest"})
@@ -63,7 +47,8 @@ func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyReques
 	var awsRegion = os.Getenv("AWS_REGION")
 	var s3Bucket = os.Getenv("S3_UPLOAD_BUCKET")
 
-	key, err := RandStringBytes(24)
+	key, err := randstr.RandStringBytes(24)
+
 	if err != nil {
 		logs.LogError(err, "key generation error")
 		return msgs.SendServerError(err)

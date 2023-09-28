@@ -13,7 +13,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/lib/pq v1.10.9
 	github.com/rs/xid v1.5.0
-	github.com/thanhpk/randstr v1.0.6
 	golang.org/x/crypto v0.13.0
 )
 
