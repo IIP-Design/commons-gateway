@@ -11,7 +11,7 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
 <script>
   import { isLoggedInAsExternalPartner } from '../utils/auth';
   import { showError, showInfo } from '../utils/alert';
-  import { handlePartnerLogin } from '../utils/login';
+  import { handlePartnerLogin, handleMfaRequest } from '../utils/login';
   import { MONITORING_CONSENT_MESSAGE } from '../utils/constants';
   import btnStyles from '../styles/button.module.scss';
 
@@ -50,7 +50,11 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
     'cf-turnstile-response'
   ) as NodeListOf<HTMLInputElement>;
 
-  mfaBtn?.addEventListener('click', () => {
+  // Initialize a variable store the MFA request id.
+  let mfaRequestId = '';
+
+  // Handle the user's request for a 2FA code.
+  mfaBtn?.addEventListener('click', async () => {
     const name = nameInput.value;
 
     if (!name) {
@@ -58,17 +62,22 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       return;
     }
 
-    const hiddenElements = document.querySelectorAll('.post-mfa');
+    mfaRequestId = await handleMfaRequest(name);
 
-    hiddenElements.forEach((el) => {
-      (el as HTMLElement).style.display = 'block';
-    });
+    if (mfaRequestId) {
+      // Show remaining parts of login form
+      const hiddenElements = document.querySelectorAll('.post-mfa');
+      hiddenElements.forEach((el) => {
+        (el as HTMLElement).style.display = 'block';
+      });
 
-    mfaBtn.style.display = 'none';
-
-    consentBox.setAttribute('disabled', 'disabled');
+      // Hide the 2FA button and disable consent
+      mfaBtn.style.display = 'none';
+      consentBox.setAttribute('disabled', 'disabled');
+    }
   });
 
+  // Handle the user's full credentials submission.
   submitBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
 
@@ -96,9 +105,14 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       return;
     }
 
-    const loggedIn = await handlePartnerLogin(name, pass, token);
+    const mfaRequest = { id: mfaRequestId, code: mfa };
+
+    const loggedIn = await handlePartnerLogin(name, pass, mfaRequest, token);
+
     if (loggedIn) {
       window.location.assign('/upload');
+    } else {
+      showError('Login failed, invalid credentials provided.');
     }
   });
 </script>

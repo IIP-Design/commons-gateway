@@ -23,15 +23,20 @@ type UserBodyOptions struct {
 	AprimoName string `json:"teamAprimo"`
 }
 
+type MFARequest struct {
+	Id   string `json:"id"`
+	Code string `json:"code"`
+}
+
 // RequestBodyOptions represents the possible properties on the body
 // JSON object sent to the serverless functions by the API Gateway.
 type RequestBodyOptions struct {
 	UserBodyOptions
-	Action   string          `json:"action"`
 	Active   bool            `json:"active"`
 	Hash     string          `json:"hash"`
 	Invitee  UserBodyOptions `json:"invitee"`
 	Inviter  string          `json:"inviter"`
+	MFA      MFARequest      `json:"mfa"`
 	Proposer string          `json:"proposer"`
 	Username string          `json:"username"`
 	Token    string          `json:"token"`
