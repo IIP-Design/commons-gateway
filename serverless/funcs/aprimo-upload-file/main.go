@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -20,11 +23,25 @@ const (
 	PartSize = 10 * 1024 * 1024 // 10MB per part
 )
 
+type FileRecord struct {
+	Filename string `json:"filename"`
+	FileType string `json:"filetype"`
+}
+
+func ParseEventBody(body string) (FileRecord, error) {
+	var parsed FileRecord
+
+	b := []byte(body)
+	err := json.Unmarshal(b, &parsed)
+
+	return parsed, err
+}
+
 func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	var err error
 
-	// Retrieve Aprimo auth token.  FIXME: Add back token later
-	_, err = aprimo.GetAuthToken()
+	// Retrieve Aprimo auth token
+	token, err := aprimo.GetAuthToken()
 
 	if err != nil {
 		logs.LogError(err, "Unable to Authenticate Error")
@@ -46,16 +63,22 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	})
 
 	for _, message := range event.Records {
-		key := message.Body
+		fileInfo, err := ParseEventBody(message.Body)
+		if err != nil {
+			logs.LogError(err, "Failed to Unmarshal Body")
+			return err
+		}
+
+		uri := aprimo.InitFileUpload(fileInfo.Filename, token)
 
 		segment := 0
 		readyToCommit := false
 
 		for !readyToCommit {
-			buffer := manager.NewWriteAtBuffer([]byte{})
-			bytesDownloaded, err := downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
+			data := manager.NewWriteAtBuffer([]byte{})
+			bytesDownloaded, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
 				Bucket: aws.String(bucket),
-				Key:    aws.String(key),
+				Key:    aws.String(fileInfo.Filename),
 				Range:  aws.String(fmt.Sprintf("bytes=%d-%d", PartSize*segment, PartSize*(segment+1))),
 			})
 
@@ -65,12 +88,28 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 			}
 
 			// Send to Aprimo
+			success, err := aprimo.UploadSegment(fileInfo.Filename, uri, &aprimo.FileSegment{
+				Segment:  segment,
+				FileType: fileInfo.FileType,
+				Data:     bytes.NewBuffer(data.Bytes()),
+			}, token)
+
+			if err != nil {
+				logs.LogError(err, "Aprimo Segment Upload Error")
+				break
+			} else if !success {
+				break
+			}
 
 			segment += 1
 			readyToCommit = (bytesDownloaded < PartSize)
 		}
 
 		// Commit to Aprimo
+		if readyToCommit {
+			ret := aprimo.CommitFileUpload(fileInfo.Filename, segment-1, uri, token)
+			log.Println(ret)
+		}
 	}
 
 	return err

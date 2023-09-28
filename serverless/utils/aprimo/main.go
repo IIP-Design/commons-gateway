@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"os"
 	"strings"
@@ -27,6 +28,12 @@ type UploadSegmentResponse struct {
 
 type UploadCommitResponse struct {
 	Token string `json:"token"`
+}
+
+type FileSegment struct {
+	Segment  int
+	FileType string
+	Data     *bytes.Buffer
 }
 
 // GetEndpointURL constructs an URL for a given Aprimo API endpoint. Authorization
@@ -135,12 +142,12 @@ func PostJsonData(endpoint string, token string, reqBody string) ([]byte, int, e
 	return res, statusCode, nil
 }
 
-func InitFileUpload(key string, token string) string {
+func InitFileUpload(filename string, token string) string {
 	var uri string
 
 	reqBody := fmt.Sprintf(`{
 		"filename":"%s"
-	}`, key)
+	}`, filename)
 
 	resp, statusCode, err := PostJsonData("uploads/segments", token, reqBody)
 	if err == nil && statusCode == 200 {
@@ -152,13 +159,13 @@ func InitFileUpload(key string, token string) string {
 	return uri
 }
 
-func CommitFileUpload(key string, segments int, uri string, token string) string {
+func CommitFileUpload(filename string, segments int, uri string, token string) string {
 	var respToken string
 
 	reqBody := fmt.Sprintf(`{
 		"filename":"%s",
 		"segmentcount": "%d"
-	}`, key, segments)
+	}`, filename, segments)
 
 	resp, statusCode, err := PostJsonData(fmt.Sprintf("%s/commit", uri[1:]), token, reqBody)
 	if err == nil && statusCode == 200 {
@@ -170,38 +177,40 @@ func CommitFileUpload(key string, segments int, uri string, token string) string
 	return respToken
 }
 
-func UploadSegment(key string, uri string, segment int, token string) (bool, error) {
+func UploadSegment(filename string, uri string, seg *FileSegment, token string) (bool, error) {
 	success := false
 	var err error
 
-	url := GetEndpointURL(fmt.Sprintf("%s?index=%d", uri[1:], segment), false)
+	url := GetEndpointURL(fmt.Sprintf("%s?index=%d", uri[1:], seg.Segment), false)
 
-	// Add file data TODO
-	var form bytes.Buffer
-	mwriter := multipart.NewWriter(&form)
-	mwriter.Close()
+	// Add file data
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	partHeaders := textproto.MIMEHeader{}
+	partHeaders.Set("Content-Type", seg.FileType)
+	partHeaders.Set("Content-Disposition", fmt.Sprintf(`form-data; name="segment%d"; filename="%s.segment%d"`, seg.Segment, filename, seg.Segment))
+	part, _ := writer.CreatePart(partHeaders)
+
+	io.Copy(part, seg.Data)
+	writer.Close()
 
 	client := &http.Client{}
 	request, err := http.NewRequest(
 		http.MethodPost,
 		url,
-		&form,
+		body,
 	)
 
 	if err != nil {
 		logs.LogError(err, "Error Preparing Aprimo Request")
 		return success, err
 	}
-	request.Header.Add("Content-Type", mwriter.FormDataContentType())
+	request.Header.Add("Content-Type", writer.FormDataContentType())
 
 	request.Header.Set("Accept", "*/*")
 	request.Header.Set("API-VERSION", "1")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-
-	// Below Boundary on https://state-sb1.dam.aprimo.com/api/core/docs#usage_uploading
-	// What does that mean?
-	request.Header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="segment%d"; filename="%s.segment%d"`, segment, key, segment))
-	request.Header.Set("Content-Type", "Filetype FIXME")
 
 	// Make the request
 	resp, err := client.Do(request)
