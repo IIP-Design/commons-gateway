@@ -22,7 +22,7 @@ func createAllUsersTable(pool *sql.DB) error {
 	_, err := pool.Exec(query)
 
 	if err != nil {
-		logs.LogError(err, "Table Creation Query Error - All Teams")
+		logs.LogError(err, "Table Creation Query Error - All Users")
 	}
 
 	return err
