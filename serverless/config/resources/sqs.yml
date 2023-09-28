@@ -1,8 +1,8 @@
 Resources:
-  SQS2FA:
+  SQSSend2FA:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: content-gateway-${opt:stage}-email-2fa
+      QueueName: content-gateway-${opt:stage}-send-2fa
 
   SQSAprimoUpload:
     Type: AWS::SQS::Queue

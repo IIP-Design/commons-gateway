@@ -456,7 +456,7 @@ functions:
     runtime: go1.x
     events:
       - sqs:
-          arn: !GetAtt SQS2FA.Arn
+          arn: !GetAtt SQSSend2FA.Arn
     package:
       patterns:
         - './bin/email-2fa'
