@@ -129,7 +129,7 @@ export const handleMfaRequest = async ( username: string ) => {
   const response = await buildQuery( `creds/2fa?username=${username}`, null, 'GET' );
   const { data } = await response.json();
 
-  return data.requestId;
+  return data?.requestId;
 };
 
 /**

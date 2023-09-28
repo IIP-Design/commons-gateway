@@ -117,7 +117,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	_, exists, err := data.CheckForExistingUser(username, "guests")
 
 	if err != nil || !exists {
-		return msgs.SendServerError(errors.New("user does not exist"))
+		return msgs.SendAuthError(errors.New("internal error"), 500)
 	}
 
 	// Generate the 2FA code.

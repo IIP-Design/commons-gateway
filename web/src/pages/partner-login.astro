@@ -74,6 +74,8 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       // Hide the 2FA button and disable consent
       mfaBtn.style.display = 'none';
       consentBox.setAttribute('disabled', 'disabled');
+    } else {
+      showError('2FA code request failed.');
     }
   });
 
