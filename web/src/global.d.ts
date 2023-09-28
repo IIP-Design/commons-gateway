@@ -16,3 +16,8 @@ interface IUser {
   team: string
   active: boolean
 }
+
+interface IMfaRequest {
+  id: string
+  code: string
+}

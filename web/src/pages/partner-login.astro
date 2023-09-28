@@ -11,7 +11,7 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
 <script>
   import { isLoggedInAsExternalPartner } from '../utils/auth';
   import { showError, showInfo } from '../utils/alert';
-  import { handlePartnerLogin } from '../utils/login';
+  import { handlePartnerLogin, handleMfaRequest } from '../utils/login';
   import { MONITORING_CONSENT_MESSAGE } from '../utils/constants';
   import btnStyles from '../styles/button.module.scss';
 
@@ -21,47 +21,84 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
   if (authenticated) {
     window.location.assign('/upload');
   }
-  const submitBtn = document.getElementById('login-btn') as HTMLElement;
 
+  const submitBtn = document.getElementById('login-btn') as HTMLElement;
+  const mfaBtn = document.getElementById('mfa-btn') as HTMLButtonElement;
   const consentBox = document.getElementById('consent-check') as HTMLInputElement;
+
   consentBox.addEventListener('change', function () {
     const { checked } = this;
     if (checked) {
-      submitBtn.removeAttribute('disabled');
-      submitBtn.classList.remove(btnStyles['disabled-btn']);
+      mfaBtn.removeAttribute('disabled');
+      mfaBtn.classList.remove(btnStyles['disabled-btn']);
     } else {
-      submitBtn.setAttribute('disabled', 'disabled');
-      submitBtn.classList.add(btnStyles['disabled-btn']);
+      mfaBtn.setAttribute('disabled', 'disabled');
+      mfaBtn.classList.add(btnStyles['disabled-btn']);
     }
   });
 
   const consentNotice = document.getElementById('monitoring-consent') as HTMLElement;
+
   consentNotice.addEventListener('click', () =>
     showInfo('Consent to Monitoring', MONITORING_CONSENT_MESSAGE)
   );
 
   const nameInput = document.getElementById('name-input') as HTMLInputElement;
   const passInput = document.getElementById('pass-input') as HTMLInputElement;
+  const mfaInput = document.getElementById('mfa-input') as HTMLInputElement;
   const tokenInput = document.getElementsByName(
     'cf-turnstile-response'
   ) as NodeListOf<HTMLInputElement>;
 
+  // Initialize a variable store the MFA request id.
+  let mfaRequestId = '';
+
+  // Handle the user's request for a 2FA code.
+  mfaBtn?.addEventListener('click', async () => {
+    const name = nameInput.value;
+
+    if (!name) {
+      showError('Please input a username');
+      return;
+    }
+
+    mfaRequestId = await handleMfaRequest(name);
+
+    if (mfaRequestId) {
+      // Show remaining parts of login form
+      const hiddenElements = document.querySelectorAll('.post-mfa');
+      hiddenElements.forEach((el) => {
+        (el as HTMLElement).style.display = 'block';
+      });
+
+      // Hide the 2FA button and disable consent
+      mfaBtn.style.display = 'none';
+      consentBox.setAttribute('disabled', 'disabled');
+    } else {
+      showError('2FA code request failed.');
+    }
+  });
+
+  // Handle the user's full credentials submission.
   submitBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
 
     const name = nameInput.value;
     const pass = passInput.value;
+    const mfa = mfaInput.value;
 
     // Empty string if not using token in deployment, null if using and missing
     const token = tokenInput.length ? tokenInput[0].value || null : '';
 
-    if (!name || !pass) {
-      if (!name && !pass) {
-        showError('Please input a username and password');
+    if (!name || !pass || !mfa) {
+      if (!name && !pass && !mfa) {
+        showError('Please input a username, password, and 2fa code');
       } else if (!name) {
         showError('Please input a username');
-      } else {
+      } else if (!pass) {
         showError('Please input a password');
+      } else {
+        showError('Please input a second factor authentication code');
       }
       return;
     } else if (token === null) {
@@ -70,9 +107,14 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       return;
     }
 
-    const loggedIn = await handlePartnerLogin(name, pass, token);
+    const mfaRequest = { id: mfaRequestId, code: mfa };
+
+    const loggedIn = await handlePartnerLogin(name, pass, mfaRequest, token);
+
     if (loggedIn) {
       window.location.assign('/upload');
+    } else {
+      showError('Login failed, invalid credentials provided.');
     }
   });
 </script>
@@ -87,12 +129,22 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       Password
       <input id="pass-input" type="password" />
     </label>
+    <div class="post-mfa" style="display: none">
+      <label>
+        2FA Code
+        <input id="mfa-input" type="text" />
+        <p class="mfa-msg">
+          <span>If you provided a valid username above, you will</span>
+          <span>receive an email with a one-time second factor code.</span>
+        </p>
+      </label>
+    </div>
     {
       PUBLIC_TURNSTILE_SITE_KEY && (
         <div class="cf-turnstile" data-sitekey={PUBLIC_TURNSTILE_SITE_KEY} />
       )
     }
-    <label style="display:flex; flex-direction: row; justify-content: center; align-items: center">
+    <label class="consent-dialogue">
       <input
         id="consent-check"
         type="checkbox"
@@ -104,7 +156,31 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
         type="button">monitoring consent notice</button
       >&nbsp;while using this system
     </label>
-    <Button id="login-btn" class={btnStyles['disabled-btn']} type="submit" disabled>Sign In</Button>
+    <Button id="mfa-btn" class={btnStyles['disabled-btn']} type="button" disabled>
+      Request 2FA Code
+    </Button>
+    <div class="post-mfa" style="display: none">
+      <Button id="login-btn" type="submit">Sign In</Button>
+    </div>
   </form>
   <a href="/login" style="margin-top: 1em;">Or choose a different method</a>
 </LoggedOutLayout>
+
+<style>
+  .consent-dialogue {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+  .mfa-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.5rem 0;
+  }
+
+  .post-mfa > button {
+    width: 100%;
+  }
+</style>

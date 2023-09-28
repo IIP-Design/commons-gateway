@@ -10,16 +10,20 @@ import (
 
 type Response events.APIGatewayProxyResponse
 
-// MarshalBody accepts any value and converts it into a stringified data object.
-func MarshalBody(data any) ([]byte, error) {
+func marshalResponse(data any, prop string) ([]byte, error) {
 	var body []byte
 	var err error
 
 	body, err = json.Marshal(map[string]any{
-		"data": data,
+		prop: data,
 	})
 
 	return body, err
+}
+
+// MarshalBody accepts any value and converts it into a stringified data object.
+func MarshalBody(data any) ([]byte, error) {
+	return marshalResponse(data, "data")
 }
 
 // PrepareResponse accepts any string as an input and sets it to the message property
@@ -65,42 +69,53 @@ func SendServerError(err error) (Response, error) {
 			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
 			"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
 			"Access-Control-Allow-Origin":  "*",
-			"Content-Type":                 "text/plain",
+			"Content-Type":                 "application/json",
 		},
 	}, nil
 }
 
+// statusCodeToBody returns standardized error messages
+// based on the provided status code
 func statusCodeToBody(statusCode int) string {
+	var code string
+
 	switch statusCode {
 	case 401:
-		return "unauthorized"
+		code = "unauthorized"
 	case 403:
-		return "forbidden"
+		code = "forbidden"
 	case 500:
 	default:
-		return "internal error"
+		code = "internal error"
 	}
 
-	return "internal error"
+	return code
 }
 
 func SendAuthError(err error, statusCode int) (Response, error) {
-	var body string
+	var msg string
+
 	if err != nil {
-		body = err.Error()
+		msg = err.Error()
 	} else {
-		body = statusCodeToBody(statusCode)
+		msg = statusCodeToBody(statusCode)
 	}
+
+	body, _ := marshalResponse(msg, "error")
+
+	var buf bytes.Buffer
+
+	json.HTMLEscape(&buf, body)
 
 	resp := Response{
 		StatusCode:      statusCode,
 		IsBase64Encoded: false,
-		Body:            body,
+		Body:            buf.String(),
 		Headers: map[string]string{
 			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
 			"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
 			"Access-Control-Allow-Origin":  "*",
-			"Content-Type":                 "text/plain",
+			"Content-Type":                 "application/json",
 		},
 	}
 	return resp, nil

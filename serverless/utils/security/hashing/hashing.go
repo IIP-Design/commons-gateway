@@ -4,21 +4,26 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/thanhpk/randstr"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/randstr"
 	"golang.org/x/crypto/pbkdf2"
 )
-
-// generateRandString creates a random string of the provided length.
-func generateRandString(count int) string {
-	return randstr.String(count)
-}
 
 // generateCredentials creates a random 20 character string to be used as a password
 // as well as a random 10 character string to salt the password when hashing
 // it for storage in the database.
 func GenerateCredentials() (string, string) {
-	pass := generateRandString(20)
-	salt := generateRandString(10)
+	pass, err := randstr.RandStringBytes(20)
+
+	if err != nil {
+		logs.LogError(err, "failed to generate credentials - password")
+	}
+
+	salt, err := randstr.RandStringBytes(10)
+
+	if err != nil {
+		logs.LogError(err, "failed to generate credentials - salt")
+	}
 
 	return pass, salt
 }
