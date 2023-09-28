@@ -35,7 +35,7 @@ func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
 		var description string
 		var team string
 
-		query := "SELECT uploads.description, teams.team_name FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
+		query := "SELECT uploads.description, teams.aprimo_name FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
 		err = pool.QueryRow(query, key).Scan(&description, &team)
 
 		if err != nil {
@@ -59,10 +59,16 @@ func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
 						"localizedValues": [
 							{ "value": "%s" }
 						]
-					}
+					},
+					{
+						"Name": "Team",
+						"localizedValues": [
+							{ "values": ["%s"] }
+						]
+				}
 				]
 			}
-		}`, description, key)
+		}`, description, key, team)
 
 		endpoint := aprimo.GetEndpointURL("records", false)
 

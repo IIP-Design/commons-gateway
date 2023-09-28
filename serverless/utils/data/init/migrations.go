@@ -1,6 +1,8 @@
 package init
 
 import (
+	"fmt"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
@@ -9,6 +11,7 @@ import (
 // They should also follow the naming conventions `migYYYYMMDD` for
 // the const name and `YYYYMMDD_short_description` for the value.
 const mig20230831 = "20230831_user_roles"
+const mig20230926 = "20230926_aprimo_teams"
 
 // getAppliedMigrations queries the `migrations` table in that database
 // for a list of schema updates that have already been executed.
@@ -55,7 +58,20 @@ func ApplyMigrations() error {
 
 	// Apply the migration from August 31, 2023
 	if !stringArrayContains(applied, mig20230831) {
+		fmt.Printf("Applying migration - %s", mig20230831)
+
 		err = applyMigration20230831(mig20230831)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// Apply the migration from September 26, 2023
+	if !stringArrayContains(applied, mig20230926) {
+		fmt.Printf("Applying migration - %s", mig20230926)
+
+		err = applyMigration20230926(mig20230926)
 
 		if err != nil {
 			return err

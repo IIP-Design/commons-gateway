@@ -26,9 +26,9 @@ func GetEndpointURL(endpoint string, auth bool) string {
 	var url string
 
 	if auth {
-		url = fmt.Sprintf("https://%s.aprimo.com/%s", os.Getenv("APRIMO_DOMAIN"), endpoint)
+		url = fmt.Sprintf("https://%s.aprimo.com/%s", os.Getenv("APRIMO_TENANT"), endpoint)
 	} else {
-		url = fmt.Sprintf("https://%s.dam.aprimo.com/api/core/%s", os.Getenv("APRIMO_DOMAIN"), endpoint)
+		url = fmt.Sprintf("https://%s.dam.aprimo.com/api/core/%s", os.Getenv("APRIMO_TENANT"), endpoint)
 	}
 
 	return url

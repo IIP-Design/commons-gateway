@@ -12,14 +12,15 @@ import Modal from 'react-modal';
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { buildQuery } from '../utils/api';
-import { showError } from '../utils/alert';
-import ToggleSwitch from './ToggleSwitch/ToggleSwitch';
+import { buildQuery } from '../../utils/api';
+import { showError } from '../../utils/alert';
+import ToggleSwitch from '../ToggleSwitch/ToggleSwitch';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import btnStyle from '../styles/button.module.scss';
+import btnStyle from '../../styles/button.module.scss';
+import style from './TeamModal.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
@@ -56,10 +57,16 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
   // Update Team
   const handleSubmit = async () => {
-    const { name, id, active } = localTeam;
+    const { name, aprimoName, id, active } = localTeam;
 
     if ( !name ) {
       showError( 'A team must have a name' );
+
+      return;
+    }
+
+    if ( !aprimoName ) {
+      showError( 'Please specify the value Aprimo uses for this team' );
 
       return;
     }
@@ -69,13 +76,13 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
     // If the team is new, send a create request, otherwise send an update request.
     if ( !id ) {
-      const response = await buildQuery( 'team/create', { teamName: name }, 'POST' );
+      const response = await buildQuery( 'team/create', { teamName: name, teamAprimo: aprimoName }, 'POST' );
       const { data, message } = await response.json();
 
       newList = data;
       errMessage = message;
     } else {
-      const response = await buildQuery( 'team/update', { active, team: id, teamName: name }, 'POST' );
+      const response = await buildQuery( 'team/update', { active, team: id, teamName: name, teamAprimo: aprimoName }, 'POST' );
       const { data, message } = await response.json();
 
       newList = data;
@@ -98,12 +105,14 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
   const modalStyle = {
     content: {
       height: 'fit-content',
-      width: 'fit-content',
+      width: '400px',
+      minWidth: 'fit-content',
       top: '50%',
       left: '50%',
       right: 'auto',
       bottom: 'auto',
       marginRight: '-50%',
+      padding: '2rem',
       transform: 'translate(-50%, -50%)',
       boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
     },
@@ -118,21 +127,31 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         contentLabel="Example Modal"
         style={ modalStyle }
       >
-        <h1>{ localTeam.id ? `Update ${localTeam.name}` : 'Add a New Team' }</h1>
-        <label
-          style={ { margin: '0.5rem 0', display: 'block' } }
-        >
+        <h2 className={ style.header }>
+          { localTeam.id ? `Update ${localTeam.name}` : 'Add a New Team' }
+        </h2>
+        <label className={ style.label }>
           Team Name
         </label>
         <input
-          style={ { maxWidth: '100%', padding: '0.3rem 0.5rem', display: 'block' } }
+          className={ style.input }
           type="text"
           value={ localTeam.name || '' }
           onChange={ e => handleUpdate( 'name', e.target.value ) }
           aria-label="Team Name"
         />
+        <label className={ style.label }>
+          Aprimo Name
+        </label>
+        <input
+          className={ style.input }
+          type="text"
+          value={ localTeam.aprimoName || '' }
+          onChange={ e => handleUpdate( 'aprimoName', e.target.value ) }
+          aria-label="Team Name"
+        />
         { localTeam.id && (
-          <div style={ { margin: '0.5rem 0', display: 'block' } }>
+          <div className={ style.label }>
             <ToggleSwitch
               active={ localTeam.active ?? false }
               callback={ e => handleUpdate( 'active', e ) }
@@ -140,16 +159,16 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
             />
           </div>
         ) }
-        <div style={ { margin: '0.5rem 0' } }>
+        <div className={ style['btn-container'] }>
           <button
-            className={ `${btnStyle.btn} ${btnStyle['spaced-btn']}` }
+            className={ btnStyle.btn }
             onClick={ handleSubmit }
             type="button"
           >
             Submit
           </button>
           <button
-            className={ `${btnStyle.btn} ${btnStyle['spaced-btn']} ${btnStyle['back-btn']} ` }
+            className={ `${btnStyle.btn} ${btnStyle['back-btn']} ` }
             onClick={ closeModal }
             type="button"
           >

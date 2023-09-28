@@ -180,6 +180,22 @@ functions:
       APRIMO_TENANT: ${env:APRIMO_TENANT}
       APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
       APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
+  aprimoUpload:
+    name: gateway-${opt:stage}-aprimo-upload
+    handler: bin/aprimo-upload-file
+    description: Copies a file from S3 to Aprimo and associates it with the appropriate record.
+    runtime: go1.x
+    events:
+      - sqs:
+          arn: !GetAtt SQSAprimoUpload.Arn
+    package:
+      patterns:
+        - './bin/aprimo-upload-file'
+    environment:
+      APRIMO_TENANT: ${env:APRIMO_TENANT}
+      APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
+      APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
+      SOURCE_BUCKET: commons-gateway-${opt:stage}-clean
   guestApprove:
     name: gateway-${opt:stage}-guest-approve
     handler: bin/guest-approve

@@ -62,7 +62,7 @@ func CheckForExistingTeamById(teamId string) (bool, error) {
 }
 
 // CreateTeam opens a database connection and saves a new team record.
-func CreateTeam(teamName string) error {
+func CreateTeam(teamName string, aprimoName string) error {
 	var err error
 
 	pool := data.ConnectToDB()
@@ -72,9 +72,9 @@ func CreateTeam(teamName string) error {
 	currentTime := time.Now()
 
 	insertTeam :=
-		`INSERT INTO teams( id, team_name, active, date_created, date_modified )
-		 VALUES ($1, $2, $3, $4, $5);`
-	_, err = pool.Exec(insertTeam, guid, teamName, true, currentTime, currentTime)
+		`INSERT INTO teams( id, team_name, aprimo_name, active, date_created, date_modified )
+		 VALUES ($1, $2, $3, $4, $5, $6);`
+	_, err = pool.Exec(insertTeam, guid, teamName, aprimoName, true, currentTime, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Create Team Query Error")
@@ -104,7 +104,7 @@ func GetTeamIdByName(teamName string) (string, error) {
 }
 
 // UpdateTeam opens a database connection and updates and existing team record.
-func UpdateTeam(teamId string, teamName string, active bool) error {
+func UpdateTeam(teamId string, teamName string, aprimoName string, active bool) error {
 	var err error
 
 	pool := data.ConnectToDB()
@@ -112,8 +112,8 @@ func UpdateTeam(teamId string, teamName string, active bool) error {
 
 	currentTime := time.Now()
 
-	query := `UPDATE teams SET team_name = $1, active = $2, date_modified = $3 WHERE id = $4;`
-	_, err = pool.Exec(query, teamName, active, currentTime, teamId)
+	query := `UPDATE teams SET team_name = $1, aprimo_name = $2, active = $3, date_modified = $4 WHERE id = $5;`
+	_, err = pool.Exec(query, teamName, aprimoName, active, currentTime, teamId)
 
 	if err != nil {
 		logs.LogError(err, "Update Team Query Error")
@@ -149,7 +149,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	rows, err := pool.Query(`SELECT id, team_name, active FROM teams ORDER BY team_name`)
+	rows, err := pool.Query(`SELECT id, team_name, active, aprimo_name FROM teams ORDER BY team_name`)
 
 	if err != nil {
 		logs.LogError(err, "Get Teams Query Error")
@@ -160,15 +160,16 @@ func RetrieveTeams() ([]map[string]any, error) {
 
 	for rows.Next() {
 		var team data.Team
-		if err := rows.Scan(&team.Id, &team.Name, &team.Active); err != nil {
+		if err := rows.Scan(&team.Id, &team.Name, &team.Active, &team.AprimoName); err != nil {
 			logs.LogError(err, "Get Teams Query Error")
 			return teams, err
 		}
 
 		teamData := map[string]any{
-			"id":     team.Id,
-			"name":   team.Name,
-			"active": team.Active,
+			"id":         team.Id,
+			"name":       team.Name,
+			"aprimoName": team.AprimoName,
+			"active":     team.Active,
 		}
 
 		teams = append(teams, teamData)

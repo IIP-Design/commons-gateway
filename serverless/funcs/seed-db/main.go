@@ -37,7 +37,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) error {
 		var partMiBs int64 = 10
 
 		downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
-			d.PartSize = partMiBs * 1024 * 1024
+			d.PartSize = partMiBs * 1024 * 1024 // 10MB per part
 		})
 
 		buffer := manager.NewWriteAtBuffer([]byte{})
@@ -94,7 +94,7 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) error {
 					return err
 				}
 			case "teams":
-				err := teams.CreateTeam(rec[1])
+				err := teams.CreateTeam(rec[1], rec[6])
 
 				if err != nil {
 					logs.LogError(err, "Team Creation Error")
