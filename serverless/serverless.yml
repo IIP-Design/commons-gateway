@@ -173,10 +173,8 @@ functions:
     description: Creates a record in Aprimo which will be used to upload the file.
     runtime: go1.x
     events:
-      - s3:
-          bucket: commons-gateway-${opt:stage}-clean
-          event: s3:ObjectCreated:*
-          existing: true
+      - sqs:
+          arn: !GetAtt SQSAprimoUpload.Arn
     package:
       patterns:
         - './bin/aprimo-create-record'
@@ -190,8 +188,10 @@ functions:
     description: Copies a file from S3 to Aprimo and associates it with the appropriate record.
     runtime: go1.x
     events:
-      - sqs:
-          arn: !GetAtt SQSAprimoUpload.Arn
+      - s3:
+          bucket: commons-gateway-${opt:stage}-clean
+          event: s3:ObjectCreated:*
+          existing: true
     package:
       patterns:
         - './bin/aprimo-upload-file'
@@ -199,7 +199,7 @@ functions:
       APRIMO_TENANT: ${env:APRIMO_TENANT}
       APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
       APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
-      SOURCE_BUCKET: commons-gateway-${opt:stage}-clean
+      RECORD_UPDATE_QUEUE: !GetAtt SQSAprimoUpload.Arn
   guestApprove:
     name: gateway-${opt:stage}-guest-approve
     handler: bin/guest-approve
