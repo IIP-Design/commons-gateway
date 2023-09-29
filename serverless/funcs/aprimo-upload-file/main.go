@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/IIP-Design/commons-gateway/utils/aprimo"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/IIP-Design/commons-gateway/utils/queue"
 )
@@ -24,22 +25,25 @@ const (
 	PartSize = 10 * 1024 * 1024 // 10MB per part
 )
 
-func ParseEventBody(body string) (aprimo.FileRecordInitEvent, error) {
-	var parsed aprimo.FileRecordInitEvent
+func LookupFileType(key string) (string, error) {
+	pool := data.ConnectToDB()
+	defer pool.Close()
 
-	b := []byte(body)
-	err := json.Unmarshal(b, &parsed)
+	var fileType string
 
-	return parsed, err
+	query := "SELECT file_type FROM uploads WHERE s3_id = $1"
+	err := pool.QueryRow(query, key).Scan(&fileType)
+
+	return fileType, err
 }
 
-func SendUpdateEvent(aprimoId string, filename string, fileToken string) (string, error) {
+func SendRecordEvent(key string, fileType string, fileToken string) (string, error) {
 	var messageId string
 	var err error
 
-	event := aprimo.FileRecordUpdateEvent{
-		AprimoId:  aprimoId,
-		Filename:  filename,
+	event := aprimo.FileRecordInitEvent{
+		Key:       key,
+		FileType:  fileType,
 		FileToken: fileToken,
 	}
 
@@ -56,7 +60,7 @@ func SendUpdateEvent(aprimoId string, filename string, fileToken string) (string
 	return queue.SendToQueue(string(json), queueUrl)
 }
 
-func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
+func uploadAprimoFile(ctx context.Context, event events.S3Event) error {
 	var err error
 
 	// Retrieve Aprimo auth token
@@ -75,20 +79,21 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	}
 
 	s3Client := s3.NewFromConfig(sdkConfig)
-	bucket := os.Getenv("SOURCE_BUCKET")
 
 	downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
 		d.PartSize = PartSize
 	})
 
-	for _, message := range event.Records {
-		fileInfo, err := ParseEventBody(message.Body)
+	for _, record := range event.Records {
+		bucket := record.S3.Bucket.Name
+		key := record.S3.Object.Key
+		fileType, err := LookupFileType(key)
 		if err != nil {
-			logs.LogError(err, "Failed to Unmarshal Body")
+			logs.LogError(err, "failed to lookup file type")
 			return err
 		}
 
-		uri := aprimo.InitFileUpload(fileInfo.Filename, token)
+		uri := aprimo.InitFileUpload(key, token)
 
 		segment := 0
 		readyToCommit := false
@@ -97,7 +102,7 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 			data := manager.NewWriteAtBuffer([]byte{})
 			bytesDownloaded, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
 				Bucket: aws.String(bucket),
-				Key:    aws.String(fileInfo.Filename),
+				Key:    aws.String(key),
 				Range:  aws.String(fmt.Sprintf("bytes=%d-%d", PartSize*segment, PartSize*(segment+1))),
 			})
 
@@ -107,9 +112,9 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 			}
 
 			// Send to Aprimo
-			success, err := aprimo.UploadSegment(fileInfo.Filename, uri, &aprimo.FileSegment{
+			success, err := aprimo.UploadSegment(key, uri, &aprimo.FileSegment{
 				Segment:  segment,
-				FileType: fileInfo.FileType,
+				FileType: fileType,
 				Data:     bytes.NewBuffer(data.Bytes()),
 			}, token)
 
@@ -126,14 +131,14 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 
 		// Commit to Aprimo
 		if readyToCommit {
-			uploadToken, err := aprimo.CommitFileUpload(fileInfo.Filename, segment-1, uri, token)
+			uploadToken, err := aprimo.CommitFileUpload(key, segment-1, uri, token)
 			if err != nil {
 				logs.LogError(err, "Aprimo File Commit Error")
 			} else {
 				log.Println(uploadToken)
-				messageId, err := SendUpdateEvent(fileInfo.AprimoId, fileInfo.Filename, uploadToken)
+				messageId, err := SendRecordEvent(key, fileType, uploadToken)
 				if err != nil {
-					logs.LogError(err, "send record update event error")
+					logs.LogError(err, "send record event error")
 				} else {
 					log.Println(messageId)
 				}

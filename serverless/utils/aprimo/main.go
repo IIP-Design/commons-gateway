@@ -23,14 +23,8 @@ type TokenResponse struct {
 }
 
 type FileRecordInitEvent struct {
-	AprimoId string `json:"aprimoId"`
-	Filename string `json:"filename"`
-	FileType string `json:"filetype"`
-}
-
-type FileRecordUpdateEvent struct {
-	AprimoId  string `json:"aprimoId"`
-	Filename  string `json:"filename"`
+	Key       string `json:"key"`
+	FileType  string `json:"filetype"`
 	FileToken string `json:"fileToken"`
 }
 
