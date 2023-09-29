@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	PartSize = 10 * 1024 * 1024 // 10MB per part
+	PartSize = 15 * 1024 * 1024 // 15MB per part
 )
 
 func LookupFileType(key string) (string, error) {
@@ -35,6 +35,72 @@ func LookupFileType(key string) (string, error) {
 	err := pool.QueryRow(query, key).Scan(&fileType)
 
 	return fileType, err
+}
+
+func UploadSmallFile(key string, token string, downloader *manager.Downloader, bucket string, fileType string) (string, error) {
+	data := manager.NewWriteAtBuffer([]byte{})
+	_, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		logs.LogError(err, "Error Retrieving S3 Object")
+		return "", err
+	}
+
+	// Send to Aprimo
+	return aprimo.UploadFile(key, fileType, bytes.NewBuffer(data.Bytes()), token)
+}
+
+func UploadFileSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string) (string, error) {
+	var uploadToken string
+	var err error
+
+	uri := aprimo.InitFileUpload(key, token)
+
+	segment := 0
+	readyToCommit := false
+
+	for !readyToCommit {
+		data := manager.NewWriteAtBuffer([]byte{})
+		bytesDownloaded, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+			Range:  aws.String(fmt.Sprintf("bytes=%d-%d", PartSize*segment, PartSize*(segment+1))),
+		})
+
+		if err != nil {
+			logs.LogError(err, "Error Retrieving S3 Object")
+			break
+		}
+
+		// Send to Aprimo
+		success, err := aprimo.UploadSegment(key, uri, &aprimo.FileSegment{
+			Segment:  segment,
+			FileType: fileType,
+			Data:     bytes.NewBuffer(data.Bytes()),
+		}, token)
+
+		if err != nil {
+			logs.LogError(err, "Aprimo Segment Upload Error")
+			break
+		} else if !success {
+			break
+		}
+
+		segment += 1
+		readyToCommit = (bytesDownloaded < PartSize)
+	}
+
+	// Commit to Aprimo
+	if readyToCommit {
+		uploadToken, err = aprimo.CommitFileUpload(key, segment-1, uri, token)
+	} else {
+		log.Println("Not ready to commit")
+	}
+
+	return uploadToken, err
 }
 
 func SendRecordEvent(key string, fileType string, fileToken string) (string, error) {
@@ -87,65 +153,30 @@ func uploadAprimoFile(ctx context.Context, event events.S3Event) error {
 	for _, record := range event.Records {
 		bucket := record.S3.Bucket.Name
 		key := record.S3.Object.Key
+		size := record.S3.Object.Size
+
 		fileType, err := LookupFileType(key)
 		if err != nil {
 			logs.LogError(err, "failed to lookup file type")
 			return err
 		}
 
-		uri := aprimo.InitFileUpload(key, token)
+		var uploadToken string
 
-		segment := 0
-		readyToCommit := false
-
-		for !readyToCommit {
-			data := manager.NewWriteAtBuffer([]byte{})
-			bytesDownloaded, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
-				Bucket: aws.String(bucket),
-				Key:    aws.String(key),
-				Range:  aws.String(fmt.Sprintf("bytes=%d-%d", PartSize*segment, PartSize*(segment+1))),
-			})
-
-			if err != nil {
-				logs.LogError(err, "Error Retrieving S3 Object")
-				return err
-			}
-
-			// Send to Aprimo
-			success, err := aprimo.UploadSegment(key, uri, &aprimo.FileSegment{
-				Segment:  segment,
-				FileType: fileType,
-				Data:     bytes.NewBuffer(data.Bytes()),
-			}, token)
-
-			if err != nil {
-				logs.LogError(err, "Aprimo Segment Upload Error")
-				break
-			} else if !success {
-				break
-			}
-
-			segment += 1
-			readyToCommit = (bytesDownloaded < PartSize)
+		if size <= PartSize {
+			uploadToken, err = UploadSmallFile(key, token, downloader, bucket, fileType)
+		} else {
+			uploadToken, err = UploadFileSegments(key, token, downloader, bucket, fileType)
 		}
 
-		// Commit to Aprimo
-		if readyToCommit {
-			uploadToken, err := aprimo.CommitFileUpload(key, segment-1, uri, token)
+		if err == nil {
+			log.Println(uploadToken)
+			messageId, err := SendRecordEvent(key, fileType, uploadToken)
 			if err != nil {
-				logs.LogError(err, "Aprimo File Commit Error")
+				logs.LogError(err, "send record event error")
 			} else {
-				log.Println(uploadToken)
-				messageId, err := SendRecordEvent(key, fileType, uploadToken)
-				if err != nil {
-					logs.LogError(err, "send record event error")
-				} else {
-					log.Println(messageId)
-				}
-
+				log.Println(messageId)
 			}
-		} else {
-			log.Println("Not ready to commit")
 		}
 	}
 

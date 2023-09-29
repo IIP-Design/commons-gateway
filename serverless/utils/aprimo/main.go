@@ -231,3 +231,60 @@ func UploadSegment(filename string, uri string, seg *FileSegment, token string) 
 	defer resp.Body.Close()
 	return success, nil
 }
+
+func UploadFile(filename string, fileType string, data *bytes.Buffer, token string) (string, error) {
+	var uploadToken string
+	var err error
+
+	url := GetEndpointURL("uploads", false)
+
+	// Add file data
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	partHeaders := textproto.MIMEHeader{}
+	partHeaders.Set("Content-Type", fileType)
+	partHeaders.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, filename, filename))
+	part, _ := writer.CreatePart(partHeaders)
+
+	io.Copy(part, data)
+	writer.Close()
+
+	client := &http.Client{}
+	request, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		body,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Error Preparing Aprimo Request")
+		return uploadToken, err
+	}
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+
+	request.Header.Set("Accept", "*/*")
+	request.Header.Set("API-VERSION", "1")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	// Make the request
+	resp, err := client.Do(request)
+
+	if err != nil {
+		logs.LogError(err, "Aprimo File Upload Error")
+		return uploadToken, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logs.LogError(err, "Error Reading Response Body")
+		return uploadToken, err
+	}
+
+	var commitResp UploadCommitResponse
+	json.Unmarshal(respBody, &commitResp)
+	uploadToken = commitResp.Token
+
+	return uploadToken, nil
+}
