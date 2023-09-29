@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 
 	"github.com/IIP-Design/commons-gateway/utils/aprimo"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -14,6 +12,54 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
+
+type RecordCreationResponse struct {
+	Id string `json:"id"`
+}
+
+func submitRecord(description string, key string, team string, token string) (string, error) {
+	var id string
+	var err error
+
+	reqBody := fmt.Sprintf(`{
+		"status":"draft",
+		"fields": {
+			"addOrUpdate": [
+				{
+					"Name": "Description",
+					"localizedValues": [
+						{ "value": "%s" }
+					]
+				},
+				{
+					"Name": "DisplayTitle",
+					"localizedValues": [
+						{ "value": "%s" }
+					]
+				},
+				{
+					"Name": "Team",
+					"localizedValues": [
+						{ "values": ["%s"] }
+					]
+			}
+			]
+		}
+	}`, description, key, team)
+
+	respBody, _, err := aprimo.PostJsonData("records", token, reqBody)
+	if err != nil {
+		return id, err
+	}
+
+	var res RecordCreationResponse
+	err = json.Unmarshal(respBody, &res)
+	if err != nil {
+		return id, err
+	}
+
+	return res.Id, nil
+}
 
 // CreateAprimoRecord initiates the creation of a new record in Aprimo.
 func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
@@ -28,15 +74,14 @@ func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	client := &http.Client{}
-
 	for _, record := range event.Records {
 		key := record.S3.Object.Key
 		var description string
+		var fileType string
 		var team string
 
-		query := "SELECT uploads.description, teams.aprimo_name FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
-		err = pool.QueryRow(query, key).Scan(&description, &team)
+		query := "SELECT uploads.description, uploads.file_type, teams.aprimo_name FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
+		err = pool.QueryRow(query, key).Scan(&description, &fileType, &team)
 
 		if err != nil {
 			logs.LogError(err, "Retrieve Upload Metadata Query Error")
@@ -44,85 +89,21 @@ func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
 			return
 		}
 
-		reqBody := fmt.Sprintf(`{
-			"status":"draft",
-			"fields": {
-				"addOrUpdate": [
-					{
-						"Name": "Description",
-						"localizedValues": [
-							{ "value": "%s" }
-						]
-					},
-					{
-						"Name": "DisplayTitle",
-						"localizedValues": [
-							{ "value": "%s" }
-						]
-					},
-					{
-						"Name": "Team",
-						"localizedValues": [
-							{ "values": ["%s"] }
-						]
-				}
-				]
-			}
-		}`, description, key, team)
-
-		endpoint := aprimo.GetEndpointURL("records", false)
-
-		jsonData := []byte(reqBody)
-		bodyReader := bytes.NewReader(jsonData)
-
-		request, err := http.NewRequest(
-			http.MethodPost,
-			endpoint,
-			bodyReader,
-		)
-
+		recordId, err := submitRecord(description, key, team, token)
 		if err != nil {
-			logs.LogError(err, "Error Preparing Records Request")
-
-			return
+			logs.LogError(err, "Aprimo Record Create Error")
+		} else {
+			log.Println(recordId)
 		}
 
-		request.Header.Set("Accept", "application/json")
-		request.Header.Set("API-VERSION", "1")
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-		request.Header.Set("Content-Type", "application/json")
-
-		resp, err := client.Do(request)
-
+		query = "UPDATE uploads SET aprimo_record_id = $1 WHERE s3_id = $2"
+		_, err = pool.Exec(query, recordId, key)
 		if err != nil {
-			logs.LogError(err, "Create Aprimo Record Error")
-
-			return
+			logs.LogError(err, "Aprimo Record ID Save Error")
 		}
 
-		defer resp.Body.Close()
-		respBody, err := io.ReadAll(resp.Body)
-
-		if err != nil {
-			logs.LogError(err, "Error Reading Response Body")
-
-			return
-		}
-
-		res := string(respBody[:])
-
-		log.Println(res)
+		// TODO: Pass along to file upload (s3_id, recordId, fileType)
 	}
-
-	// if err != nil {
-	// 	return msgs.SendServerError(err)
-	// }
-
-	// endpoint := getEndpointURL("records")
-
-	// resp, err := http.Post(endpoint)
-
-	// return msgs.PrepareResponse(body)
 }
 
 func main() {

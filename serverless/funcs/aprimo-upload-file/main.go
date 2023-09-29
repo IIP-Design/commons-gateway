@@ -107,8 +107,15 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 
 		// Commit to Aprimo
 		if readyToCommit {
-			ret := aprimo.CommitFileUpload(fileInfo.Filename, segment-1, uri, token)
-			log.Println(ret)
+			uploadToken, err := aprimo.CommitFileUpload(fileInfo.Filename, segment-1, uri, token)
+			if err != nil {
+				logs.LogError(err, "Aprimo File Commit Error")
+			} else {
+				log.Println(uploadToken)
+				// Update record?
+			}
+		} else {
+			log.Println("Not ready to commit")
 		}
 	}
 

@@ -159,8 +159,9 @@ func InitFileUpload(filename string, token string) string {
 	return uri
 }
 
-func CommitFileUpload(filename string, segments int, uri string, token string) string {
+func CommitFileUpload(filename string, segments int, uri string, token string) (string, error) {
 	var respToken string
+	var err error
 
 	reqBody := fmt.Sprintf(`{
 		"filename":"%s",
@@ -174,7 +175,7 @@ func CommitFileUpload(filename string, segments int, uri string, token string) s
 		respToken = commitResp.Token
 	}
 
-	return respToken
+	return respToken, err
 }
 
 func UploadSegment(filename string, uri string, seg *FileSegment, token string) (bool, error) {
