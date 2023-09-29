@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/aprimo"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/queue"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -61,6 +63,29 @@ func submitRecord(description string, key string, team string, token string) (st
 	return res.Id, nil
 }
 
+func SendRecordEvent(aprimoId string, filename string, fileType string) (string, error) {
+	var messageId string
+	var err error
+
+	event := aprimo.FileRecordInitEvent{
+		AprimoId: aprimoId,
+		Filename: filename,
+		FileType: fileType,
+	}
+
+	json, err := json.Marshal(event)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Marshal SQS Body")
+		return messageId, err
+	}
+
+	queueUrl := os.Getenv("RECORD_INIT_QUEUE")
+
+	// Send the message to SQS.
+	return queue.SendToQueue(string(json), queueUrl)
+}
+
 // CreateAprimoRecord initiates the creation of a new record in Aprimo.
 func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
 	token, err := aprimo.GetAuthToken()
@@ -102,7 +127,13 @@ func CreateAprimoRecord(ctx context.Context, event events.S3Event) {
 			logs.LogError(err, "Aprimo Record ID Save Error")
 		}
 
-		// TODO: Pass along to file upload (s3_id, recordId, fileType)
+		// Pass along to file upload
+		messageId, err := SendRecordEvent(recordId, key, fileType)
+		if err != nil {
+			logs.LogError(err, "send record update event error")
+		} else {
+			log.Println(messageId)
+		}
 	}
 }
 

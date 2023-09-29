@@ -10,14 +10,12 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/rs/xid"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/queue"
 	"github.com/IIP-Design/commons-gateway/utils/randstr"
 )
 
@@ -60,16 +58,6 @@ func initiateEmailQueue(username string, code string) error {
 		return err
 	}
 
-	// Set up AWS configuration needed by SQS client.
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-
-	if err != nil {
-		logs.LogError(err, "Error Loading AWS Config")
-		return err
-	}
-
-	client := sqs.NewFromConfig(cfg)
-
 	// Prepare the message sent by SQS.
 	body := map[string]any{
 		"user": user,
@@ -83,23 +71,17 @@ func initiateEmailQueue(username string, code string) error {
 		return err
 	}
 
-	queue := os.Getenv("EMAIL_QUEUE")
-
-	messageInput := &sqs.SendMessageInput{
-		DelaySeconds: 0,
-		MessageBody:  aws.String(string(json)),
-		QueueUrl:     &queue,
-	}
+	queueUrl := os.Getenv("EMAIL_QUEUE")
 
 	// Send the message to SQS.
-	resp, err := client.SendMessage(context.TODO(), messageInput)
+	messageId, err := queue.SendToQueue(string(json), queueUrl)
 
 	if err != nil {
 		logs.LogError(err, "Failed to Send Queue Message")
 		return err
 	}
 
-	fmt.Println("Sent message with ID: " + *resp.MessageId)
+	fmt.Println("Sent message with ID: " + messageId)
 
 	return err
 }

@@ -17,24 +17,43 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/aprimo"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/queue"
 )
 
 const (
 	PartSize = 10 * 1024 * 1024 // 10MB per part
 )
 
-type FileRecord struct {
-	Filename string `json:"filename"`
-	FileType string `json:"filetype"`
-}
-
-func ParseEventBody(body string) (FileRecord, error) {
-	var parsed FileRecord
+func ParseEventBody(body string) (aprimo.FileRecordInitEvent, error) {
+	var parsed aprimo.FileRecordInitEvent
 
 	b := []byte(body)
 	err := json.Unmarshal(b, &parsed)
 
 	return parsed, err
+}
+
+func SendUpdateEvent(aprimoId string, filename string, fileToken string) (string, error) {
+	var messageId string
+	var err error
+
+	event := aprimo.FileRecordUpdateEvent{
+		AprimoId:  aprimoId,
+		Filename:  filename,
+		FileToken: fileToken,
+	}
+
+	json, err := json.Marshal(event)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Marshal SQS Body")
+		return messageId, err
+	}
+
+	queueUrl := os.Getenv("RECORD_UPDATE_QUEUE")
+
+	// Send the message to SQS.
+	return queue.SendToQueue(string(json), queueUrl)
 }
 
 func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
@@ -112,7 +131,13 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 				logs.LogError(err, "Aprimo File Commit Error")
 			} else {
 				log.Println(uploadToken)
-				// Update record?
+				messageId, err := SendUpdateEvent(fileInfo.AprimoId, fileInfo.Filename, uploadToken)
+				if err != nil {
+					logs.LogError(err, "send record update event error")
+				} else {
+					log.Println(messageId)
+				}
+
 			}
 		} else {
 			log.Println("Not ready to commit")

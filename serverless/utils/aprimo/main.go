@@ -15,11 +15,23 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
-type AprimoToken struct {
+type TokenResponse struct {
 	Expiration int    `json:"expires_in"`
 	Scope      string `json:"scope"`
 	Token      string `json:"access_token"`
 	Type       string `json:"token_type"`
+}
+
+type FileRecordInitEvent struct {
+	AprimoId string `json:"aprimoId"`
+	Filename string `json:"filename"`
+	FileType string `json:"filetype"`
+}
+
+type FileRecordUpdateEvent struct {
+	AprimoId  string `json:"aprimoId"`
+	Filename  string `json:"filename"`
+	FileToken string `json:"fileToken"`
 }
 
 type UploadSegmentResponse struct {
@@ -84,7 +96,7 @@ func GetAuthToken() (string, error) {
 		return token, err
 	}
 
-	var res AprimoToken
+	var res TokenResponse
 
 	err = json.Unmarshal(respBody, &res)
 
