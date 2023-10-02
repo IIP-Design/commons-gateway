@@ -8,12 +8,56 @@ import (
 )
 
 func updateUploadTable(pool *sql.DB) error {
-	query := `ALTER TABLE uploads ADD COLUMN aprimo_record_id VARCHAR(255) DEFAULT NULL;`
+	var err error
 
-	_, err := pool.Exec(query)
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD COLUMN clean_dt TIMESTAMP DEFAULT NULL;`,
+	)
 
 	if err != nil {
-		logs.LogError(err, "Alter Table Query Error - Upload")
+		logs.LogError(err, "Alter Table Query Error - clean_dt")
+
+		return err
+	}
+
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD COLUMN aprimo_upload_token VARCHAR(255) DEFAULT NULL;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Alter Table Query Error - aprimo_upload_token")
+
+		return err
+	}
+
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD COLUMN aprimo_upload_dt TIMESTAMP DEFAULT NULL;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Alter Table Query Error - aprimo_upload_dt")
+
+		return err
+	}
+
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD COLUMN aprimo_record_id VARCHAR(255) DEFAULT NULL;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Alter Table Query Error - aprimo_record_id")
+
+		return err
+	}
+
+	_, err = pool.Exec(
+		`ALTER TABLE uploads ADD COLUMN aprimo_record_dt TIMESTAMP DEFAULT NULL;`,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Alter Table Query Error - aprimo_record_dt")
+
+		return err
 	}
 
 	return err

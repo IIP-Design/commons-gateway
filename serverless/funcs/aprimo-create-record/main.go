@@ -86,13 +86,12 @@ func submitRecord(description string, event aprimo.FileRecordInitEvent, team str
 }
 
 // CreateAprimoRecord initiates the creation of a new record in Aprimo.
-func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) {
+func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 	token, err := aprimo.GetAuthToken()
 
 	if err != nil {
 		logs.LogError(err, "Unable to Authenticate Error")
-
-		return
+		return err
 	}
 
 	pool := data.ConnectToDB()
@@ -102,33 +101,43 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) {
 		fileInfo, err := ParseEventBody(record.Body)
 		if err != nil {
 			logs.LogError(err, "SQS event body parse error")
-			return
+			return err
 		}
 
 		var description string
 		var team string
+		var aprimoRecordId string
 
-		query := "SELECT uploads.description, teams.aprimo_name FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
-		err = pool.QueryRow(query, fileInfo.Key).Scan(&description, &team)
+		query := "SELECT uploads.description, teams.aprimo_name, uploads.aprimo_record_id FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
+		err = pool.QueryRow(query, fileInfo.Key).Scan(&description, &team, &aprimoRecordId)
 
 		if err != nil {
 			logs.LogError(err, "Retrieve Upload Metadata Query Error")
-			return
+			return err
 		}
 
-		recordId, err := submitRecord(description, fileInfo, team, token)
-		if err != nil {
-			logs.LogError(err, "Aprimo Record Create Error")
-		} else {
-			log.Println(recordId)
-		}
+		if aprimoRecordId == "" { // No Aprimo record ID means this is likely a new record that we need to create
+			recordId, err := submitRecord(description, fileInfo, team, token)
+			if err != nil {
+				logs.LogError(err, "Aprimo Record Create Error")
+				return err
+			} else {
+				log.Println(recordId)
+			}
 
-		query = "UPDATE uploads SET aprimo_record_id = $1 WHERE s3_id = $2"
-		_, err = pool.Exec(query, recordId, fileInfo.Key)
-		if err != nil {
-			logs.LogError(err, "Aprimo Record ID Save Error")
+			query = "UPDATE uploads SET aprimo_record_id = $1, aprimo_record_dt = NOW() WHERE s3_id = $2"
+			_, err = pool.Exec(query, recordId, fileInfo.Key)
+			if err != nil {
+				logs.LogError(err, "Aprimo Record ID Save Error")
+				return err
+			}
+
+		} else { // If there's already an Aprimo ID, this is a replayed event and we don't want to act on it
+			log.Printf("Object %s already has a record (%s), but the event was not deleted", fileInfo.Key, aprimoRecordId)
 		}
 	}
+
+	return nil
 }
 
 func main() {
