@@ -336,7 +336,7 @@ functions:
     runtime: go1.x
     events:
       - http:
-          path: /team/create
+          path: /team
           method: post
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
@@ -349,8 +349,8 @@ functions:
     runtime: go1.x
     events:
       - http:
-          path: /team/update
-          method: post
+          path: /team
+          method: put
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
