@@ -36,9 +36,9 @@ const makeAdminVerificationFn = ( roles: TUserRole[] ): TPermissionVerificationF
     const { role } = data;
 
     authenticated = roles.includes( role );
-
-    // eslint-disable-next-line no-empty
-  } catch ( err ) {}
+  } catch ( err ) {
+    console.error( 'Login failed.' );
+  }
 
   if ( !authenticated ) {
     window.location.assign( redirect );
