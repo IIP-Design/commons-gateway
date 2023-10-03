@@ -483,3 +483,16 @@ functions:
     environment:
       SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
       AWS_SES_REGION: ${env:AWS_SES_REGION}
+  # tmpSqlTest:
+  #   name: gateway-${opt:stage}-sql-test
+  #   handler: bin/tmp-sql-test
+  #   description: Exec.
+  #   runtime: go1.x
+  #   events:
+  #     - http:
+  #         path: /tmp
+  #         method: post
+  #         cors: ${file(./config/${param:deployment}.json):cors}
+  #   package:
+  #     patterns:
+  #       - './bin/tmp-sql-test'

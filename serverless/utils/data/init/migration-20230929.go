@@ -7,38 +7,8 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
-func updateUploadTable(pool *sql.DB) error {
+func addAprimoRecordId(pool *sql.DB) error {
 	var err error
-
-	_, err = pool.Exec(
-		`ALTER TABLE uploads ADD COLUMN clean_dt TIMESTAMP DEFAULT NULL;`,
-	)
-
-	if err != nil {
-		logs.LogError(err, "Alter Table Query Error - clean_dt")
-
-		return err
-	}
-
-	_, err = pool.Exec(
-		`ALTER TABLE uploads ADD COLUMN aprimo_upload_token VARCHAR(255) DEFAULT NULL;`,
-	)
-
-	if err != nil {
-		logs.LogError(err, "Alter Table Query Error - aprimo_upload_token")
-
-		return err
-	}
-
-	_, err = pool.Exec(
-		`ALTER TABLE uploads ADD COLUMN aprimo_upload_dt TIMESTAMP DEFAULT NULL;`,
-	)
-
-	if err != nil {
-		logs.LogError(err, "Alter Table Query Error - aprimo_upload_dt")
-
-		return err
-	}
 
 	_, err = pool.Exec(
 		`ALTER TABLE uploads ADD COLUMN aprimo_record_id VARCHAR(255) DEFAULT NULL;`,
@@ -46,16 +16,6 @@ func updateUploadTable(pool *sql.DB) error {
 
 	if err != nil {
 		logs.LogError(err, "Alter Table Query Error - aprimo_record_id")
-
-		return err
-	}
-
-	_, err = pool.Exec(
-		`ALTER TABLE uploads ADD COLUMN aprimo_record_dt TIMESTAMP DEFAULT NULL;`,
-	)
-
-	if err != nil {
-		logs.LogError(err, "Alter Table Query Error - aprimo_record_dt")
 
 		return err
 	}
@@ -70,7 +30,7 @@ func applyMigration20230929(title string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	err = updateUploadTable(pool)
+	err = addAprimoRecordId(pool)
 
 	if err != nil {
 		return err

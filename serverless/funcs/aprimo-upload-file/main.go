@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -21,6 +22,10 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/queue"
 )
 
+type WrappedS3Events struct {
+	Records []events.S3EventRecord `json:"Records"`
+}
+
 const (
 	PartSize = 15 * 1024 * 1024 // 15MB per part
 )
@@ -32,15 +37,16 @@ func LookupFileType(key string) (string, error) {
 	defer pool.Close()
 
 	var fileType string
-	var aprimoUploadToken string
+	var aprimoUploadToken sql.NullString
 
 	query := "SELECT file_type, aprimo_upload_token FROM uploads WHERE s3_id = $1"
 	err := pool.QueryRow(query, key).Scan(&fileType, &aprimoUploadToken)
 
-	if aprimoUploadToken == "" {
-		return fileType, err
-	} else {
+	// There is a value for the token, so it's already been uploaded
+	if aprimoUploadToken.Valid {
 		return "", err
+	} else {
+		return fileType, err
 	}
 }
 
@@ -145,9 +151,9 @@ func SendRecordEvent(key string, fileType string, fileToken string) (string, err
 }
 
 func extractS3DataFromSqsEvent(record events.SQSMessage) []events.S3EventRecord {
-	var event []events.S3EventRecord
-	json.Unmarshal([]byte(record.Body), &event)
-	return event
+	var parsed WrappedS3Events
+	json.Unmarshal([]byte(record.Body), &parsed)
+	return parsed.Records
 }
 
 func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
@@ -174,12 +180,15 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
 		d.PartSize = PartSize
 	})
+	log.Printf("SQS Events: %d\n", len(event.Records))
 
 	// We are receiving SQS record(s) for increased durability . . .
 	for _, e := range event.Records {
+		log.Printf("Message ID: %s\n", e.MessageId)
 
 		// . . . but they are wrapping one or more (should be exactly one, but handle 1..N) S3 events . . .
 		r := extractS3DataFromSqsEvent(e)
+		log.Printf("S3 Events: %d\n", len(r))
 
 		// . . . and need to be processed as such
 		for _, record := range r {

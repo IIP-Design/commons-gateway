@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -71,9 +72,11 @@ func submitRecord(description string, event aprimo.FileRecordInitEvent, team str
 		}
 	}`, description, event.Key, team, event.FileToken, event.FileToken, event.Key)
 
-	respBody, _, err := aprimo.PostJsonData("records", token, reqBody)
+	respBody, statusCode, err := aprimo.PostJsonData("records", token, reqBody)
 	if err != nil {
 		return id, err
+	} else if statusCode >= 400 {
+		log.Printf("Return status: %d\n", statusCode)
 	}
 
 	var res RecordCreationResponse
@@ -93,6 +96,7 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 		logs.LogError(err, "Unable to Authenticate Error")
 		return err
 	}
+	log.Printf("SQS Events: %d\n", len(event.Records))
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -103,10 +107,11 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 			logs.LogError(err, "SQS event body parse error")
 			return err
 		}
+		log.Printf("Event body: %s\n", record.Body)
 
 		var description string
 		var team string
-		var aprimoRecordId string
+		var aprimoRecordId sql.NullString
 
 		query := "SELECT uploads.description, teams.aprimo_name, uploads.aprimo_record_id FROM uploads INNER JOIN teams ON uploads.team_id=teams.id WHERE uploads.s3_id = $1"
 		err = pool.QueryRow(query, fileInfo.Key).Scan(&description, &team, &aprimoRecordId)
@@ -116,7 +121,7 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 			return err
 		}
 
-		if aprimoRecordId == "" { // No Aprimo record ID means this is likely a new record that we need to create
+		if !aprimoRecordId.Valid { // No Aprimo record ID means this is likely a new record that we need to create
 			recordId, err := submitRecord(description, fileInfo, team, token)
 			if err != nil {
 				logs.LogError(err, "Aprimo Record Create Error")
@@ -131,9 +136,8 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 				logs.LogError(err, "Aprimo Record ID Save Error")
 				return err
 			}
-
 		} else { // If there's already an Aprimo ID, this is a replayed event and we don't want to act on it
-			log.Printf("Object %s already has a record (%s), but the event was not deleted", fileInfo.Key, aprimoRecordId)
+			log.Printf("Object %s already has a record (%s), but the event was not deleted", fileInfo.Key, aprimoRecordId.String)
 		}
 	}
 
