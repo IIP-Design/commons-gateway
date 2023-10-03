@@ -18,10 +18,10 @@ Resources:
     DependsOn: SQSAprimoUpload
     Properties:
       BucketName: commons-gateway-${opt:stage}-clean
-      # NotificationConfiguration:
-      #   QueueConfigurations:
-      #     - Event: s3:ObjectCreated:*
-      #       Queue: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-record
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload
 
   # Bucket from which static site is served.
   StaticSiteBucket:

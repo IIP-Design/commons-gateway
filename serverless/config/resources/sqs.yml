@@ -7,7 +7,7 @@ Resources:
   SQSAprimoUpload:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: content-gateway-${opt:stage}-aprimo-upload        
+      QueueName: content-gateway-${opt:stage}-aprimo-upload
 
   SQSAprimoRecord:
     Type: AWS::SQS::Queue
@@ -29,9 +29,9 @@ Resources:
               Service: s3.amazonaws.com
             Action:
               - SQS:SendMessage
-            Resource: content-gateway-${opt:stage}-aprimo-upload
+            Resource: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload
             Condition:
               StringEquals:
                 aws:SourceAccount: ${aws:accountId}
               ArnLike:
-                aws:SourceArn: arn:aws:s3:${aws:region}:${aws:accountId}:*
+                aws:SourceArn: arn:aws:s3:*:*:*
