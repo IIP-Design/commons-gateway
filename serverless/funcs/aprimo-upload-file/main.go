@@ -144,7 +144,7 @@ func SendRecordEvent(key string, fileType string, fileToken string) (string, err
 		return messageId, err
 	}
 
-	queueUrl := os.Getenv("RECORD_UPDATE_QUEUE")
+	queueUrl := os.Getenv("RECORD_CREATE_QUEUE")
 
 	// Send the message to SQS.
 	return queue.SendToQueue(string(json), queueUrl)

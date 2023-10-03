@@ -7,4 +7,31 @@ Resources:
   SQSAprimoUpload:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: content-gateway-${opt:stage}-aprimo-upload
+      QueueName: content-gateway-${opt:stage}-aprimo-upload        
+
+  SQSAprimoRecord:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-aprimo-record
+  
+  SQSAprimoUploadPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SQSAprimoUpload
+      PolicyDocument:
+        Id: s3-access-entry
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Allow-S3-SendMessage
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - SQS:SendMessage
+            Resource: content-gateway-${opt:stage}-aprimo-upload
+            Condition:
+              StringEquals:
+                aws:SourceAccount: ${aws:accountId}
+              ArnLike:
+                aws:SourceArn: arn:aws:s3:${aws:region}:${aws:accountId}:*
