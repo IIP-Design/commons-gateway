@@ -2,6 +2,7 @@
 astro
 astrojs
 initdb
+jwtv5
 nanostores
 randstr
 sweetalert

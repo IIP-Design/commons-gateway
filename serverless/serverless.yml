@@ -112,6 +112,13 @@ package:
     - '!./**'
 
 functions:
+  authorizer:
+    handler: bin/authorizer
+    description: Verifies that the request is accompanied by a valid JSON web token.
+    runtime: go1.x
+    package:
+      patterns:
+        - './bin/authorizer'
   adminCreate:
     name: gateway-${opt:stage}-admin-create
     handler: bin/admin-create

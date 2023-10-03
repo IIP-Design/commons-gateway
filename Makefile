@@ -22,6 +22,7 @@ EVENT_UPLOAD_METADATA = ./config/sim-events/upload-metadata.json
 build:
 	cd web; npm i && npm run build;
 	cd serverless;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/authorizer funcs/authorizer/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-deactivate funcs/admin-deactivate/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
