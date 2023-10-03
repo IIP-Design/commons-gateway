@@ -4,16 +4,32 @@ Resources:
     Properties:
       QueueName: content-gateway-${opt:stage}-send-2fa
 
+  SQSAprimoUploadDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-aprimo-upload-dlq
+
   SQSAprimoUpload:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-upload
+      RedrivePolicy:
+         deadLetterTargetArn : arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload-dlq
+         maxReceiveCount: 5
+
+  SQSAprimoRecordDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-aprimo-record-dlq
 
   SQSAprimoRecord:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-record
-  
+      RedrivePolicy:
+         deadLetterTargetArn : arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-record-dlq
+         maxReceiveCount: 5
+
   SQSAprimoUploadPolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
