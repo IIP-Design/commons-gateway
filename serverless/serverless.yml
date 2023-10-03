@@ -76,6 +76,7 @@ provider:
     DB_PORT: ${self:custom.DB_PORT}
     DB_REGION: ${env:AWS_REGION}
     DB_USER: ${self:custom.DB_USER}
+    JWT_SECRET: ${/aws/reference/secretsmanager/${self:custom.JWT_SECRET_NAME}}
   deploymentBucket:
     name: gpalab-automatic-deployments-${param:deployment}
   disableRollback: ${param:rollback}
@@ -87,6 +88,7 @@ custom:
   DB_NAME: gateway_${opt:stage}
   DB_USER: gateway${opt:stage}
   DB_PORT: !GetAtt RDSInstance.Endpoint.Port
+  JWT_SECRET_NAME: commons-gateway-${opt:stage}-jwt
   PROXY_NAME: commons-gateway-proxy-${opt:stage}
   PROXY_ENDPOINT: !GetAtt RDSProxy.Endpoint
 
@@ -98,6 +100,7 @@ resources:
   - ${file(./config/resources/nat.yml)}
   - ${file(./config/resources/sqs.yml)}
   - ${file(./config/resources/s3.yml)}
+  - ${file(./config/resources/secretsmanager.yml)}
   - ${file(./config/resources/jump.yml)} # Optional jump server to access resources via SSH, uncomment to apply
 
 # Defines how the functions are deployed. To reduce the functions
