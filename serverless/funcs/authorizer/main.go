@@ -98,7 +98,7 @@ func handleAuthorizationRequest(
 	}
 
 	// Verify the token is valid.
-	err := jwt.CheckAuthToken(token, retrieveScopes(arnInfo.Resource))
+	err := jwt.CheckAuthToken(token, retrieveScopes(arnInfo.Resource, arnInfo.Method))
 
 	if err != nil {
 		logs.LogError(err, "Error Validating JWT")
@@ -114,7 +114,7 @@ func handleAuthorizationRequest(
 	statement := setPolicyStatement(Allow, arnInfo)
 
 	return events.APIGatewayCustomAuthorizerResponse{
-		PrincipalID: "",
+		PrincipalID: "*",
 		PolicyDocument: events.APIGatewayCustomAuthorizerPolicy{
 			Version:   "2012-10-17",
 			Statement: []events.IAMPolicyStatement{statement},

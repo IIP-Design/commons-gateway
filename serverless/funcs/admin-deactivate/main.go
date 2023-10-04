@@ -5,13 +5,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // deactivateAdmin sets an existing admin's `active` status to `false`.
@@ -34,12 +33,6 @@ func deactivateAdmin(email string) error {
 // DeactivateAdminHandler handles the request to deactivate an existing admin.
 // It ensures that the required data is present before continuing on to update the admin data.
 func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
-
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {

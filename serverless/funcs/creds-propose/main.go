@@ -10,7 +10,6 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -73,11 +72,6 @@ func handleProposedInvitation(invite data.Invite) error {
 //  2. Provision preliminary credentials for the guest user
 //  3. Initiate the admin and guest user notifications
 func ProposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"guest admin"})
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {

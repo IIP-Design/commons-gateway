@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // GetAdminHandler handles the request to retrieve a single admin user based on email address.

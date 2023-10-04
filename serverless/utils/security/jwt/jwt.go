@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/aws/aws-lambda-go/events"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
@@ -80,16 +81,19 @@ func VerifyJWT(tokenString string, scopes []string) error {
 	})
 
 	if err != nil {
+		logs.LogError(err, "Error Parsing JWT Token")
 		return err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid {
+		logs.LogError(err, "Bearer Token is Not Valid")
 		return errors.New("token is not valid")
 	}
 
 	if !slices.Contains(scopes, claims["scope"].(string)) {
+		logs.LogError(err, "Bearer Token Has Incorrect Scope")
 		return errors.New("token has incorrect scope: " + claims["scope"].(string))
 	}
 
@@ -126,10 +130,15 @@ func CheckAuthToken(token string, scopes []string) error {
 	extracted, err := extractBearerToken(token)
 
 	if err != nil {
+		logs.LogError(err, "Error Extracting Bearer Token")
 		return err
 	}
 
 	err = VerifyJWT(extracted, scopes)
+
+	if err != nil {
+		logs.LogError(err, "Error Verifying Bearer Token")
+	}
 
 	return err
 }

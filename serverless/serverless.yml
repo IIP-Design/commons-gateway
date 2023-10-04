@@ -128,6 +128,9 @@ functions:
       - http:
           path: /admin
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -141,11 +144,14 @@ functions:
       - http:
           path: /admin
           method: delete
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+          cors: ${file(./config/${param:deployment}.json):cors}
           request:
             parameters:
               querystrings:
                 username: true
-          cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
         - './bin/admin-deactivate'
@@ -175,6 +181,9 @@ functions:
       - http:
           path: /admin
           method: put
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -188,6 +197,9 @@ functions:
       - http:
           path: /admins
           method: get
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -232,6 +244,9 @@ functions:
       - http:
           path: /guest/approve
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -262,6 +277,9 @@ functions:
       - http:
           path: /guest
           method: delete
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           request:
             parameters:
               querystrings:
@@ -279,6 +297,9 @@ functions:
       - http:
           path: /guest
           method: get
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           request:
             parameters:
               querystrings:
@@ -296,6 +317,9 @@ functions:
       - http:
           path: /guest
           method: put
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -309,6 +333,9 @@ functions:
       - http:
           path: /guests
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -322,6 +349,9 @@ functions:
       - http:
           path: /guests/pending
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -343,6 +373,9 @@ functions:
       - http:
           path: /team
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -356,6 +389,9 @@ functions:
       - http:
           path: /team
           method: put
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -369,6 +405,9 @@ functions:
       - http:
           path: /teams
           method: get
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -414,6 +453,9 @@ functions:
       - http:
           path: /creds/propose
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -430,6 +472,9 @@ functions:
       - http:
           path: /creds/provision
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
@@ -490,6 +535,9 @@ functions:
       - http:
           path: /guests/uploaders
           method: post
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
