@@ -149,6 +149,23 @@ functions:
     package:
       patterns:
         - './bin/admin-deactivate'
+  adminGet:
+    name: gateway-${opt:stage}-admin-get
+    handler: bin/admin-get
+    description: Retrieve an individual admin user.
+    runtime: go1.x
+    events:
+      - http:
+          path: /admin
+          method: get
+          cors: ${file(./config/${param:deployment}.json):cors}
+          request:
+            parameters:
+              querystrings:
+                username: true
+    package:
+      patterns:
+        - './bin/admin-get'
   adminUpdate:
     name: gateway-${opt:stage}-admin-update
     handler: bin/admin-update
@@ -162,19 +179,6 @@ functions:
     package:
       patterns:
         - './bin/admin-update'
-  adminGet:
-    name: gateway-${opt:stage}-admin-get
-    handler: bin/admin-get
-    description: Retrieve an individual admin user.
-    runtime: go1.x
-    events:
-      - http:
-          path: /admin
-          method: get
-          cors: ${file(./config/${param:deployment}.json):cors}
-    package:
-      patterns:
-        - './bin/admin-get'
   adminsGet:
     name: gateway-${opt:stage}-admins-get
     handler: bin/admins-get
@@ -289,8 +293,8 @@ functions:
     runtime: go1.x
     events:
       - http:
-          path: /guest/update
-          method: post
+          path: /guest
+          method: put
           cors: ${file(./config/${param:deployment}.json):cors}
     package:
       patterns:
