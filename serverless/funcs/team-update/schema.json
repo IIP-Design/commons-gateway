@@ -1,8 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "event.schema.json",
-  "title": "Event Body Format for Admin Create",
-  "description": "Data required to create a new admin user",
+  "title": "Update Team Event Body Schema",
+  "description": "Data required to update an existing team",
   "type": "object",
   "properties": {
     "active": {
@@ -12,11 +11,15 @@
       "type": "string",
       "minLength": 1
     },
+    "teamAprimo": {
+      "type": "string",
+      "minLength": 1
+    },
     "teamName": {
       "type": "string",
       "minLength": 1
     }
   },
-  "required": ["active", "team", "teamName"],
+  "required": ["active", "team", "teamAprimo", "teamName"],
   "additionalProperties": false
 }

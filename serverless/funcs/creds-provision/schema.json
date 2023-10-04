@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Invite Guest Event Body Schema",
+  "description": "Data required to invite a new guest user",
+  "type": "object",
+  "properties": {
+    "invitee": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "The invited guest user's email, used as a unique id",
+          "type": "string",
+          "format": "email",
+          "minLength": 6,
+          "maxLength": 127
+        },
+        "familyName": {
+          "description": "The guest user's family (last) name",
+          "type": "string",
+          "minLength": 1
+        },
+        "givenName": {
+          "description": "The guest user's given (first) name",
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "description": "The type of guest this user should be assigned",
+          "type": "string",
+          "enum": ["guest admin", "guest"]
+        },
+        "team": {
+          "description": "The id of the guest user's team",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "expiration": {
+      "description": "The date at which the user's access expires",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["expiration"],
+  "additionalProperties": false
+}

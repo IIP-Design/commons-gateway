@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Approve Invite Event Body Schema",
+  "description": "Records the admin who approved a guest user",
+  "type": "object",
+  "properties": {
+    "inviteeEmail": {
+      "description": "The email of the guest user approving the guest",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
+    },
+    "inviterEmail": {
+      "description": "The email of the admin user who approved the guest",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
+    }
+  },
+  "required": ["inviteeEmail", "inviterEmail"],
+  "additionalProperties": false
+}

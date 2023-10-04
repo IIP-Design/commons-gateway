@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Propose Invite Event Body Schema",
+  "description": "Data required to for a guest admin to propose the addition of a new guest",
+  "type": "object",
+  "properties": {
+    "proposer": {
+      "description": "The admin user extending the invitation",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
+    },
+    "invitee": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "The invited guest user's email, used as a unique id",
+          "type": "string",
+          "format": "email",
+          "minLength": 6,
+          "maxLength": 127
+        },
+        "familyName": {
+          "description": "The guest user's family (last) name",
+          "type": "string",
+          "minLength": 1
+        },
+        "givenName": {
+          "description": "The guest user's given (first) name",
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "description": "The type of guest this user should be assigned",
+          "type": "string",
+          "enum": ["guest admin", "guest"]
+        },
+        "team": {
+          "description": "The id of the guest user's team",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "expiration": {
+      "description": "The date at which the user's access expires",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["proposer", "invitee", "expiration"],
+  "additionalProperties": false
+}

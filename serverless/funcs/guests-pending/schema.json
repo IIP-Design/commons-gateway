@@ -1,15 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Create Team Event Body Schema",
-  "description": "Data required to create a new team",
+  "title": "Retrieve Pending Guest Event Body Schema",
+  "description": "Identifies the team for which to retrieve pending invites",
   "type": "object",
   "properties": {
     "team": {
-      "description": "The id of the team on which to search",
+      "description": "The id of the current user's team",
       "type": "string",
       "minLength": 1
     }
   },
-  "required": ["team"],
   "additionalProperties": false
 }

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Retrieve Guests Event Body Schema",
+  "description": "Specifies what type of user should be returned",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": ["guest admin", "guest"]
+    }
+  },
+  "required": ["role"],
+  "additionalProperties": false
+}
