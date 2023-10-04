@@ -237,8 +237,9 @@ functions:
       patterns:
         - './bin/guest-approve'
     environment:
-      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
       AWS_SES_REGION: ${env:AWS_SES_REGION}
+      EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/partner-login
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
   guestAuth:
     name: gateway-${opt:stage}-guest-auth
     handler: bin/guest-auth
@@ -434,8 +435,9 @@ functions:
       patterns:
         - './bin/creds-provision'
     environment:
-      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
       AWS_SES_REGION: ${env:AWS_SES_REGION}
+      EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/partner-login
+      SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
   seedDB:
     name: gateway-${opt:stage}-seed-db
     handler: bin/seed-db
