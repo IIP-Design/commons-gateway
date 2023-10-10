@@ -15,6 +15,7 @@ const mig20230926 = "20230926_aprimo_teams"
 const mig20230927 = "20230927_mfa_table"
 const mig20230929 = "20230929_aprimo_ids"
 const mig20231002 = "20231002_aprimo_tokens"
+const mig20231010 = "20231010_login_lockouts"
 
 // getAppliedMigrations queries the `migrations` table in that database
 // for a list of schema updates that have already been executed.
@@ -108,6 +109,17 @@ func ApplyMigrations() error {
 		fmt.Printf("Applying migration - %s", mig20231002)
 
 		err = applyMigration20231002(mig20231002)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// Apply the migration from October 10, 2023
+	if !stringArrayContains(applied, mig20231010) {
+		fmt.Printf("Applying migration - %s", mig20231010)
+
+		err = applyMigration20231010(mig20231010)
 
 		if err != nil {
 			return err
