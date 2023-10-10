@@ -1,0 +1,91 @@
+# All of the functions pertaining to authentication and credentials.
+authorizer:
+  handler: bin/authorizer
+  description: Verifies that the request is accompanied by a valid JSON web token.
+  runtime: go1.x
+  package:
+    patterns:
+      - './bin/authorizer'
+creds2FA:
+  name: gateway-${opt:stage}-creds-2fa
+  handler: bin/creds-2fa
+  description: Generate a 2FA code for the guest user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /creds/2fa
+        method: get
+        request:
+          parameters:
+            querystrings:
+              username: true
+        cors: ${file(./config/${param:deployment}.json):cors}
+  package:
+    patterns:
+      - './bin/creds-2fa'
+  environment:
+    EMAIL_QUEUE: !Ref SQSSend2FA
+credsSalt:
+  name: gateway-${opt:stage}-creds-retrieve
+  handler: bin/creds-salt
+  description: Retrieve a users hashing salt.
+  runtime: go1.x
+  events:
+    - http:
+        path: /creds/salt
+        method: post
+        cors: ${file(./config/${param:deployment}.json):cors}
+  package:
+    patterns:
+      - './bin/creds-salt'
+credsPropose:
+  name: gateway-${opt:stage}-creds-propose
+  handler: bin/creds-propose
+  description: Records a proposed guest user invitation and generates credentials for this user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /creds/propose
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/creds-propose/schema.json)}
+              name: PostCredsProposeModel
+              description: Validation model for proposing an invite.
+  package:
+    patterns:
+      - './bin/creds-propose'
+  environment:
+    SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+    AWS_SES_REGION: ${env:AWS_SES_REGION}
+credsProvision:
+  name: gateway-${opt:stage}-creds-provision
+  handler: bin/creds-provision
+  description: Records a guest user invitation and generates credentials for this user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /creds/provision
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/creds-provision/schema.json)}
+              name: PostCredsProvisionModel
+              description: Validation model for inviting a new guest.
+  package:
+    patterns:
+      - './bin/creds-provision'
+  environment:
+    AWS_SES_REGION: ${env:AWS_SES_REGION}
+    EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/partner-login
+    SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}

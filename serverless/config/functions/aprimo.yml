@@ -1,0 +1,32 @@
+# All of the functions pertaining to integration with Aprimo.
+aprimoCreate:
+  name: gateway-${opt:stage}-aprimo-create
+  handler: bin/aprimo-create-record
+  description: Creates a record in Aprimo from an existing file.
+  runtime: go1.x
+  events:
+    - sqs:
+        arn: !GetAtt SQSAprimoRecord.Arn
+  package:
+    patterns:
+      - './bin/aprimo-create-record'
+  environment:
+    APRIMO_TENANT: ${env:APRIMO_TENANT}
+    APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
+    APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
+aprimoUpload:
+  name: gateway-${opt:stage}-aprimo-upload
+  handler: bin/aprimo-upload-file
+  description: Copies a file from S3 to Aprimo.
+  runtime: go1.x
+  events:
+    - sqs:
+        arn: !GetAtt SQSAprimoUpload.Arn
+  package:
+    patterns:
+      - './bin/aprimo-upload-file'
+  environment:
+    APRIMO_TENANT: ${env:APRIMO_TENANT}
+    APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
+    APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
+    RECORD_CREATE_QUEUE: !Ref SQSAprimoRecord

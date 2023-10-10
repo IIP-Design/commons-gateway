@@ -1,0 +1,61 @@
+# All of the functions pertaining to teams.
+teamCreate:
+  name: gateway-${opt:stage}-team-create
+  handler: bin/team-create
+  description: Create a new team.
+  runtime: go1.x
+  events:
+    - http:
+        path: /team
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/team-create/schema.json)}
+              name: PostTeamModel
+              description: Validation model for creating a new team.
+  package:
+    patterns:
+      - './bin/team-create'
+teamUpdate:
+  name: gateway-${opt:stage}-team-update
+  handler: bin/team-update
+  description: Edit the data for an exiting team.
+  runtime: go1.x
+  events:
+    - http:
+        path: /team
+        method: put
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/team-update/schema.json)}
+              name: PutTeamModel
+              description: Validation model for updating a team.
+  package:
+    patterns:
+      - './bin/team-update'
+teamsGet:
+  name: gateway-${opt:stage}-teams-get
+  handler: bin/teams-get
+  description: Retrieve the list of teams.
+  runtime: go1.x
+  events:
+    - http:
+        path: /teams
+        method: get
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+  package:
+    patterns:
+      - './bin/teams-get'

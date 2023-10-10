@@ -1,0 +1,15 @@
+# All of the functions pertaining to email actions.
+email2fa:
+  name: gateway-${opt:stage}-email-2fa
+  handler: bin/email-2fa
+  description: Email an invitee their temporary verification code.
+  runtime: go1.x
+  events:
+    - sqs:
+        arn: !GetAtt SQSSend2FA.Arn
+  package:
+    patterns:
+      - './bin/email-2fa'
+  environment:
+    SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+    AWS_SES_REGION: ${env:AWS_SES_REGION}

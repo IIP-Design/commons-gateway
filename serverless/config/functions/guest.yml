@@ -1,0 +1,174 @@
+# All of the functions pertaining to guest users.
+guestApprove:
+  name: gateway-${opt:stage}-guest-approve
+  handler: bin/guest-approve
+  description: Approve an invited guest user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest/approve
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/guest-approve/schema.json)}
+              name: PostGuestApproveModel
+              description: Validation model for approving a guest user invitation.
+  package:
+    patterns:
+      - './bin/guest-approve'
+  environment:
+    AWS_SES_REGION: ${env:AWS_SES_REGION}
+    EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/partner-login
+    SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+guestAuth:
+  name: gateway-${opt:stage}-guest-auth
+  handler: bin/guest-auth
+  description: Authenticate a guest user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest/auth
+        method: post
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/guest-auth/schema.json)}
+              name: PostGuestAuthModel
+              description: Validation model for authentication a guest user.
+  package:
+    patterns:
+      - './bin/guest-auth'
+guestDeactivate:
+  name: gateway-${opt:stage}-guest-deactivate
+  handler: bin/guest-deactivate
+  description: Deactivate a single guest user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest
+        method: delete
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        request:
+          parameters:
+            querystrings:
+              id: true
+        cors: ${file(./config/${param:deployment}.json):cors}
+  package:
+    patterns:
+      - './bin/guest-deactivate'
+guestGet:
+  name: gateway-${opt:stage}-guest-get
+  handler: bin/guest-get
+  description: Retrieve a single guest user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest
+        method: get
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        request:
+          parameters:
+            querystrings:
+              id: true
+        cors: ${file(./config/${param:deployment}.json):cors}
+  package:
+    patterns:
+      - './bin/guest-get'
+guestUpdate:
+  name: gateway-${opt:stage}-guest-update
+  handler: bin/guest-update
+  description: Update a guest users.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest
+        method: put
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/guest-update/schema.json)}
+              name: PutGuestModel
+              description: Validation model for updating a guest user.
+  package:
+    patterns:
+      - './bin/guest-update'
+guestsGet:
+  name: gateway-${opt:stage}-guests-get
+  handler: bin/guests-get
+  description: Retrieve a list of guest users.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guests
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/guests-get/schema.json)}
+              name: PostGuestsModel
+              description: Validation model for requesting a list of guests.
+  package:
+    patterns:
+      - './bin/guests-get'
+guestsPending:
+  name: gateway-${opt:stage}-guests-pending
+  handler: bin/guests-pending
+  description: Retrieve a list of pending guest invites.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guests/pending
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/guests-pending/schema.json)}
+              name: PostGuestsPendingModel
+              description: Validation model for requesting a list of pending invites.
+  package:
+    patterns:
+      - './bin/guests-pending'
+uploaderGet:
+  name: gateway-${opt:stage}-uploader-get
+  handler: bin/uploader-get
+  description: Return a list of uploaders for a specific team.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guests/uploaders
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/uploader-get/schema.json)}
+              name: PostUploaderModel
+              description: Validation model for retrieving guests from a given team.
+  package:
+    patterns:
+      - './bin/uploader-get'

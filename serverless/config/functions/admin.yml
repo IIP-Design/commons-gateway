@@ -1,0 +1,98 @@
+# All of the functions pertaining to admin users.
+adminCreate:
+  name: gateway-${opt:stage}-admin-create
+  handler: bin/admin-create
+  description: Add an new email to the list of admin users.
+  runtime: go1.x
+  events:
+    - http:
+        path: /admin
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/admin-create/schema.json)}
+              name: PostAdminModel
+              description: Validation model for creating an admin user.
+  package:
+    patterns:
+      - './bin/admin-create'
+adminDeactivate:
+  name: gateway-${opt:stage}-admin-deactivate
+  handler: bin/admin-deactivate
+  description: Deactivate a single admin user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /admin
+        method: delete
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          parameters:
+            querystrings:
+              username: true
+  package:
+    patterns:
+      - './bin/admin-deactivate'
+adminGet:
+  name: gateway-${opt:stage}-admin-get
+  handler: bin/admin-get
+  description: Retrieve an individual admin user.
+  runtime: go1.x
+  events:
+    - http:
+        path: /admin
+        method: get
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          parameters:
+            querystrings:
+              username: true
+  package:
+    patterns:
+      - './bin/admin-get'
+adminUpdate:
+  name: gateway-${opt:stage}-admin-update
+  handler: bin/admin-update
+  description: Update a admin users.
+  runtime: go1.x
+  events:
+    - http:
+        path: /admin
+        method: put
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/admin-update/schema.json)}
+              name: PutAdminModel
+              description: Validation model for updating an admin user.
+  package:
+    patterns:
+      - './bin/admin-update'
+adminsGet:
+  name: gateway-${opt:stage}-admins-get
+  handler: bin/admins-get
+  description: Retrieve the list of admin users.
+  runtime: go1.x
+  events:
+    - http:
+        path: /admins
+        method: get
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+  package:
+    patterns:
+      - './bin/admins-get'
