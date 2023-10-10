@@ -1,6 +1,7 @@
 # Dependency names that set off the spell checker
 astro
 astrojs
+dotenv
 initdb
 jwtv5
 nanostores

@@ -1,0 +1,51 @@
+### Custom IAM Statements to be added to the Lambdas' default IAM role. ###
+# Allow Lambdas to connect to the RDS Proxy.
+- Effect: Allow
+  Action: rds-db:connect
+  Resource: !Join
+    - ''
+    - - 'arn:aws:rds-db:${aws:region}:${aws:accountId}:dbuser:'
+      - !Select [6, !Split [':', !GetAtt RDSProxy.DBProxyArn]]
+      - /*
+# Allow Lambdas to manage content in the uploads bucket
+- Effect: Allow
+  Action:
+    - s3:GetObject
+    - s3:PutObject
+    - s3:PutObjectTagging
+  Resource: !Join
+    - ''
+    - - !GetAtt UploadBucket.Arn
+      - /*
+# Allow Lambdas to retrieve files from the clean files bucket.
+- Effect: Allow
+  Action:
+    - s3:GetObject
+  Resource: !Join
+    - ''
+    - - !GetAtt CleanBucket.Arn
+      - /*
+# Allow Lambdas to retrieve files from the seeds directory in the static
+# site bucket. Used to seed the database with initial content.
+- Effect: Allow
+  Action:
+    - s3:GetObject
+  Resource: !Join
+    - ''
+    - - !GetAtt StaticSiteBucket.Arn
+      - /seed/*
+# Allow Lambdas to initiate email sends through SES.
+- Effect: Allow
+  Action:
+    - ses:SendEmail
+  Resource: arn:aws:ses:${env:AWS_SES_REGION}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
+# Allow Lambdas to trigger the SQS queue that initiates Aprimo uploads.
+- Effect: Allow
+  Action:
+    - sqs:SendMessage
+  Resource: !GetAtt SQSAprimoRecord.Arn
+# Allow Lambdas to trigger the SQS queue that sends users their 2FA code.
+- Effect: Allow
+  Action:
+    - sqs:SendMessage
+  Resource: !GetAtt SQSSend2FA.Arn

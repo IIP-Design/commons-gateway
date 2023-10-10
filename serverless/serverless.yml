@@ -21,49 +21,7 @@ provider:
   iam:
     role:
       name: CommonsGatewayLambdaRole-${opt:stage}
-      statements:
-        - Effect: Allow
-          Action: rds-db:connect
-          Resource: !Join
-            - ''
-            - - 'arn:aws:rds-db:${aws:region}:${aws:accountId}:dbuser:'
-              - !Select [6, !Split [':', !GetAtt RDSProxy.DBProxyArn]]
-              - /*
-        - Effect: Allow
-          Action:
-            - s3:GetObject
-            - s3:PutObject
-            - s3:PutObjectTagging
-          Resource: !Join
-            - ''
-            - - !GetAtt UploadBucket.Arn
-              - /*
-        - Effect: Allow
-          Action:
-            - s3:GetObject
-          Resource: !Join
-            - ''
-            - - !GetAtt CleanBucket.Arn
-              - /*
-        - Effect: Allow
-          Action:
-            - s3:GetObject
-          Resource: !Join
-            - ''
-            - - !GetAtt StaticSiteBucket.Arn
-              - /seed/*
-        - Effect: Allow
-          Action:
-            - ses:SendEmail
-          Resource: arn:aws:ses:${env:AWS_SES_REGION}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
-        - Effect: Allow
-          Action:
-            - sqs:SendMessage
-          Resource: !GetAtt SQSAprimoRecord.Arn
-        - Effect: Allow
-          Action:
-            - sqs:SendMessage
-          Resource: !GetAtt SQSSend2FA.Arn
+      statements: ${file(./config/provider/iam.yml)}
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
