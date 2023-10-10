@@ -85,9 +85,9 @@ export const handleAdminLogin = async () => {
  */
 const getUserPasswordSalt = async ( username: string ) => {
   const response = await buildQuery( 'creds/salt', { username } );
-  const { data } = await response.json();
+  const { data, error } = await response.json();
 
-  return data;
+  return [data, error];
 };
 
 /**
@@ -143,18 +143,20 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
   let authenticated = false;
 
   try {
-    const salt = await getUserPasswordSalt( username );
+    const [salt, saltError] = await getUserPasswordSalt( username );
 
-    if ( !salt ) { return authenticated; }
+    if ( !salt ) {
+      return [authenticated, saltError];
+    }
 
     const localHash = await derivePasswordHash( password, salt );
     const jwt = await submitUserPasswordHash( localHash, username, mfa, token );
 
     if ( !jwt ) {
-      return authenticated;
+      return [authenticated, null];
     }
-    accessToken.set( jwt );
 
+    accessToken.set( jwt );
 
     const exp = tokenExpiration( jwt );
 
@@ -172,7 +174,7 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
     console.error( 'Login failed.' );
   }
 
-  return authenticated;
+  return [authenticated, null];
 };
 
 // ////////////////////////////////////////////////////////////////////////////
