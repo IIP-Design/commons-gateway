@@ -25,6 +25,19 @@ creds2FA:
       - './bin/creds-2fa'
   environment:
     EMAIL_QUEUE: !Ref SQSSend2FA
+creds2FAClear:
+  name: gateway-${opt:stage}-creds-2fa-clear
+  handler: bin/creds-2fa-clear
+  description: Clears out expired 2FA codes.
+  runtime: go1.x
+  events:
+    - eventBridge:
+        name: gateway-${opt:stage}-clear-2fa
+        description: Invokes the Lambda to clear out expired 2FA codes every ten minutes.
+        schedule: rate(10 minutes)
+  package:
+    patterns:
+      - './bin/creds-2fa-clear'
 credsSalt:
   name: gateway-${opt:stage}-creds-retrieve
   handler: bin/creds-salt
