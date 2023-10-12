@@ -43,15 +43,15 @@ type FileSegment struct {
 }
 
 // GetEndpointURL constructs an URL for a given Aprimo API endpoint. Authorization
-// is handled by the Aprimo Marketing Operations API, while other operations should
-// be directed to the DAM API by setting the `auth` parameter to `false`.
-func GetEndpointURL(endpoint string, auth bool) string {
+// is handled by the Aprimo Marketing Operations API, while most other operations should
+// be directed to the DAM API by setting the `dam` parameter to `true`.
+func GetEndpointURL(endpoint string, dam bool) string {
 	var url string
 
-	if auth {
-		url = fmt.Sprintf("https://%s.aprimo.com/%s", os.Getenv("APRIMO_TENANT"), endpoint)
-	} else {
+	if dam {
 		url = fmt.Sprintf("https://%s.dam.aprimo.com/api/core/%s", os.Getenv("APRIMO_TENANT"), endpoint)
+	} else {
+		url = fmt.Sprintf("https://%s.aprimo.com/%s", os.Getenv("APRIMO_TENANT"), endpoint)
 	}
 
 	return url
@@ -64,7 +64,7 @@ func GetAuthToken() (string, error) {
 	var err error
 	var token string
 
-	endpoint := GetEndpointURL("login/connect/token", true)
+	endpoint := GetEndpointURL("login/connect/token", false)
 
 	body := url.Values{}
 	body.Set("grant_type", "client_credentials")
@@ -103,12 +103,16 @@ func GetAuthToken() (string, error) {
 	return res.Token, err
 }
 
-func PostJsonData(endpoint string, token string, reqBody string) ([]byte, int, error) {
+func PostJsonData(endpoint string, token string, reqBody string, useDam bool) ([]byte, int, error) {
+	url := GetEndpointURL(endpoint, useDam)
+	return PostJsonDataWithFqUrl(url, token, reqBody)
+}
+
+func PostJsonDataWithFqUrl(url string, token string, reqBody string) ([]byte, int, error) {
 	var statusCode int
 	var res []byte
 	var err error
 
-	url := GetEndpointURL(endpoint, false)
 	jsonData := []byte(reqBody)
 	bodyReader := bytes.NewReader(jsonData)
 
@@ -155,7 +159,7 @@ func InitFileUpload(filename string, token string) string {
 		"filename":"%s"
 	}`, filename)
 
-	resp, statusCode, err := PostJsonData("uploads/segments", token, reqBody)
+	resp, statusCode, err := PostJsonData("uploads/segments", token, reqBody, false)
 	if err == nil && statusCode == 200 {
 		var uriResp UploadSegmentResponse
 		json.Unmarshal(resp, &uriResp)
@@ -174,7 +178,7 @@ func CommitFileUpload(filename string, segments int, uri string, token string) (
 		"segmentcount": "%d"
 	}`, filename, segments)
 
-	resp, statusCode, err := PostJsonData(fmt.Sprintf("%s/commit", uri[1:]), token, reqBody)
+	resp, statusCode, err := PostJsonDataWithFqUrl(fmt.Sprintf("%s/commit", uri), token, reqBody)
 	if err == nil && statusCode == 200 {
 		var commitResp UploadCommitResponse
 		json.Unmarshal(resp, &commitResp)
@@ -188,7 +192,8 @@ func UploadSegment(filename string, uri string, seg *FileSegment, token string) 
 	success := false
 	var err error
 
-	url := GetEndpointURL(fmt.Sprintf("%s?index=%d", uri[1:], seg.Segment), false)
+	// Uses returned URI directly
+	url := fmt.Sprintf("%s?index=%d", uri, seg.Segment)
 
 	// Add file data
 	body := &bytes.Buffer{}
@@ -236,7 +241,8 @@ func UploadFile(filename string, fileType string, data *bytes.Buffer, token stri
 	var uploadToken string
 	var err error
 
-	url := GetEndpointURL("uploads", false)
+	// Uses DAM, unlike segmented upload, possible FIXME
+	url := GetEndpointURL("uploads", true)
 
 	// Add file data
 	body := &bytes.Buffer{}

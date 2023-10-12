@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -10,11 +11,19 @@ import (
 )
 
 func SendToQueue(body string, queueUrl string) (string, error) {
+	var cfg aws.Config
 	var err error
 	var messageId string
 
+	dbg := os.Getenv("DEBUG") == "true"
+
 	// Set up AWS configuration needed by SQS client.
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if dbg {
+		cfg, err = config.LoadDefaultConfig(context.TODO(), config.WithClientLogMode(aws.LogRetries|aws.LogRequestWithBody|aws.LogResponseWithBody|aws.LogRequestEventMessage))
+	} else {
+		cfg, err = config.LoadDefaultConfig(context.TODO())
+	}
+
 	if err != nil {
 		logs.LogError(err, "Error Loading AWS Config")
 		return messageId, err

@@ -72,7 +72,7 @@ func submitRecord(description string, event aprimo.FileRecordInitEvent, team str
 		}
 	}`, description, event.Key, team, event.FileToken, event.FileToken, event.Key)
 
-	respBody, statusCode, err := aprimo.PostJsonData("records", token, reqBody)
+	respBody, statusCode, err := aprimo.PostJsonData("records", token, reqBody, true)
 	if err != nil {
 		return id, err
 	} else if statusCode >= 400 {

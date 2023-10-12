@@ -119,7 +119,9 @@ func UploadFileSegments(key string, token string, downloader *manager.Downloader
 
 	// Commit to Aprimo
 	if readyToCommit {
-		uploadToken, err = aprimo.CommitFileUpload(key, segment-1, uri, token)
+		// Segments are zero-indexed but we need to indicate the total number of segments
+		// So the final increment of the loop should give the proper value
+		uploadToken, err = aprimo.CommitFileUpload(key, segment, uri, token)
 	} else {
 		log.Println("Not ready to commit")
 	}
