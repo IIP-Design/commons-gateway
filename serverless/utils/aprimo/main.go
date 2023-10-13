@@ -1,10 +1,13 @@
 package aprimo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"os"
 	"strings"
@@ -12,23 +15,43 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
-type AprimoToken struct {
+type TokenResponse struct {
 	Expiration int    `json:"expires_in"`
 	Scope      string `json:"scope"`
 	Token      string `json:"access_token"`
 	Type       string `json:"token_type"`
 }
 
+type FileRecordInitEvent struct {
+	Key       string `json:"key"`
+	FileType  string `json:"filetype"`
+	FileToken string `json:"fileToken"`
+}
+
+type UploadSegmentResponse struct {
+	Uri string `json:"uri"`
+}
+
+type UploadCommitResponse struct {
+	Token string `json:"token"`
+}
+
+type FileSegment struct {
+	Segment  int
+	FileType string
+	Data     *bytes.Buffer
+}
+
 // GetEndpointURL constructs an URL for a given Aprimo API endpoint. Authorization
-// is handled by the Aprimo Marketing Operations API, while other operations should
-// be directed to the DAM API by setting the `auth` parameter to `false`.
-func GetEndpointURL(endpoint string, auth bool) string {
+// is handled by the Aprimo Marketing Operations API, while most other operations should
+// be directed to the DAM API by setting the `dam` parameter to `true`.
+func GetEndpointURL(endpoint string, dam bool) string {
 	var url string
 
-	if auth {
-		url = fmt.Sprintf("https://%s.aprimo.com/%s", os.Getenv("APRIMO_TENANT"), endpoint)
-	} else {
+	if dam {
 		url = fmt.Sprintf("https://%s.dam.aprimo.com/api/core/%s", os.Getenv("APRIMO_TENANT"), endpoint)
+	} else {
+		url = fmt.Sprintf("https://%s.aprimo.com/%s", os.Getenv("APRIMO_TENANT"), endpoint)
 	}
 
 	return url
@@ -41,7 +64,7 @@ func GetAuthToken() (string, error) {
 	var err error
 	var token string
 
-	endpoint := GetEndpointURL("login/connect/token", true)
+	endpoint := GetEndpointURL("login/connect/token", false)
 
 	body := url.Values{}
 	body.Set("grant_type", "client_credentials")
@@ -67,7 +90,7 @@ func GetAuthToken() (string, error) {
 		return token, err
 	}
 
-	var res AprimoToken
+	var res TokenResponse
 
 	err = json.Unmarshal(respBody, &res)
 
@@ -78,4 +101,196 @@ func GetAuthToken() (string, error) {
 	}
 
 	return res.Token, err
+}
+
+func PostJsonData(endpoint string, token string, reqBody string, useDam bool) ([]byte, int, error) {
+	url := GetEndpointURL(endpoint, useDam)
+	return PostJsonDataWithFqUrl(url, token, reqBody)
+}
+
+func PostJsonDataWithFqUrl(url string, token string, reqBody string) ([]byte, int, error) {
+	var statusCode int
+	var res []byte
+	var err error
+
+	jsonData := []byte(reqBody)
+	bodyReader := bytes.NewReader(jsonData)
+
+	client := &http.Client{}
+	request, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		bodyReader,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Error Preparing Aprimo Request")
+		return res, statusCode, err
+	}
+
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("API-VERSION", "1")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(request)
+
+	if err != nil {
+		logs.LogError(err, "Aprimo Response Error")
+		return res, statusCode, err
+	}
+	statusCode = resp.StatusCode
+
+	defer resp.Body.Close()
+	res, err = io.ReadAll(resp.Body)
+
+	if err != nil {
+		logs.LogError(err, "Error Reading Response Body")
+		return res, statusCode, err
+	}
+
+	return res, statusCode, nil
+}
+
+func InitFileUpload(filename string, token string) string {
+	var uri string
+
+	reqBody := fmt.Sprintf(`{
+		"filename":"%s"
+	}`, filename)
+
+	resp, statusCode, err := PostJsonData("uploads/segments", token, reqBody, false)
+	if err == nil && statusCode == 200 {
+		var uriResp UploadSegmentResponse
+		json.Unmarshal(resp, &uriResp)
+		uri = uriResp.Uri
+	}
+
+	return uri
+}
+
+func CommitFileUpload(filename string, segments int, uri string, token string) (string, error) {
+	var respToken string
+	var err error
+
+	reqBody := fmt.Sprintf(`{
+		"filename":"%s",
+		"segmentcount": "%d"
+	}`, filename, segments)
+
+	resp, statusCode, err := PostJsonDataWithFqUrl(fmt.Sprintf("%s/commit", uri), token, reqBody)
+	if err == nil && statusCode == 200 {
+		var commitResp UploadCommitResponse
+		json.Unmarshal(resp, &commitResp)
+		respToken = commitResp.Token
+	}
+
+	return respToken, err
+}
+
+func UploadSegment(filename string, uri string, seg *FileSegment, token string) (bool, error) {
+	success := false
+	var err error
+
+	// Uses returned URI directly
+	url := fmt.Sprintf("%s?index=%d", uri, seg.Segment)
+
+	// Add file data
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	partHeaders := textproto.MIMEHeader{}
+	partHeaders.Set("Content-Type", seg.FileType)
+	partHeaders.Set("Content-Disposition", fmt.Sprintf(`form-data; name="segment%d"; filename="%s.segment%d"`, seg.Segment, filename, seg.Segment))
+	part, _ := writer.CreatePart(partHeaders)
+
+	io.Copy(part, seg.Data)
+	writer.Close()
+
+	client := &http.Client{}
+	request, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		body,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Error Preparing Aprimo Request")
+		return success, err
+	}
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+
+	request.Header.Set("Accept", "*/*")
+	request.Header.Set("API-VERSION", "1")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	// Make the request
+	resp, err := client.Do(request)
+
+	if err != nil {
+		logs.LogError(err, "Aprimo File Segment Upload Error")
+		return success, err
+	}
+	success = resp.StatusCode == 202
+
+	defer resp.Body.Close()
+	return success, nil
+}
+
+func UploadFile(filename string, fileType string, data *bytes.Buffer, token string) (string, error) {
+	var uploadToken string
+	var err error
+
+	// Uses DAM, unlike segmented upload, possible FIXME
+	url := GetEndpointURL("uploads", true)
+
+	// Add file data
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	partHeaders := textproto.MIMEHeader{}
+	partHeaders.Set("Content-Type", fileType)
+	partHeaders.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, filename, filename))
+	part, _ := writer.CreatePart(partHeaders)
+
+	io.Copy(part, data)
+	writer.Close()
+
+	client := &http.Client{}
+	request, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		body,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Error Preparing Aprimo Request")
+		return uploadToken, err
+	}
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+
+	request.Header.Set("Accept", "*/*")
+	request.Header.Set("API-VERSION", "1")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	// Make the request
+	resp, err := client.Do(request)
+
+	if err != nil {
+		logs.LogError(err, "Aprimo File Upload Error")
+		return uploadToken, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logs.LogError(err, "Error Reading Response Body")
+		return uploadToken, err
+	}
+
+	var commitResp UploadCommitResponse
+	json.Unmarshal(respBody, &commitResp)
+	uploadToken = commitResp.Token
+
+	return uploadToken, nil
 }

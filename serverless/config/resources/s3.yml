@@ -17,6 +17,10 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: commons-gateway-${opt:stage}-clean
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue: !GetAtt SQSAprimoUpload.Arn
 
   # Bucket from which static site is served.
   StaticSiteBucket:

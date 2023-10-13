@@ -43,12 +43,23 @@ provider:
             - s3:GetObject
           Resource: !Join
             - ''
+            - - !GetAtt CleanBucket.Arn
+              - /*
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+          Resource: !Join
+            - ''
             - - !GetAtt StaticSiteBucket.Arn
               - /seed/*
         - Effect: Allow
           Action:
             - ses:SendEmail
           Resource: arn:aws:ses:${env:AWS_SES_REGION}:${aws:accountId}:identity/${env:AWS_SES_EMAIL}
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource: !GetAtt SQSAprimoRecord.Arn
         - Effect: Allow
           Action:
             - sqs:SendMessage
@@ -83,11 +94,11 @@ resources:
   - ${file(./config/resources/vpc.yml)}
   - ${file(./config/resources/rds.yml)}
   - ${file(./config/resources/proxy.yml)}
-  - ${file(./config/resources/s3.yml)}
   - ${file(./config/resources/cloudfront.yml)}
   - ${file(./config/resources/nat.yml)}
   - ${file(./config/resources/sqs.yml)}
-  #- ${file(./config/resources/jump.yml)} # Optional jump server to access resources via SSH, uncomment to apply
+  - ${file(./config/resources/s3.yml)}
+  - ${file(./config/resources/jump.yml)} # Optional jump server to access resources via SSH, uncomment to apply
 
 # Defines how the functions are deployed. To reduce the functions
 # size for each Lambda, we package them independently. This requires
@@ -167,27 +178,10 @@ functions:
     package:
       patterns:
         - './bin/admins-get'
-  aprimoCreate:
-    name: gateway-${opt:stage}-aprimo-create
-    handler: bin/aprimo-create-record
-    description: Creates a record in Aprimo which will be used to upload the file.
-    runtime: go1.x
-    events:
-      - s3:
-          bucket: commons-gateway-${opt:stage}-clean
-          event: s3:ObjectCreated:*
-          existing: true
-    package:
-      patterns:
-        - './bin/aprimo-create-record'
-    environment:
-      APRIMO_TENANT: ${env:APRIMO_TENANT}
-      APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
-      APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
   aprimoUpload:
     name: gateway-${opt:stage}-aprimo-upload
     handler: bin/aprimo-upload-file
-    description: Copies a file from S3 to Aprimo and associates it with the appropriate record.
+    description: Copies a file from S3 to Aprimo.
     runtime: go1.x
     events:
       - sqs:
@@ -199,7 +193,22 @@ functions:
       APRIMO_TENANT: ${env:APRIMO_TENANT}
       APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
       APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
-      SOURCE_BUCKET: commons-gateway-${opt:stage}-clean
+      RECORD_CREATE_QUEUE: https://${aws:region}.amazonaws.com/${aws:accountId}/content-gateway-${opt:stage}-aprimo-record
+  aprimoCreate:
+    name: gateway-${opt:stage}-aprimo-create
+    handler: bin/aprimo-create-record
+    description: Creates a record in Aprimo from an existing file.
+    runtime: go1.x
+    events:
+      - sqs:
+          arn: !GetAtt SQSAprimoRecord.Arn
+    package:
+      patterns:
+        - './bin/aprimo-create-record'
+    environment:
+      APRIMO_TENANT: ${env:APRIMO_TENANT}
+      APRIMO_CLIENT_ID: ${env:APRIMO_CLIENT_ID}
+      APRIMO_CLIENT_SECRET: ${env:APRIMO_CLIENT_SECRET}
   guestApprove:
     name: gateway-${opt:stage}-guest-approve
     handler: bin/guest-approve
