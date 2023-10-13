@@ -76,13 +76,13 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
     // If the team is new, send a create request, otherwise send an update request.
     if ( !id ) {
-      const response = await buildQuery( 'team/create', { teamName: name, teamAprimo: aprimoName }, 'POST' );
+      const response = await buildQuery( 'team', { teamName: name, teamAprimo: aprimoName }, 'POST' );
       const { data, message } = await response.json();
 
       newList = data;
       errMessage = message;
     } else {
-      const response = await buildQuery( 'team/update', { active, team: id, teamName: name, teamAprimo: aprimoName }, 'POST' );
+      const response = await buildQuery( 'team', { active, team: id, teamName: name, teamAprimo: aprimoName }, 'PUT' );
       const { data, message } = await response.json();
 
       newList = data;

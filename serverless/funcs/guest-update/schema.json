@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Update Guest Event Body Schema",
+  "description": "Data required to update an existing guest user",
+  "type": "object",
+  "properties": {
+    "expiration": {
+      "description": "The date at which the user's access expires",
+      "type": "string",
+      "format": "date-time"
+    },
+    "email": {
+      "description": "The admin user's email, used as a unique id",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
+    },
+    "familyName": {
+      "description": "The admin user's family (last) name",
+      "type": "string",
+      "minLength": 1
+    },
+    "givenName": {
+      "description": "The admin user's given (first) name",
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "description": "The type of guest role this user should be assigned",
+      "type": "string",
+      "enum": ["guest admin", "guest"]
+    },
+    "team": {
+      "description": "The id of the guest user's team",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": ["expiration", "email", "familyName", "givenName", "role", "team"],
+  "additionalProperties": false
+}

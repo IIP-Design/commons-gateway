@@ -107,16 +107,23 @@ func SendAuthError(err error, statusCode int) (Response, error) {
 
 	json.HTMLEscape(&buf, body)
 
+	headers := map[string]string{
+		"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+		"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+		"Access-Control-Allow-Origin":  "*",
+		"Content-Type":                 "application/json",
+	}
+
+	// Set a retry after header if the response is Too Many Requests.
+	if statusCode == 429 {
+		headers["Retry-After"] = "900"
+	}
+
 	resp := Response{
 		StatusCode:      statusCode,
 		IsBase64Encoded: false,
 		Body:            buf.String(),
-		Headers: map[string]string{
-			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-			"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-			"Access-Control-Allow-Origin":  "*",
-			"Content-Type":                 "application/json",
-		},
+		Headers:         headers,
 	}
 	return resp, nil
 }

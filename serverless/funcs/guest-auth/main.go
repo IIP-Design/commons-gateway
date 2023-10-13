@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -11,9 +15,6 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/turnstile"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // verify2FA retrieves that the user provided 2FA
@@ -50,6 +51,47 @@ func clear2FA(id string) {
 	}
 }
 
+// recordUnsuccessfulLoginAttempt counts the number of failed login attempts
+// by a user and locks their account upon a fifth unsuccessful attempt.
+func recordUnsuccessfulLoginAttempt(guest string) {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	currentTime := time.Now()
+	var attemptCount int
+
+	query :=
+		`UPDATE guests SET login_attempt = login_attempt + 1, login_date = $1
+		 WHERE email = $2 RETURNING login_attempt;`
+	err := pool.QueryRow(query, currentTime, guest).Scan(&attemptCount)
+
+	if err != nil {
+		logs.LogError(err, "Update Login Count Query Error")
+	}
+
+	if attemptCount == 5 {
+		query := "UPDATE guests SET locked = true WHERE email = $1"
+		_, err := pool.Exec(query, guest)
+
+		if err != nil {
+			logs.LogError(err, "Update Lock Status Query Error")
+		}
+	}
+}
+
+// clearUnsuccessfulLoginAttempts resets the given user's login counter to zero.
+func clearUnsuccessfulLoginAttempts(guest string) {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query := `UPDATE guests SET login_attempt = 0, login_date = NULL WHERE email = $1;`
+	_, err := pool.Exec(query, guest)
+
+	if err != nil {
+		logs.LogError(err, "Clear Login Attempts Query Error")
+	}
+}
+
 // handleGrantAccess ensures that a user hash provided a password has matching their
 // username and if so, generates a JWT to grant them guest access.
 func handleGrantAccess(username string, clientHash string) (msgs.Response, error) {
@@ -64,11 +106,16 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 	}
 
 	if creds.Hash != clientHash {
+		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("forbidden"), 403)
 	} else if creds.Expired {
+		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("credentials expired"), 403)
 	} else if !creds.Approved {
+		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("user is not yet approved"), 403)
+	} else if creds.Locked {
+		return msgs.SendAuthError(errors.New("account locked"), 429)
 	}
 
 	jwt, err := jwt.FormatJWT(username, creds.Role)
@@ -82,6 +129,8 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
+
+	clearUnsuccessfulLoginAttempts(username)
 
 	return msgs.PrepareResponse(body)
 }
@@ -105,6 +154,7 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 	verified := verify2FA(mfaId, mfaCode)
 
 	if !verified {
+		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("forbidden"), 403)
 	}
 

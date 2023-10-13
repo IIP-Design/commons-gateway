@@ -5,16 +5,15 @@ import (
 	"errors"
 	"os"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
@@ -72,11 +71,6 @@ func handleInvitation(invite data.Invite) error {
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
 func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin"})
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {

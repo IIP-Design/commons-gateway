@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Retrieve Guests by Team Event Body Schema",
+  "description": "Data required to retrieve the guest from a given team",
+  "type": "object",
+  "properties": {
+    "teamName": {
+      "description": "The name of the team to be added",
+      "type": "string",
+      "minLength": 1
+    },
+    "teamAprimo": {
+      "description": "The name of the team as it appears in Aprimo",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": ["teamName", "teamAprimo"],
+  "additionalProperties": false
+}

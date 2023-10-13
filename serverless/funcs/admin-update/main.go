@@ -4,25 +4,19 @@ import (
 	"context"
 	"errors"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // UpdateAdminHandler handles the request to edit an existing admin user.
 // It ensures that the required data is present before continuing on to
 // update the team data.
 func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin"})
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
 	admin, err := data.ExtractAdminUser(event.Body)
 
 	if err != nil {

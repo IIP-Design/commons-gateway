@@ -164,7 +164,7 @@ const UserForm: FC<IUserFormProps> = ( { user } ) => {
     };
 
     if ( user ) {
-      buildQuery( 'guest/update', { ...invitee, expiration }, 'POST' )
+      buildQuery( 'guest', { ...invitee, expiration }, 'PUT' )
         .then( () => window.location.assign( ( isAdmin ? '/' : '/uploader-users' ) ) )
         .catch( err => console.error( err ) );
     } else if ( isAdmin ) {

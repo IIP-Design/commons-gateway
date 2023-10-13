@@ -1,0 +1,24 @@
+# All of the functions pertaining to database setup.
+initDB:
+  name: gateway-${opt:stage}-init-db
+  handler: bin/init-db
+  description: Initialize the application database with the necessary tables.
+  runtime: go1.x
+  package:
+    patterns:
+      - './bin/init-db'
+seedDB:
+  name: gateway-${opt:stage}-seed-db
+  handler: bin/seed-db
+  description: Read an uploaded seed file and and update the database accordingly.
+  runtime: go1.x
+  events:
+    - s3:
+        bucket: !Ref StaticSiteBucket
+        event: s3:ObjectCreated:*
+        existing: true
+        rules:
+          - prefix: seed/
+  package:
+    patterns:
+      - './bin/seed-db'

@@ -147,7 +147,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
         .then( () => window.location.assign( '/admins' ) )
         .catch( err => console.error( err ) );
     } else {
-      await buildQuery( 'admin/create', { ...newAdmin, active: true }, 'POST' )
+      await buildQuery( 'admin', { ...newAdmin, active: true }, 'POST' )
         .then( () => window.location.assign( '/admins' ) )
         .catch( err => console.error( err ) );
     }

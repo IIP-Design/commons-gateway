@@ -3,5 +3,6 @@ dbname
 fkey
 psql
 schemaname
+smallint
 sslmode
 tablename

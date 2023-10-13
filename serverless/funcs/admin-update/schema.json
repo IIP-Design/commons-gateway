@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Create Admin Event Body Schema",
-  "description": "Data required to create a new admin user",
+  "title": "Update Admin Event Body Schema",
+  "description": "Data required to update an existing admin user",
   "type": "object",
   "properties": {
     "active": {
@@ -9,19 +9,19 @@
       "type": "boolean"
     },
     "email": {
-      "description": "The admin user's email, which is used as a unique id",
+      "description": "The admin user's email, used as a unique id",
       "type": "string",
       "format": "email",
       "minLength": 6,
       "maxLength": 127
     },
-    "givenName": {
-      "description": "The given (first) name of the admin user",
+    "familyName": {
+      "description": "The admin user's family (last) name",
       "type": "string",
       "minLength": 1
     },
-    "familyName": {
-      "description": "The family (last) name of the admin user",
+    "givenName": {
+      "description": "The admin user's given (first) name",
       "type": "string",
       "minLength": 1
     },
@@ -36,6 +36,6 @@
       "minLength": 1
     }
   },
-  "required": ["active", "email", "givenName", "familyName", "role", "team"],
+  "required": ["active", "email", "familyName", "givenName", "role", "team"],
   "additionalProperties": false
 }

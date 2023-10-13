@@ -8,12 +8,13 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
+// deactivateGuest opens a database connection and sets the given guest's
+// access expiration date to the current time.
 func deactivateGuest(email string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -35,11 +36,6 @@ func deactivateGuest(email string) error {
 // It ensures that the required data is present before continuing on to
 // update the team data.
 func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin"})
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
 	id := event.QueryStringParameters["id"]
 
 	if id == "" {

@@ -22,6 +22,7 @@ EVENT_UPLOAD_METADATA = ./config/sim-events/upload-metadata.json
 build:
 	cd web; npm i && npm run build;
 	cd serverless;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/authorizer funcs/authorizer/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-create funcs/admin-create/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-deactivate funcs/admin-deactivate/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/admin-get funcs/admin-get/*.go;\
@@ -39,6 +40,7 @@ build:
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/guests-pending funcs/guests-pending/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/init-db funcs/init-db/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-2fa funcs/creds-2fa/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-2fa-clear funcs/creds-2fa-clear/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-salt funcs/creds-salt/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-propose funcs/creds-propose/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/creds-provision funcs/creds-provision/*.go;\

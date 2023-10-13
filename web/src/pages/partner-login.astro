@@ -109,12 +109,18 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
 
     const mfaRequest = { id: mfaRequestId, code: mfa };
 
-    const loggedIn = await handlePartnerLogin(name, pass, mfaRequest, token);
+    const [loggedIn, error] = await handlePartnerLogin(name, pass, mfaRequest, token);
 
     if (loggedIn) {
       window.location.assign('/upload');
     } else {
-      showError('Login failed, invalid credentials provided.');
+      if (error === 'account locked') {
+        showError(
+          'This account has been locked for too many invalid login attempts. Please try again in 15 minutes.'
+        );
+      } else {
+        showError('Login failed, invalid credentials provided.');
+      }
     }
   });
 </script>
