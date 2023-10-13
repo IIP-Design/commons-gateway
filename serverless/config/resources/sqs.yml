@@ -11,11 +11,12 @@ Resources:
 
   SQSAprimoUpload:
     Type: AWS::SQS::Queue
+    DependsOn: SQSAprimoUploadDLQ
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-upload
       RedrivePolicy:
-         deadLetterTargetArn : arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload-dlq
-         maxReceiveCount: 5
+        deadLetterTargetArn: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload-dlq
+        maxReceiveCount: 5
 
   SQSAprimoRecordDLQ:
     Type: AWS::SQS::Queue
@@ -24,11 +25,12 @@ Resources:
 
   SQSAprimoRecord:
     Type: AWS::SQS::Queue
+    DependsOn: SQSAprimoRecordDLQ
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-record
       RedrivePolicy:
-         deadLetterTargetArn : arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-record-dlq
-         maxReceiveCount: 5
+        deadLetterTargetArn: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-record-dlq
+        maxReceiveCount: 5
 
   SQSAprimoUploadPolicy:
     Type: AWS::SQS::QueuePolicy
