@@ -30,8 +30,8 @@ const (
 	PartSize = 15 * 1024 * 1024 // 15MB per part
 )
 
-// Return file type info iff file has not already been uploaded to Aprimo
-// Duplication is not an error, but is a reason to skip re-processing
+// LookupFileType returns the file type info if file has not already been uploaded
+// to Aprimo. Duplication is not an error, but is a reason to skip re-processing
 func LookupFileType(key string) (string, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -50,7 +50,7 @@ func LookupFileType(key string) (string, error) {
 	}
 }
 
-// If the file has been xfered to Aprimo, record the token for (1) possible retry and (2) deduplication
+// If the file has been transferred to Aprimo, record the token for (1) possible retry and (2) deduplication
 func MarkFileUpload(key string, uploadToken string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -152,9 +152,11 @@ func SendRecordEvent(key string, fileType string, fileToken string) (string, err
 	return queue.SendToQueue(string(json), queueUrl)
 }
 
+// extractS3DataFromSqsEvent retrieves the S3 event embedded in the SQS message.
 func extractS3DataFromSqsEvent(record events.SQSMessage) []events.S3EventRecord {
 	var parsed WrappedS3Events
 	json.Unmarshal([]byte(record.Body), &parsed)
+
 	return parsed.Records
 }
 
@@ -182,23 +184,22 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 	downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
 		d.PartSize = PartSize
 	})
-	log.Printf("SQS Events: %d\n", len(event.Records))
 
-	// We are receiving SQS record(s) for increased durability . . .
+	// We are receiving SQS record(s) for increased durability...
 	for _, e := range event.Records {
 		log.Printf("Message ID: %s\n", e.MessageId)
 
-		// . . . but they are wrapping one or more (should be exactly one, but handle 1..N) S3 events . . .
+		// ...but they are wrapping one or more (should be exactly one, but handle 1..N) S3 events...
 		r := extractS3DataFromSqsEvent(e)
-		log.Printf("S3 Events: %d\n", len(r))
 
-		// . . . and need to be processed as such
+		// ...and need to be processed as such
 		for _, record := range r {
 			bucket := record.S3.Bucket.Name
 			key := record.S3.Object.Key
 			size := record.S3.Object.Size
 
 			fileType, err := LookupFileType(key)
+
 			if err != nil {
 				logs.LogError(err, "failed to lookup file type")
 				return err

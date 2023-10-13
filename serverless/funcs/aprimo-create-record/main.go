@@ -96,6 +96,7 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 		logs.LogError(err, "Unable to Authenticate Error")
 		return err
 	}
+
 	log.Printf("SQS Events: %d\n", len(event.Records))
 
 	pool := data.ConnectToDB()
