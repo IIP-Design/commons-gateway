@@ -40,16 +40,6 @@ func updateUploadTable(pool *sql.DB) error {
 		return err
 	}
 
-	// _, err = pool.Exec(
-	// 	`ALTER TABLE uploads ADD COLUMN aprimo_record_id VARCHAR(255) DEFAULT NULL;`,
-	// )
-
-	// if err != nil {
-	// 	logs.LogError(err, "Alter Table Query Error - aprimo_record_id")
-
-	// 	return err
-	// }
-
 	_, err = pool.Exec(
 		`ALTER TABLE uploads ADD COLUMN aprimo_record_dt TIMESTAMP DEFAULT NULL;`,
 	)
