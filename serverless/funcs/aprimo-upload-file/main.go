@@ -88,7 +88,7 @@ func UploadSmallFile(key string, token string, downloader *manager.Downloader, b
 	return aprimo.UploadFile(key, fileType, bytes.NewBuffer(data.Bytes()), token)
 }
 
-func UploadFileSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string) (string, error) {
+func UploadFileSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string, fileSize int64) (string, error) {
 	var uploadToken string
 	var err error
 
@@ -96,14 +96,16 @@ func UploadFileSegments(key string, token string, downloader *manager.Downloader
 
 	buf := make([]byte, S3DownloadBytes)
 	segment := 0
+	downloadBlock := 0
 	readyToCommit := false
 
 	var t1 int64
 	var t2 int64
 
 	for !readyToCommit {
-		s3DownloadStartByte := S3DownloadBytes * segment
-		s3DownloadEndByte := S3DownloadBytes*(segment+1) - 1 // NB: Range appears to be inclusive at both ends
+		// NB: Range appears to be inclusive at both ends
+		s3DownloadStartByte := S3DownloadBytes * downloadBlock
+		s3DownloadEndByte := min(int64(S3DownloadBytes*(downloadBlock+1)-1), fileSize)
 
 		// DBG
 		fmt.Printf("bytes=%d-%d\n", s3DownloadStartByte, s3DownloadEndByte)
@@ -167,6 +169,8 @@ func UploadFileSegments(key string, token string, downloader *manager.Downloader
 		}
 
 		readyToCommit = (bytesDownloaded < S3DownloadBytes)
+
+		downloadBlock += 1
 	}
 
 	// Commit to Aprimo
@@ -264,7 +268,7 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 				if size <= PartSize {
 					uploadToken, err = UploadSmallFile(key, token, downloader, bucket, fileType)
 				} else {
-					uploadToken, err = UploadFileSegments(key, token, downloader, bucket, fileType)
+					uploadToken, err = UploadFileSegments(key, token, downloader, bucket, fileType, size)
 				}
 
 				if err == nil {
