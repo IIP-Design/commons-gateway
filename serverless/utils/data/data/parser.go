@@ -99,6 +99,10 @@ type AcceptInvite struct {
 	Inviter string `json:"inviterEmail"`
 }
 
+type GuestUnlockInitEvent struct {
+	Username string `json:"username"`
+}
+
 // ParseBodyData converts the serialized JSON string provided in the body
 // of the API Gateway request into a usable data format.
 func ParseBodyData(body string) (RequestBodyOptions, error) {

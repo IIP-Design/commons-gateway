@@ -53,3 +53,17 @@ Resources:
                 aws:SourceAccount: ${aws:accountId}
               ArnLike:
                 aws:SourceArn: arn:aws:s3:*:*:*
+
+  SQSUnlockGuestAccountDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-unlock-guest-account-dlq
+
+  SQSUnlockGuestAccount:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-unlock-guest-account
+      DelaySeconds: 900 # Delay execution by 15 minutes
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SQSUnlockGuestAccountDLQ.Arn
+        maxReceiveCount: 5

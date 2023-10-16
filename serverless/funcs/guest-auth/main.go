@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/queue"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/turnstile"
 )
@@ -51,6 +53,31 @@ func clear2FA(id string) {
 	}
 }
 
+// scheduleAccountUnlock initials and SQS message requesting user account unlock in 15 minutes.
+func scheduleAccountUnlock(email string) (string, error) {
+	var messageId string
+	var err error
+
+	event := data.GuestUnlockInitEvent{
+		Username: email,
+	}
+
+	json, err := json.Marshal(event)
+
+	if err != nil {
+		logs.LogError(err, "Failed to Marshal SQS Body")
+		return messageId, err
+	}
+
+	queueUrl := os.Getenv("UNLOCK_GUEST_ACCOUNT_QUEUE")
+
+	// Time in seconds to delay the execution of the lambda (15 minutes)
+	// var delay int32 = 900
+
+	// Send the message to SQS.
+	return queue.SendToQueue(string(json), queueUrl, 0)
+}
+
 // recordUnsuccessfulLoginAttempt counts the number of failed login attempts
 // by a user and locks their account upon a fifth unsuccessful attempt.
 func recordUnsuccessfulLoginAttempt(guest string) {
@@ -76,19 +103,8 @@ func recordUnsuccessfulLoginAttempt(guest string) {
 		if err != nil {
 			logs.LogError(err, "Update Lock Status Query Error")
 		}
-	}
-}
 
-// clearUnsuccessfulLoginAttempts resets the given user's login counter to zero.
-func clearUnsuccessfulLoginAttempts(guest string) {
-	pool := data.ConnectToDB()
-	defer pool.Close()
-
-	query := `UPDATE guests SET login_attempt = 0, login_date = NULL WHERE email = $1;`
-	_, err := pool.Exec(query, guest)
-
-	if err != nil {
-		logs.LogError(err, "Clear Login Attempts Query Error")
+		scheduleAccountUnlock(guest)
 	}
 }
 
@@ -99,26 +115,26 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
 
-	creds, err := creds.RetrieveCredentials(username)
+	credentials, err := creds.RetrieveCredentials(username)
 
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
-	if creds.Hash != clientHash {
+	if credentials.Hash != clientHash {
 		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("forbidden"), 403)
-	} else if creds.Expired {
+	} else if credentials.Expired {
 		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("credentials expired"), 403)
-	} else if !creds.Approved {
+	} else if !credentials.Approved {
 		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendAuthError(errors.New("user is not yet approved"), 403)
-	} else if creds.Locked {
+	} else if credentials.Locked {
 		return msgs.SendAuthError(errors.New("account locked"), 429)
 	}
 
-	jwt, err := jwt.FormatJWT(username, creds.Role)
+	jwt, err := jwt.FormatJWT(username, credentials.Role)
 
 	if err != nil {
 		return msgs.SendServerError(err)
@@ -130,7 +146,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.SendServerError(err)
 	}
 
-	clearUnsuccessfulLoginAttempts(username)
+	creds.ClearUnsuccessfulLoginAttempts(username)
 
 	return msgs.PrepareResponse(body)
 }

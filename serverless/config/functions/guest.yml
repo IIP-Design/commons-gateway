@@ -44,6 +44,8 @@ guestAuth:
   package:
     patterns:
       - './bin/guest-auth'
+  environment:
+    UNLOCK_GUEST_ACCOUNT_QUEUE: !Ref SQSUnlockGuestAccount
 guestDeactivate:
   name: gateway-${opt:stage}-guest-deactivate
   handler: bin/guest-deactivate
@@ -84,6 +86,17 @@ guestGet:
   package:
     patterns:
       - './bin/guest-get'
+guestUnlock:
+  name: gateway-${opt:stage}-guest-unlock
+  handler: bin/guest-unlock
+  description: Unlock a guest user's account.
+  runtime: go1.x
+  events:
+    - sqs:
+        arn: !GetAtt SQSUnlockGuestAccount.Arn
+  package:
+    patterns:
+      - './bin/guest-unlock'
 guestUpdate:
   name: gateway-${opt:stage}-guest-update
   handler: bin/guest-update
