@@ -34,6 +34,7 @@ Resources:
 
   SQSAprimoUploadPolicy:
     Type: AWS::SQS::QueuePolicy
+    DependsOn: SQSAprimoUpload
     Properties:
       Queues:
         - !Ref SQSAprimoUpload
