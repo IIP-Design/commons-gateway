@@ -8,6 +8,9 @@ uploadMetadata:
     - http:
         path: /upload
         method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
         cors: ${file(./config/${param:deployment}.json):cors}
   package:
     patterns:
@@ -21,6 +24,9 @@ uploadPresignedUrl:
     - http:
         path: /upload
         method: get
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
         cors: ${file(./config/${param:deployment}.json):cors}
   package:
     patterns:

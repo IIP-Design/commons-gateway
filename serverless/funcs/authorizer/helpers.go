@@ -89,6 +89,8 @@ func retrieveScopes(endpoint string, method string) []string {
 		}
 	case "teams":
 		return AllAdmins.Array()
+	case "upload":
+		return All.Array()
 	default:
 		return SuperAdmins.Array()
 	}

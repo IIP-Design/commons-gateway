@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/aws/aws-lambda-go/events"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
@@ -98,29 +97,6 @@ func VerifyJWT(tokenString string, scopes []string) error {
 	}
 
 	return nil
-}
-
-// DEPRECATED - remove once all endpoints are switched over to using authorizer function.
-func RequestIsAuthorized(req events.APIGatewayProxyRequest, scopes []string) (int, error) {
-	authHeader := req.Headers["Authorization"]
-	token, err := extractBearerToken(authHeader)
-
-	if err != nil {
-		return 401, err
-	}
-
-	err = VerifyJWT(token, scopes)
-
-	// Everything looks good and client can continue
-	if err == nil {
-		return 200, nil
-		// Token is expired and client should re-login
-	} else if errors.Is(err, jwt.ErrTokenExpired) {
-		return 401, err
-		// Token is invalid and client must be rejected
-	} else {
-		return 403, err
-	}
 }
 
 // CheckAuthToken is used by the Authorizer function to extract the token

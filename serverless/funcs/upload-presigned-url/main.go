@@ -11,7 +11,6 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/randstr"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,13 +23,7 @@ const (
 	LifetimeSecs = 300
 )
 
-func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin", "guest"})
-
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
+func presignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	rawContentType := event.QueryStringParameters["contentType"]
 
 	if rawContentType == "" {
@@ -93,5 +86,5 @@ func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyReques
 }
 
 func main() {
-	lambda.Start(PresignedUrlHandler)
+	lambda.Start(presignedUrlHandler)
 }
