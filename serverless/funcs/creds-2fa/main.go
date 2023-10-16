@@ -74,7 +74,7 @@ func initiateEmailQueue(username string, code string) error {
 	queueUrl := os.Getenv("EMAIL_QUEUE")
 
 	// Send the message to SQS.
-	messageId, err := queue.SendToQueue(string(json), queueUrl)
+	messageId, err := queue.SendToQueue(string(json), queueUrl, 0)
 
 	if err != nil {
 		logs.LogError(err, "Failed to Send Queue Message")

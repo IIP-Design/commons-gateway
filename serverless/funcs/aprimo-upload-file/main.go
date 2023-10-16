@@ -129,7 +129,7 @@ func UploadFileSegments(key string, token string, downloader *manager.Downloader
 	return uploadToken, err
 }
 
-func SendRecordEvent(key string, fileType string, fileToken string) (string, error) {
+func sendRecordEvent(key string, fileType string, fileToken string) (string, error) {
 	var messageId string
 	var err error
 
@@ -149,7 +149,7 @@ func SendRecordEvent(key string, fileType string, fileToken string) (string, err
 	queueUrl := os.Getenv("RECORD_CREATE_QUEUE")
 
 	// Send the message to SQS.
-	return queue.SendToQueue(string(json), queueUrl)
+	return queue.SendToQueue(string(json), queueUrl, 0)
 }
 
 // extractS3DataFromSqsEvent retrieves the S3 event embedded in the SQS message.
@@ -217,7 +217,7 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 
 				if err == nil {
 					log.Println(uploadToken) // DBG
-					messageId, err := SendRecordEvent(key, fileType, uploadToken)
+					messageId, err := sendRecordEvent(key, fileType, uploadToken)
 					if err != nil {
 						logs.LogError(err, "send record event error")
 						return err
