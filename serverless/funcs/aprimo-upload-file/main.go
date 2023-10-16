@@ -149,7 +149,7 @@ func sendRecordEvent(key string, fileType string, fileToken string) (string, err
 	queueUrl := os.Getenv("RECORD_CREATE_QUEUE")
 
 	// Send the message to SQS.
-	return queue.SendToQueue(string(json), queueUrl, 0)
+	return queue.SendToQueue(string(json), queueUrl)
 }
 
 // extractS3DataFromSqsEvent retrieves the S3 event embedded in the SQS message.

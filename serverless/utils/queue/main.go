@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
-func SendToQueue(body string, queueUrl string, delay int32) (string, error) {
+func SendToQueue(body string, queueUrl string) (string, error) {
 	var cfg aws.Config
 	var err error
 	var messageId string
@@ -32,7 +32,7 @@ func SendToQueue(body string, queueUrl string, delay int32) (string, error) {
 	client := sqs.NewFromConfig(cfg)
 
 	messageInput := &sqs.SendMessageInput{
-		DelaySeconds: delay,
+		DelaySeconds: 0,
 		MessageBody:  aws.String(body),
 		QueueUrl:     &queueUrl,
 	}

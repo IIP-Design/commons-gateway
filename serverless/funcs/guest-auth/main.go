@@ -71,11 +71,8 @@ func scheduleAccountUnlock(email string) (string, error) {
 
 	queueUrl := os.Getenv("UNLOCK_GUEST_ACCOUNT_QUEUE")
 
-	// Time in seconds to delay the execution of the lambda (15 minutes)
-	// var delay int32 = 900
-
 	// Send the message to SQS.
-	return queue.SendToQueue(string(json), queueUrl, 0)
+	return queue.SendToQueue(string(json), queueUrl)
 }
 
 // recordUnsuccessfulLoginAttempt counts the number of failed login attempts
