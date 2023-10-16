@@ -9,7 +9,7 @@ import (
 func LogError(err error, message string) {
 	errMessage := map[string]interface{}{
 		"Message": message,
-		"Error":   err,
+		"Error":   err.Error(),
 	}
 
 	fullMessage, _ := json.MarshalIndent(errMessage, "", "  ")
