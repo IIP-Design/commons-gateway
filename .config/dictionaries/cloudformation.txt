@@ -1,0 +1,4 @@
+# AWS CloudFormation properties that set off the spell checker
+brotli
+redrive
+sigv4
