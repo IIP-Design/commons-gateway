@@ -15,7 +15,7 @@ Resources:
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-upload
       RedrivePolicy:
-        deadLetterTargetArn: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload-dlq
+        deadLetterTargetArn: !GetAtt SQSAprimoUploadDLQ.Arn
         maxReceiveCount: 5
 
   SQSAprimoRecordDLQ:
@@ -29,7 +29,7 @@ Resources:
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-record
       RedrivePolicy:
-        deadLetterTargetArn: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-record-dlq
+        deadLetterTargetArn: !GetAtt SQSAprimoRecordDLQ.Arn
         maxReceiveCount: 5
 
   SQSAprimoUploadPolicy:

@@ -24,7 +24,7 @@ creds2FA:
     patterns:
       - './bin/creds-2fa'
   environment:
-    EMAIL_QUEUE: !Ref SQSSend2FA
+    EMAIL_MFA_QUEUE: !Ref SQSSend2FA
 creds2FAClear:
   name: gateway-${opt:stage}-creds-2fa-clear
   handler: bin/creds-2fa-clear
