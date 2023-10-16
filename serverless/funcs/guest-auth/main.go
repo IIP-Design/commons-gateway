@@ -69,7 +69,7 @@ func recordUnsuccessfulLoginAttempt(guest string) {
 		logs.LogError(err, "Update Login Count Query Error")
 	}
 
-	if attemptCount == 5 {
+	if attemptCount >= 5 {
 		query := "UPDATE guests SET locked = true WHERE email = $1"
 		_, err := pool.Exec(query, guest)
 
