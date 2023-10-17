@@ -861,10 +861,14 @@ func removeIllegalCharacters(value string) string {
 	return SAFE_CHARACTERS_REGEX.ReplaceAllString(value, "")
 }
 
+func replaceAllSpace(value string, separator string) string {
+	return SPACE_REGEX.ReplaceAllString(value, separator)
+}
+
 func SanitizeObjectKey(objectKey string, separator string) string {
 	trimmed := strings.TrimSpace(objectKey)
 	clean := removeIllegalCharacters(replaceLatinCharacters(trimmed))
-	return SPACE_REGEX.ReplaceAllString(clean, separator)
+	return replaceAllSpace(clean, separator)
 }
 
 func DefaultKeySanitizer(objectKey string) string {
