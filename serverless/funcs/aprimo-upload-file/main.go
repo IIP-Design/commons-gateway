@@ -28,7 +28,7 @@ type WrappedS3Events struct {
 }
 
 const (
-	PartSize        = 19 * 1024 * 1024 // 15MB per part
+	PartSize        = 19 * 1024 * 1024 // 19 MB per part
 	PartsToDownload = 10
 	S3DownloadBytes = PartSize * PartsToDownload
 )
