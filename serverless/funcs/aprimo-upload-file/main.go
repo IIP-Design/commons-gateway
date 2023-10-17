@@ -272,7 +272,6 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 				}
 
 				if err == nil {
-					log.Println(uploadToken) // DBG
 					messageId, err := sendRecordEvent(key, fileType, uploadToken)
 					if err != nil {
 						logs.LogError(err, "send record event error")
