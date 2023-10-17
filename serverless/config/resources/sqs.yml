@@ -15,7 +15,7 @@ Resources:
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-upload
       RedrivePolicy:
-        deadLetterTargetArn: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-upload-dlq
+        deadLetterTargetArn: !GetAtt SQSAprimoUploadDLQ.Arn
         maxReceiveCount: 5
 
   SQSAprimoRecordDLQ:
@@ -29,7 +29,7 @@ Resources:
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-record
       RedrivePolicy:
-        deadLetterTargetArn: arn:aws:sqs:${aws:region}:${aws:accountId}:content-gateway-${opt:stage}-aprimo-record-dlq
+        deadLetterTargetArn: !GetAtt SQSAprimoRecordDLQ.Arn
         maxReceiveCount: 5
 
   SQSAprimoUploadPolicy:
@@ -53,3 +53,17 @@ Resources:
                 aws:SourceAccount: ${aws:accountId}
               ArnLike:
                 aws:SourceArn: arn:aws:s3:*:*:*
+
+  SQSUnlockGuestAccountDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-unlock-guest-account-dlq
+
+  SQSUnlockGuestAccount:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: content-gateway-${opt:stage}-unlock-guest-account
+      DelaySeconds: 900 # Delay execution by 15 minutes
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SQSUnlockGuestAccountDLQ.Arn
+        maxReceiveCount: 5

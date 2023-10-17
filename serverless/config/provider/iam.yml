@@ -49,3 +49,8 @@
   Action:
     - sqs:SendMessage
   Resource: !GetAtt SQSSend2FA.Arn
+# Allow Lambdas to trigger the SQS queue that unlocks a user's account.
+- Effect: Allow
+  Action:
+    - sqs:SendMessage
+  Resource: !GetAtt SQSUnlockGuestAccount.Arn

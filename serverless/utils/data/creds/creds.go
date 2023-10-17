@@ -14,6 +14,21 @@ type CredentialsData struct {
 	Role     string `json:"role"`
 }
 
+// ClearUnsuccessfulLoginAttempts resets the given user's login counter to zero.
+func ClearUnsuccessfulLoginAttempts(guest string) error {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query := `UPDATE guests SET login_attempt = 0, login_date = NULL WHERE email = $1;`
+	_, err := pool.Exec(query, guest)
+
+	if err != nil {
+		logs.LogError(err, "Clear Login Attempts Query Error")
+	}
+
+	return err
+}
+
 // RetrieveCredentials
 func RetrieveCredentials(email string) (CredentialsData, error) {
 	var err error
