@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -27,8 +28,18 @@ type WrappedS3Events struct {
 }
 
 const (
-	PartSize = 15 * 1024 * 1024 // 15MB per part
+	PartSize        = 19 * 1024 * 1024 // 19 MB per part
+	PartsToDownload = 10
+	S3DownloadBytes = PartSize * PartsToDownload
 )
+
+// Needed before go 1.21
+func min(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
+}
 
 // LookupFileType returns the file type info if file has not already been uploaded
 // to Aprimo. Duplication is not an error, but is a reason to skip re-processing
@@ -77,44 +88,89 @@ func UploadSmallFile(key string, token string, downloader *manager.Downloader, b
 	return aprimo.UploadFile(key, fileType, bytes.NewBuffer(data.Bytes()), token)
 }
 
-func UploadFileSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string) (string, error) {
+func UploadFileSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string, fileSize int64) (string, error) {
 	var uploadToken string
 	var err error
 
 	uri := aprimo.InitFileUpload(key, token)
 
+	buf := make([]byte, S3DownloadBytes)
 	segment := 0
+	downloadBlock := 0
 	readyToCommit := false
 
+	var t1 int64
+	var t2 int64
+
 	for !readyToCommit {
-		data := manager.NewWriteAtBuffer([]byte{})
+		// NB: Range appears to be inclusive at both ends
+		s3DownloadStartByte := S3DownloadBytes * downloadBlock
+		s3DownloadEndByte := min(int64(S3DownloadBytes*(downloadBlock+1)-1), fileSize)
+
+		// DBG
+		fmt.Printf("bytes=%d-%d\n", s3DownloadStartByte, s3DownloadEndByte)
+
+		data := manager.NewWriteAtBuffer(buf)
+
+		t1 = time.Now().UnixMilli()
 		bytesDownloaded, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
-			Range:  aws.String(fmt.Sprintf("bytes=%d-%d", PartSize*segment, PartSize*(segment+1))),
+			Range:  aws.String(fmt.Sprintf("bytes=%d-%d", s3DownloadStartByte, s3DownloadEndByte)),
 		})
+		t2 = time.Now().UnixMilli()
 
 		if err != nil {
 			logs.LogError(err, "Error Retrieving S3 Object")
 			break
+		} else {
+			// DBG
+			fmt.Printf("Downloaded %d bytes in %d ms\n", bytesDownloaded, t2-t1)
 		}
 
-		// Send to Aprimo
-		success, err := aprimo.UploadSegment(key, uri, &aprimo.FileSegment{
-			Segment:  segment,
-			FileType: fileType,
-			Data:     bytes.NewBuffer(data.Bytes()),
-		}, token)
+		dataBytes := data.Bytes()
 
-		if err != nil {
-			logs.LogError(err, "Aprimo Segment Upload Error")
-			break
-		} else if !success {
-			break
+		segmentsDownloaded := (bytesDownloaded / PartSize)
+		lastSegmentIsShort := bytesDownloaded%PartSize > 0
+		if lastSegmentIsShort {
+			// DBG
+			fmt.Printf("Excess bytes: %d \n", bytesDownloaded%PartSize)
+			segmentsDownloaded += 1
 		}
 
-		segment += 1
-		readyToCommit = (bytesDownloaded < PartSize)
+		// DBG
+		fmt.Printf("Downloaded %d segments\n", segmentsDownloaded)
+
+		for seg := int64(0); seg < segmentsDownloaded; seg++ {
+			start := PartSize * int64(seg)
+			end := min(int64(PartSize*(seg+1)), bytesDownloaded)
+
+			// Send to Aprimo
+			t1 = time.Now().UnixMilli()
+			success, err := aprimo.UploadSegment(key, uri, &aprimo.FileSegment{
+				Segment:  segment,
+				FileType: fileType,
+				Data:     bytes.NewBuffer(dataBytes[start:end]),
+			}, token)
+			t2 = time.Now().UnixMilli()
+
+			if err != nil {
+				logs.LogError(err, "Aprimo Segment Upload Error")
+				break
+			} else if !success {
+				logs.LogError(err, "Failed to succeed")
+				break
+			}
+
+			// DBG
+			fmt.Printf("Uploaded bytes %d to %d in %d ms\n", start, end, t2-t1)
+
+			segment += 1
+		}
+
+		readyToCommit = (bytesDownloaded < S3DownloadBytes)
+
+		downloadBlock += 1
 	}
 
 	// Commit to Aprimo
@@ -212,11 +268,10 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 				if size <= PartSize {
 					uploadToken, err = UploadSmallFile(key, token, downloader, bucket, fileType)
 				} else {
-					uploadToken, err = UploadFileSegments(key, token, downloader, bucket, fileType)
+					uploadToken, err = UploadFileSegments(key, token, downloader, bucket, fileType, size)
 				}
 
 				if err == nil {
-					log.Println(uploadToken) // DBG
 					messageId, err := sendRecordEvent(key, fileType, uploadToken)
 					if err != nil {
 						logs.LogError(err, "send record event error")

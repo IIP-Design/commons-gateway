@@ -16,6 +16,7 @@ const mig20230927 = "20230927_mfa_table"
 const mig20230929 = "20230929_aprimo_ids"
 const mig20231002 = "20231002_aprimo_tokens"
 const mig20231010 = "20231010_login_lockouts"
+const mig20231016 = "20231016_s3_id_column_size"
 
 // getAppliedMigrations queries the `migrations` table in that database
 // for a list of schema updates that have already been executed.
@@ -62,7 +63,7 @@ func ApplyMigrations() error {
 
 	// Apply the migration from August 31, 2023
 	if !stringArrayContains(applied, mig20230831) {
-		fmt.Printf("Applying migration - %s", mig20230831)
+		fmt.Printf("Applying migration - %s\n", mig20230831)
 
 		err = applyMigration20230831(mig20230831)
 
@@ -73,7 +74,7 @@ func ApplyMigrations() error {
 
 	// Apply the migration from September 26, 2023
 	if !stringArrayContains(applied, mig20230926) {
-		fmt.Printf("Applying migration - %s", mig20230926)
+		fmt.Printf("Applying migration - %s\n", mig20230926)
 
 		err = applyMigration20230926(mig20230926)
 
@@ -84,7 +85,7 @@ func ApplyMigrations() error {
 
 	// Apply the migration from September 27, 2023
 	if !stringArrayContains(applied, mig20230927) {
-		fmt.Printf("Applying migration - %s", mig20230927)
+		fmt.Printf("Applying migration - %s\n", mig20230927)
 
 		err = applyMigration20230927(mig20230927)
 
@@ -95,7 +96,7 @@ func ApplyMigrations() error {
 
 	// Apply the migration from September 29, 2023
 	if !stringArrayContains(applied, mig20230929) {
-		fmt.Printf("Applying migration - %s", mig20230929)
+		fmt.Printf("Applying migration - %s\n", mig20230929)
 
 		err = applyMigration20230929(mig20230929)
 
@@ -106,7 +107,7 @@ func ApplyMigrations() error {
 
 	// Apply the migration from October 02, 2023
 	if !stringArrayContains(applied, mig20231002) {
-		fmt.Printf("Applying migration - %s", mig20231002)
+		fmt.Printf("Applying migration - %s\n", mig20231002)
 
 		err = applyMigration20231002(mig20231002)
 
@@ -117,9 +118,20 @@ func ApplyMigrations() error {
 
 	// Apply the migration from October 10, 2023
 	if !stringArrayContains(applied, mig20231010) {
-		fmt.Printf("Applying migration - %s", mig20231010)
+		fmt.Printf("Applying migration - %s\n", mig20231010)
 
 		err = applyMigration20231010(mig20231010)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// Apply the migration from October 16, 2023
+	if !stringArrayContains(applied, mig20231016) {
+		fmt.Printf("Applying migration - %s\n", mig20231016)
+
+		err = applyMigration20231016(mig20231016)
 
 		if err != nil {
 			return err

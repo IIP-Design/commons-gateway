@@ -27,8 +27,11 @@ const UPLOAD_ENDPOINT = import.meta.env.UPLOAD_ENDPOINT || 'upload';
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-const getPresignedUrl = async ( contentType: string ) => {
-  const response = await buildQuery( `${UPLOAD_ENDPOINT}?contentType=${encodeURIComponent( contentType )}`, null, 'GET' );
+const getPresignedUrl = async ( filename: string, contentType: string ) => {
+  const queryFilename = `fileName=${encodeURIComponent( filename )}`;
+  const queryType = `contentType=${encodeURIComponent( contentType )}`;
+
+  const response = await buildQuery( `${UPLOAD_ENDPOINT}?${queryFilename}&${queryType}`, null, 'GET' );
   const { uploadURL, key } = await response.json();
 
   return { uploadURL, key };
@@ -53,7 +56,7 @@ const submitFileMetadata = async ( body: IFileUploadMeta ) => {
 // Exports
 // ////////////////////////////////////////////////////////////////////////////
 export const submitFiles = async ( file: File, meta: IMetadata ): Promise<TUploadStatus> => {
-  const { uploadURL, key } = await getPresignedUrl( file.type );
+  const { uploadURL, key } = await getPresignedUrl( file.name, file.type );
 
   if ( !uploadURL ) { return 'urlFailed'; }
 

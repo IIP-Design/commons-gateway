@@ -10,8 +10,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/randstr"
-	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
+	"github.com/IIP-Design/commons-gateway/utils/security/sanitize"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,13 +23,7 @@ const (
 	LifetimeSecs = 300
 )
 
-func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
-	code, err := jwt.RequestIsAuthorized(event, []string{"super admin", "admin", "guest admin", "guest"})
-
-	if err != nil {
-		return msgs.SendAuthError(err, code)
-	}
-
+func presignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	rawContentType := event.QueryStringParameters["contentType"]
 
 	if rawContentType == "" {
@@ -44,15 +37,24 @@ func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyReques
 		return msgs.SendServerError(err)
 	}
 
-	var awsRegion = os.Getenv("AWS_REGION")
-	var s3Bucket = os.Getenv("S3_UPLOAD_BUCKET")
+	rawFilename := event.QueryStringParameters["fileName"]
 
-	key, err := randstr.RandStringBytes(24)
+	if rawFilename == "" {
+		return msgs.SendServerError(errors.New("no fileName type submitted"))
+	}
+
+	unsafeFilename, err := url.PathUnescape(rawFilename)
 
 	if err != nil {
-		logs.LogError(err, "key generation error")
+		logs.LogError(err, "fileName decode error")
 		return msgs.SendServerError(err)
 	}
+
+	key := sanitize.TimestampObjectKey(sanitize.DefaultKeySanitizer(unsafeFilename))
+	// fmt.Printf("Key: %s\n", key)
+
+	var awsRegion = os.Getenv("AWS_REGION")
+	var s3Bucket = os.Getenv("S3_UPLOAD_BUCKET")
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(awsRegion),
@@ -93,5 +95,5 @@ func PresignedUrlHandler(ctx context.Context, event events.APIGatewayProxyReques
 }
 
 func main() {
-	lambda.Start(PresignedUrlHandler)
+	lambda.Start(presignedUrlHandler)
 }

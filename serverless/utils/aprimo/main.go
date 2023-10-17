@@ -267,8 +267,8 @@ func UploadFile(filename string, fileType string, data *bytes.Buffer, token stri
 		logs.LogError(err, "Error Preparing Aprimo Request")
 		return uploadToken, err
 	}
-	request.Header.Add("Content-Type", writer.FormDataContentType())
 
+	request.Header.Add("Content-Type", writer.FormDataContentType())
 	request.Header.Set("Accept", "*/*")
 	request.Header.Set("API-VERSION", "1")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
