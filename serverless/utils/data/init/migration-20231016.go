@@ -11,7 +11,7 @@ func updateS3KeyColumn(pool *sql.DB) error {
 	var err error
 
 	_, err = pool.Exec(
-		`ALTER TABLE uploads ALTER COLUMN s3_id TYPE VARCHAR(100);`,
+		`ALTER TABLE uploads ALTER COLUMN s3_id TYPE VARCHAR(255);`,
 	)
 
 	if err != nil {
@@ -21,7 +21,8 @@ func updateS3KeyColumn(pool *sql.DB) error {
 	return err
 }
 
-// applyMigration20231016
+// applyMigration20231016 increases the size of the s3_id property since we no
+// longer use a defined length file name.
 func applyMigration20231016(title string) error {
 	var err error
 
