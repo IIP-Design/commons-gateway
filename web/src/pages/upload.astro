@@ -39,11 +39,12 @@ const title = 'Submit Files';
     <p class="section-header"><strong>Description <span>*</span></strong></p>
     <p>Include a point of contact email in case questions arise.</p>
     <textarea id="description-text" aria-label="Enter uploaded media metadata" />
+    <span id="loader" class="loader" style="display: none;"></span>
     <Button id="upload-files-btn" type="submit">Submit</Button>
   </PageContainer>
 </LoggedInPageLayout>
 
-<style>
+<style lang="scss">
   p,
   strong {
     color: var(--blue);
@@ -77,4 +78,32 @@ const title = 'Submit Files';
     list-style: none;
     padding: 0;
   }
+  .loader {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: block;
+    margin:15px auto;
+    position: relative;
+    margin-left: 3em;
+    color: var(--blue);
+    box-sizing: border-box;
+    animation: animloader 1s linear infinite alternate;
+  }
+
+  @keyframes animloader {
+    0% {
+      box-shadow: -38px -6px, -14px 6px,  14px -6px;
+    }
+    33% {
+      box-shadow: -38px 6px, -14px -6px,  14px 6px;
+    }
+    66% {
+      box-shadow: -38px -6px, -14px 6px, 14px -6px;
+    }
+    100% {
+      box-shadow: -38px 6px, -14px -6px, 14px 6px;
+    }
+  }
+
 </style>
