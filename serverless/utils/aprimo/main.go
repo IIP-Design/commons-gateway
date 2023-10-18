@@ -241,8 +241,8 @@ func UploadFile(filename string, fileType string, data *bytes.Buffer, token stri
 	var uploadToken string
 	var err error
 
-	// Uses DAM, unlike segmented upload, possible FIXME
-	url := GetEndpointURL("uploads", true)
+	// Using DAM will only work for very small files, e.g., 2.8 MB will fail
+	url := GetEndpointURL("uploads", false)
 
 	// Add file data
 	body := &bytes.Buffer{}
@@ -276,7 +276,7 @@ func UploadFile(filename string, fileType string, data *bytes.Buffer, token stri
 	// Make the request
 	resp, err := client.Do(request)
 
-	if err != nil {
+	if err != nil || resp.StatusCode >= 400 {
 		logs.LogError(err, "Aprimo File Upload Error")
 		return uploadToken, err
 	}
