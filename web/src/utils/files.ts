@@ -92,7 +92,6 @@ const switchSubmitDisplay = () => {
   btn.style.display = ( btnHidden ? 'block' : 'none' );
 
   const loader = document.getElementById( 'loader' ) as HTMLInputElement;
-  console.log( loader );
   const loaderHidden = ( loader.style.display === 'none' );
   loader.style.display = ( loaderHidden ? 'block' : 'none' );
 }
