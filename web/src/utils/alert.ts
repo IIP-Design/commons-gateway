@@ -61,6 +61,17 @@ export const showInfo = ( title: string, text: string ) => Swal.fire( {
   buttonsStyling: false,
 } );
 
+export const showWarning = ( text: string, heading?: string ) => Swal.fire( {
+  icon: 'warning',
+  title: heading || 'Warning',
+  text,
+  customClass: {
+    confirmButton: REJECT_BTN_STYLE_CLASSES,
+    popup: alertStyles.text,
+  },
+  buttonsStyling: false,
+} );
+
 export const showConfirm = ( text: string ) => Swal.fire( {
   icon: 'warning',
   title: 'Please confirm your selection',

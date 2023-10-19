@@ -7,7 +7,7 @@ import prettyBytes from 'pretty-bytes';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import { submitFiles } from './upload';
-import { showError, showSuccess } from './alert';
+import { showError, showSuccess, showWarning } from './alert';
 
 import currentUser from '../stores/current-user';
 
@@ -70,10 +70,10 @@ const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
     showError( 'Internal error' );
     error = true;
   } else if ( !file ) {
-    showError( 'No file has been selected for upload' );
+    showWarning( 'No file has been selected for upload', 'Invalid Submission' );
     error = true;
   } else if ( !description ) {
-    showError( 'No file description provided' );
+    showWarning( 'No file description provided', 'Invalid Submission' );
     error = true;
   } else if ( !email ) {
     showError( 'No current user email' );
@@ -85,6 +85,16 @@ const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
 
   return { description, file, error, email, team };
 };
+
+const switchSubmitDisplay = () => {
+  const btn = document.getElementById( 'upload-files-btn' ) as HTMLInputElement;
+  const btnHidden = ( btn.style.display === 'none' );
+  btn.style.display = ( btnHidden ? 'block' : 'none' );
+
+  const loader = document.getElementById( 'loader' ) as HTMLInputElement;
+  const loaderHidden = ( loader.style.display === 'none' );
+  loader.style.display = ( loaderHidden ? 'block' : 'none' );
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 // Exports
@@ -121,6 +131,8 @@ export const chooseHandler = ( e: Event ) => {
 };
 
 export const submitHandler = async () => {
+  switchSubmitDisplay();
+
   // Prepare and validate
   const descriptionElem = document.getElementById( 'description-text' ) as HTMLInputElement;
   const fileElem = document.getElementById( 'file-list' ) as HTMLInputElement;
@@ -128,6 +140,7 @@ export const submitHandler = async () => {
   const { file, description, email, team, error } = validateSubmission( descriptionElem );
 
   if ( error ) {
+    switchSubmitDisplay();
     return;
   }
 
@@ -144,4 +157,6 @@ export const submitHandler = async () => {
   descriptionElem.value = '';
   fileElem.innerHTML = '';
   fileToUpload = null;
+
+  switchSubmitDisplay();
 };
