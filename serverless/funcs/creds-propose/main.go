@@ -42,14 +42,14 @@ func handleProposedInvitation(invite data.Invite) error {
 	hash := hashing.GenerateHash(pass, salt)
 
 	// PASSWORD IS UNRECOVERABLE
-	err = invites.SaveCredentials(invite.Invitee, invite.Expires, hash, salt)
+	err = invites.SaveCredentials(invite.Invitee)
 
 	if err != nil {
 		return errors.New("something went wrong - credential generation failed")
 	}
 
 	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = invites.SaveInvite(invite.Proposer, invite.Invitee.Email, true)
+	err = invites.SaveInvite(invite.Proposer, invite.Invitee.Email, invite.Expires, hash, salt, true)
 
 	if err != nil {
 		return errors.New("something went wrong - saving invite failed")

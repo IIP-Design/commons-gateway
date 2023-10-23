@@ -40,14 +40,14 @@ func handleInvitation(invite data.Invite) error {
 	pass, salt := hashing.GenerateCredentials()
 	hash := hashing.GenerateHash(pass, salt)
 
-	err = invites.SaveCredentials(invite.Invitee, invite.Expires, hash, salt)
+	err = invites.SaveCredentials(invite.Invitee)
 
 	if err != nil {
 		return errors.New("something went wrong - credential generation failed")
 	}
 
 	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = invites.SaveInvite(invite.Inviter, invite.Invitee.Email, false)
+	err = invites.SaveInvite(invite.Inviter, invite.Invitee.Email, invite.Expires, hash, salt, false)
 
 	if err != nil {
 		return errors.New("something went wrong - saving invite failed")

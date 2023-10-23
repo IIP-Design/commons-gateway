@@ -22,8 +22,8 @@ func deactivateGuest(email string) error {
 	currentTime := time.Now()
 	deactivatedTime := currentTime.Add(time.Duration(-1) * time.Minute)
 
-	query := `UPDATE guests SET expiration = $1, date_modified = $2 WHERE email = $3`
-	_, err := pool.Exec(query, deactivatedTime, currentTime, email)
+	query := `UPDATE invites SET expiration = $1 WHERE email = $3`
+	_, err := pool.Exec(query, deactivatedTime, email)
 
 	if err != nil {
 		logs.LogError(err, "Deactivate Guest Query Error")

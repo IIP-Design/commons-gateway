@@ -40,6 +40,13 @@
       "description": "The date at which the user's access expires",
       "type": "string",
       "format": "date-time"
+    },
+    "inviter": {
+      "description": "The inviter admin user's email",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
     }
   },
   "required": ["expiration"],

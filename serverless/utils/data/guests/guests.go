@@ -8,33 +8,69 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
+type InviteRecord struct {
+	Pending     bool   `json:"pending"`
+	DateInvited string `json:"dateInvited"`
+	Expiration  string `json:"expiration"`
+	Expired     bool   `json:"expired"`
+}
+
+type GuestData struct {
+	Email     string `json:"email"`
+	FirstName string `json:"givenName"`
+	LastName  string `json:"familyName"`
+	Role      string `json:"role"`
+	Team      string `json:"team"`
+}
+
+type GuestDetails struct {
+	GuestData
+	Invites []InviteRecord `json:"invites"`
+}
+
 // RetrieveGuest opens a database connection and retrieves the information for a single user.
-func RetrieveGuest(email string) (map[string]string, error) {
-	var guest map[string]string
+func RetrieveGuest(email string) (GuestDetails, error) {
+	var guest GuestDetails
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	var firstName string
-	var lastName string
-	var role string
-	var team string
-	var expiration time.Time
-
-	query := `SELECT first_name, last_name, role, team, expiration FROM guests WHERE email = $1`
-	err := pool.QueryRow(query, email).Scan(&firstName, &lastName, &role, &team, &expiration)
+	query := `SELECT email, first_name, last_name, role, team FROM guests WHERE email = $1`
+	err := pool.QueryRow(query, email).Scan(&guest.Email, &guest.FirstName, &guest.LastName, &guest.Role, &guest.Team)
 
 	if err != nil {
 		logs.LogError(err, "Retrieve Guest Query Error")
+		return guest, err
 	}
 
-	guest = map[string]string{
-		"email":      email,
-		"givenName":  firstName,
-		"familyName": lastName,
-		"role":       role,
-		"team":       team,
-		"expiration": expiration.Format(time.RFC3339),
+	query = `SELECT pending, date_invited, expiration, expiration < NOW() AS expired FROM invites WHERE invitee = $1 ORDER BY expiration DESC`
+	rows, err := pool.Query(query, email)
+
+	if err != nil {
+		logs.LogError(err, "Retrieve Invites Query Error")
+		return guest, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var pending bool
+		var dateInvited time.Time
+		var expiration time.Time
+		var expired bool
+
+		if err := rows.Scan(&pending, &dateInvited, &expiration, &expired); err != nil {
+			logs.LogError(err, "Scan Guests Query Error")
+			return guest, err
+		}
+
+		var invite = InviteRecord{
+			Pending:     pending,
+			DateInvited: dateInvited.Format(time.RFC3339),
+			Expiration:  expiration.Format(time.RFC3339),
+		}
+
+		guest.Invites = append(guest.Invites, invite)
 	}
 
 	return guest, err
@@ -51,12 +87,12 @@ func RetrieveGuests(team string, role string) ([]map[string]string, error) {
 	defer pool.Close()
 
 	if team == "" {
-		query = `SELECT email, first_name, last_name, role, team, expiration FROM guests ORDER BY first_name;`
+		query = `SELECT email, first_name, last_name, role, team, expiration FROM guest_auth_data ORDER BY first_name;`
 		rows, err = pool.Query(query)
 	} else {
 		query =
 			`SELECT email, first_name, last_name, role, team, expiration
-			 FROM guests WHERE team = $1 ORDER BY first_name;`
+			 FROM guest_auth_data WHERE team = $1 ORDER BY first_name;`
 		rows, err = pool.Query(query, team)
 	}
 
@@ -165,7 +201,7 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 
 	query :=
 		`SELECT email, first_name, last_name, role, team, expiration, date_invited, proposer, inviter, pending
-			FROM guests LEFT JOIN invites ON guests.email=invites.invitee
+			FROM guest_auth_data
 			WHERE team = $1 ORDER BY first_name;`
 	rows, err := pool.Query(query, team)
 
@@ -232,11 +268,19 @@ func UpdateGuest(guest data.GuestUser) error {
 
 	query :=
 		`UPDATE guests SET first_name = $1, last_name = $2, team = $3,
-		 expiration = $4, date_modified = $5 WHERE email = $6`
-	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, guest.Expires, currentTime, guest.Email)
+		 date_modified = $4 WHERE email = $5`
+	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, currentTime, guest.Email)
 
 	if err != nil {
 		logs.LogError(err, "Update Guest Query Error")
+	}
+
+	query =
+		`UPDATE invites SET expiration = $1 WHERE invitee = $3`
+	_, err = pool.Exec(query, guest.Expires, guest.Email)
+
+	if err != nil {
+		logs.LogError(err, "Update Invites Query Error")
 	}
 
 	return err
@@ -247,19 +291,11 @@ func AcceptGuest(guest data.AcceptInvite, hash string, salt string) error {
 	defer pool.Close()
 
 	query :=
-		`UPDATE invites SET inviter = $1, pending = FALSE WHERE invitee = $2`
-	_, err := pool.Exec(query, guest.Inviter, guest.Invitee)
+		`UPDATE invites SET inviter = $1, pass_hash = $2, salt = $3, pending = FALSE WHERE invitee = $4`
+	_, err := pool.Exec(query, guest.Inviter, hash, salt, guest.Invitee)
 
 	if err != nil {
 		logs.LogError(err, "Update Invite Query Error")
-	}
-
-	query =
-		`UPDATE guests SET pass_hash = $1, salt = $2 WHERE email = $3`
-	_, err = pool.Exec(query, hash, salt, guest.Invitee)
-
-	if err != nil {
-		logs.LogError(err, "Update Guest Query Error")
 	}
 
 	return err

@@ -45,7 +45,7 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 
 	query :=
 		`SELECT pass_hash, salt, expiration < NOW() AS expired, pending=FALSE AS approved, locked, role
-		 FROM guests LEFT JOIN invites ON guests.email=invites.invitee WHERE email = $1;`
+		 FROM guest_auth_data WHERE email = $1;`
 
 	err = pool.QueryRow(query, email).Scan(&pass_hash, &salt, &expired, &approved, &locked, &role)
 

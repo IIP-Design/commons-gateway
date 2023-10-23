@@ -127,6 +127,9 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendAuthError(errors.New("internal error"), 500)
 	}
 
+	// DBG
+	fmt.Printf("New code for username %s: %s\n", username, code)
+
 	// Return the 2FA request id to the application.
 	resp := map[string]any{
 		"requestId": requestId,
