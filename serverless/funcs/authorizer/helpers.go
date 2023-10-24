@@ -83,6 +83,8 @@ func retrieveScopes(endpoint string, method string) []string {
 		return StateAdmins.Array()
 	case "guests/uploaders":
 		return GuestAdmins.Array()
+	case "passwordReset":
+		return StateAdmins.Array()
 	case "team":
 		if method == "POST" {
 			return SuperAdmins.Array()

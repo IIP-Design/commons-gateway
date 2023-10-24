@@ -102,3 +102,27 @@ credsProvision:
     AWS_SES_REGION: ${env:AWS_SES_REGION}
     EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/partner-login
     SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+passwordReset:
+  name: gateway-${opt:stage}-password-reset
+  handler: bin/password-reset
+  description: Reset an existing guest's password.
+  runtime: go1.x
+  events:
+    - http:
+        path: /passwordReset
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          parameters:
+            querystrings:
+              id: true
+  package:
+    patterns:
+      - './bin/password-reset'
+  environment:
+    AWS_SES_REGION: ${env:AWS_SES_REGION}
+    EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/partner-login
+    SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}

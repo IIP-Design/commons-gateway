@@ -30,7 +30,6 @@ func handleInvitation(invite data.Invite) error {
 		return err
 	}
 
-	// TODO - email URL
 	err = provision.MailProvisionedCreds(invite.Invitee, pass)
 
 	return err

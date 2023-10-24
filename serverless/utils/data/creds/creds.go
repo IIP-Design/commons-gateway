@@ -101,3 +101,20 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 
 	return pass, nil
 }
+
+func ResetPassword(email string) (string, error) {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	pass, salt := hashing.GenerateCredentials()
+	hash := hashing.GenerateHash(pass, salt)
+
+	query := `UPDATE invites SET salt = $1, pass_hash = $2 WHERE invitee = $3 AND date_invited = ( SELECT MAX(date_invited) FROM invites WHERE invitee = $3 AND pending = FALSE );`
+	_, err := pool.Exec(query, salt, hash, email)
+
+	if err != nil {
+		logs.LogError(err, "Reset Password Error")
+	}
+
+	return pass, err
+}

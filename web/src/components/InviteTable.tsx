@@ -13,13 +13,13 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import currentUser from '../stores/current-user';
-import { showError, showTernary } from '../utils/alert';
 import { daysUntil } from '../utils/dates';
 import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
 import { getTeamName } from '../utils/team';
 import { Table, defaultColumnDef } from './Table';
+import { makeApproveUserHandler } from '../utils/users';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -34,43 +34,6 @@ interface IInvite extends IUserEntry {
   dateInvited: string;
   proposer: string;
 }
-
-// ////////////////////////////////////////////////////////////////////////////
-// Helpers
-// ////////////////////////////////////////////////////////////////////////////
-const makeClickHandler = ( inviteeEmail: string ) => {
-  const inviterEmail = currentUser.get().email;
-
-  return async () => {
-    const { isConfirmed, isDenied } = await showTernary(
-      'By approving this user they will be allowed to upload media to the Content Commons system until deactivated or their login expires.  Denying access will blacklist this email address indefinitely.',
-      { confirmButtonText: 'Approve' },
-    );
-    let wasUpdated = false;
-
-    if ( isConfirmed ) {
-      const { ok } = await buildQuery( 'guest/approve', { inviteeEmail, inviterEmail }, 'POST' );
-
-      if ( !ok ) {
-        showError( 'Unable to accept invite' );
-      } else {
-        wasUpdated = true;
-      }
-    } else if ( isDenied ) {
-      const { ok } = await buildQuery( `guest?id=${inviteeEmail}`, null, 'DELETE' );
-
-      if ( !ok ) {
-        showError( 'Unable to reject invite' );
-      } else {
-        wasUpdated = true;
-      }
-    }
-
-    if ( wasUpdated ) {
-      window.location.reload();
-    }
-  };
-};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
@@ -120,7 +83,7 @@ const UserTable: FC = () => {
         cell: info => (
           <button
             className={ btnStyle['link-btn'] }
-            onClick={ makeClickHandler( info.row.getValue( 'email' ) ) }
+            onClick={ makeApproveUserHandler( info.row.getValue( 'email' ) ) }
             type="button"
           >
             { info.getValue() as string }

@@ -15,12 +15,13 @@ import { addDays } from 'date-fns';
 import BackButton from './BackButton';
 
 import currentUser from '../stores/current-user';
-import type { TUserRole } from '../utils/types';
 import { showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
+import { makeDummyUserForm } from '../utils/users';
+import type { IUserFormData } from '../utils/users';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -29,24 +30,15 @@ import '../styles/form.scss';
 import styles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
-// Interfaces and Types
+// Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserFormData {
-  givenName: string;
-  familyName: string;
-  email: string;
-  team: string;
+export interface INewUserFormData extends IUserFormData {
   accessEndDate: string;
-  role: TUserRole,
 }
 
 const initialState = {
-  givenName: '',
-  familyName: '',
-  email: '',
-  team: currentUser.get().team || '',
+  ...makeDummyUserForm(),
   accessEndDate: getYearMonthDay( addDays( new Date(), 14 ) ),
-  role: 'guest' as TUserRole,
 };
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -55,7 +47,7 @@ const initialState = {
 const UserForm: FC = () => {
   const [isAdmin, setIsAdmin] = useState( false );
   const [teamList, setTeamList] = useState( [] );
-  const [userData, setUserData] = useState<IUserFormData>( initialState );
+  const [userData, setUserData] = useState<INewUserFormData>( initialState );
 
   const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
 
@@ -87,7 +79,7 @@ const UserForm: FC = () => {
    * Updates the user state on changed to the form inputs.
    * @param key The user property being updated.
    */
-  const handleUpdate = ( key: keyof IUserFormData, value?: string|Date ) => {
+  const handleUpdate = ( key: keyof INewUserFormData, value?: string|Date ) => {
     setUserData( { ...userData, [key]: value } );
   };
 

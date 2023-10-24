@@ -15,12 +15,14 @@ import { addDays, parse } from 'date-fns';
 import BackButton from './BackButton';
 
 import currentUser from '../stores/current-user';
-import type { IInvite, TUserRole } from '../utils/types';
 import { showConfirm, showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 import { addDaysToNow, dateSelectionIsValid, getYearMonthDay, userWillNeedNewPassword } from '../utils/dates';
+
+import type { IInvite } from '../utils/types';
+import { makeDummyUserForm, type IUserFormData, makeApproveUserHandler } from '../utils/users';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -32,32 +34,190 @@ import { InviteModal } from './InviteModal';
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
-interface IUserFormData {
-  givenName: string;
-  familyName: string;
-  email: string;
-  team: string;
-  role: TUserRole,
+interface IInviteWidgetParams {
+  readonly userData: IUserFormData;
+  readonly invite: IInvite;
+  readonly isAdmin: boolean;
 }
 
-const initialUserState: IUserFormData = {
-  givenName: '',
-  familyName: '',
-  email: '',
-  team: currentUser.get().team || '',
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+// ////////////////////////////////////////////////////////////////////////////
+const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: IInviteWidgetParams ) => {
+  const [currentInvite, setCurrentInvite] = useState<IInvite>( invite );
 
-  role: 'guest' as TUserRole,
+  const handleAccessUpdate = (value: string) => {
+    setCurrentInvite({ ...currentInvite, accessEndDate: value });
+  };
+
+  const validateAccessSub = () => {
+    if ( !dateSelectionIsValid( currentInvite.accessEndDate ) ) {
+      showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
+
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleReauth = async () => {
+    if (!validateAccessSub()) {
+      return;
+    }
+
+    const { email } = userData;
+    const { dateInvited, accessEndDate, expired, passwordReset } = currentInvite;
+
+    const shouldPrompt = userWillNeedNewPassword( dateInvited, accessEndDate, expired, passwordReset );
+    if( shouldPrompt ) {
+      let prompText = '';
+      if( expired ) {
+        prompText = 'Because the user\'s access has expired, they will need to reset their password.';
+      } else if( !passwordReset ) {
+        prompText = 'Because the user did not reset their password following the last invite, they must reset it after this one.';
+      } else {
+        prompText = `Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`;
+      }
+
+      const { isConfirmed } = await showConfirm(prompText);
+      if (!isConfirmed) {
+        return;
+      }
+    }
+
+    // Conversion to iso required by Lambda
+    const expiration = new Date( accessEndDate ).toISOString();
+    
+    const body = {
+      email,
+      admin: currentUser.get().email,
+      expiration,
+    };
+
+    const { ok } = await buildQuery('guest/reauth', body, 'POST');
+
+    if (!ok) {
+      showError('Unable to re-authorize user');
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    const { email } = userData;
+    const { ok } = await buildQuery(`resetPassword?id=${email}`, null, 'POST');
+
+    if (!ok) {
+      showError('Unable to reset password');
+    }
+  };
+
+  const handleRevoke = async () => {
+    const { email, givenName, familyName } = userData;
+    const { isConfirmed } = await showConfirm(`Are you sure you want to deactivate ${givenName} ${familyName}?`);
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    const { ok } = await buildQuery(`guest?id=${email}`, null, 'DELETE');
+
+    if (!ok) {
+      showError('Unable to deactivate user');
+    } else {
+      window.location.assign((isAdmin ? '/' : '/uploader-users'));
+    }
+  };
+  
+  return (
+    <div id="invite-data-form">
+        <h3>{currentInvite.expired ? 'Recent' : 'Current'} Access</h3>
+        <div className="field-group">
+          <label>
+            <span>Access End Date</span>
+            <input
+              id="date-input"
+              type="date"
+              disabled={!isAdmin}
+              min={getYearMonthDay(new Date())}
+              max={getYearMonthDay(addDaysToNow(60))}
+              value={currentInvite.accessEndDate}
+              onChange={e => handleAccessUpdate(e.target.value)}
+            />
+          </label>
+          <label>
+            <span>Date Invited</span>
+            <input
+              id="date-invited-input"
+              type="date"
+              disabled={true}
+              value={currentInvite.dateInvited}
+            />
+          </label>
+        </div>
+        <button
+          className={`${styles.btn} ${styles['spaced-btn']}`}
+          id="update-btn"
+          type="button"
+          onClick={handleReauth}
+        >
+          Reauthorize
+        </button>
+        <button
+          className={`${styles['btn-light']} ${styles['spaced-btn']}`}
+          id="reset-password-btn"
+          type="button"
+          onClick={handlePasswordReset}
+        >
+          Reset Password
+        </button>
+        <button
+          className={`${styles['back-btn']} ${styles['spaced-btn']}`}
+          id="deactivate-btn"
+          type="button"
+          onClick={handleRevoke}
+        >
+          Revoke Access
+        </button>
+      </div>
+  );
 };
 
-const initialInvites: IInvite[] = [
-  {
-    pending: false,
-    expired: false,
-    passwordReset: false,
-    dateInvited: getYearMonthDay(new Date()),
-    accessEndDate: getYearMonthDay(addDays(new Date(), 14)),
-  }
-];
+const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite }: IInviteWidgetParams ) => {
+  const [pendingInvite] = useState<IInvite>( invite );
+  
+  return (
+    <div id="invite-data-form">
+        <h3>Proposed Access</h3>
+        <div className="field-group">
+          <label>
+            <span>Access End Date</span>
+            <input
+              id="date-input"
+              type="date"
+              disabled={true}
+              value={pendingInvite.accessEndDate}
+            />
+          </label>
+          <label>
+            <span>Date Invited</span>
+            <input
+              id="date-invited-input"
+              type="date"
+              disabled={true}
+              value={pendingInvite.dateInvited}
+            />
+          </label>
+        </div>
+        <button
+          className={`${styles['btn-light']}`}
+          id="finalize-btn"
+          type="button"
+          onClick={makeApproveUserHandler(email)}
+        >
+          Finalize
+        </button>
+      </div>
+  );
+};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
@@ -66,9 +226,10 @@ const UserForm: FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [teamList, setTeamList] = useState([]);
 
-  const [userData, setUserData] = useState<IUserFormData>(initialUserState);
-  const [currentInvite, setCurrentInvite] = useState<IInvite>(initialInvites[0]);
-  const [invites, setInvites] = useState<IInvite[]>(initialInvites);
+  const [userData, setUserData] = useState<IUserFormData>(makeDummyUserForm());
+  const [pendingInvite, setPendingInvite] = useState<IInvite|null>(null);
+  const [currentInvite, setCurrentInvite] = useState<IInvite|null>(null);
+  const [invites, setInvites] = useState<IInvite[]>([]);
 
   const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
 
@@ -113,9 +274,10 @@ const UserForm: FC = () => {
           expired: invite.expired,
           dateInvited: getYearMonthDay(parse(invite.dateInvited, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
           accessEndDate: getYearMonthDay(parse(invite.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
-        }))
+        }));
 
-        setCurrentInvite(fmtInvites[0])
+        setPendingInvite(fmtInvites[0].pending ? fmtInvites[0] : null);
+        setCurrentInvite(fmtInvites.find( val => !val.pending ) || null);
         setInvites(fmtInvites);
       }
     };
@@ -134,10 +296,6 @@ const UserForm: FC = () => {
     setUserData({ ...userData, [key]: value });
   };
 
-  const handleAccessUpdate = (value: string) => {
-    setCurrentInvite({ ...currentInvite, accessEndDate: value });
-  }
-
   /**
    * Ensure that the form submissions are valid before sending data to the API.
    */
@@ -151,16 +309,6 @@ const UserForm: FC = () => {
     if (isAdmin && !userData.team) {
       // Admin users have the option to set a team, so a team should be set
       showError('Please assign this user to a valid team');
-
-      return false;
-    }
-
-    return true;
-  };
-
-  const validateAccessSub = () => {
-    if ( !dateSelectionIsValid( currentInvite.accessEndDate ) ) {
-      showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
 
       return false;
     }
@@ -188,64 +336,6 @@ const UserForm: FC = () => {
     };
 
     buildQuery('guest', invitee, 'PUT').catch(err => console.error(err));
-  };
-
-  const handleReauth = async () => {
-    if (!validateAccessSub()) {
-      return;
-    }
-
-    const { email } = userData;
-    const { dateInvited, accessEndDate, expired, passwordReset } = currentInvite;
-
-    const shouldPrompt = userWillNeedNewPassword( dateInvited, accessEndDate, expired, passwordReset );
-    if( shouldPrompt ) {
-      let prompText = '';
-      if( expired ) {
-        prompText = 'Because the user\'s access has expired, they will need to reset their password.';
-      } else if( !passwordReset ) {
-        prompText = 'Because the user did not reset their password following the last invite, they must reset it after this one.';
-      } else {
-        prompText = `Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`;
-      }
-
-      const { isConfirmed } = await showConfirm(prompText);
-      if (!isConfirmed) {
-        return;
-      }
-    }
-
-    // Conversion to iso required by Lambda
-    const expiration = new Date( accessEndDate ).toISOString();
-    
-    const body = {
-      email,
-      admin: currentUser.get().email,
-      expiration,
-    };
-
-    const { ok } = await buildQuery('guest/reauth', body, 'POST');
-
-    if (!ok) {
-      showError('Unable to re-authorize user');
-    }
-  };
-
-  const handleRevoke = async () => {
-    const { email, givenName, familyName } = userData;
-    const { isConfirmed } = await showConfirm(`Are you sure you want to deactivate ${givenName} ${familyName}?`);
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    const { ok } = await buildQuery(`guest?id=${email}`, null, 'DELETE');
-
-    if (!ok) {
-      showError('Unable to deactivate user');
-    } else {
-      window.location.assign((isAdmin ? '/' : '/uploader-users'));
-    }
   };
 
   return (
@@ -324,48 +414,8 @@ const UserForm: FC = () => {
           </button>
         </form>
       </div>
-      <div id="invite-data-form">
-        <h3>{currentInvite.expired ? 'Recent' : 'Current'} Access</h3>
-        <div className="field-group">
-          <label>
-            <span>Access End Date</span>
-            <input
-              id="date-input"
-              type="date"
-              disabled={!isAdmin}
-              min={getYearMonthDay(new Date())}
-              max={getYearMonthDay(addDaysToNow(60))}
-              value={currentInvite.accessEndDate}
-              onChange={e => handleAccessUpdate(e.target.value)}
-            />
-          </label>
-          <label>
-            <span>Date Invited</span>
-            <input
-              id="date-invited-input"
-              type="date"
-              disabled={true}
-              value={currentInvite.dateInvited}
-            />
-          </label>
-        </div>
-        <button
-          className={`${styles.btn} ${styles['spaced-btn']}`}
-          id="update-btn"
-          type="button"
-          onClick={handleReauth}
-        >
-          Reauthorize
-        </button>
-        <button
-          className={`${styles['btn-light']} ${styles['spaced-btn']}`}
-          id="deactivate-btn"
-          type="button"
-          onClick={handleRevoke}
-        >
-          Revoke Access
-        </button>
-      </div>
+      { pendingInvite && <PendingInvite userData={userData} invite={pendingInvite} isAdmin={isAdmin} /> }
+      { currentInvite && <CurrentInvite userData={userData} invite={currentInvite} isAdmin={isAdmin} /> }
       <div id="additional-options">
         <h3>Additional Options</h3>
         <InviteModal invites={invites} anchor={"Invite History"} />
