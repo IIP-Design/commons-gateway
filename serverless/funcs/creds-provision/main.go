@@ -3,17 +3,15 @@ package main
 import (
 	"context"
 	"errors"
-	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
+	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 )
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
@@ -27,40 +25,13 @@ func handleInvitation(invite data.Invite) error {
 		return errors.New("you are not authorized to invite users")
 	}
 
-	// Ensure invitee doesn't already have access.
-	_, guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
-
+	pass, err := creds.SaveInitialInvite(invite, false)
 	if err != nil {
 		return err
-	} else if guestHasAccess {
-		return errors.New("guest user already has access")
-	}
-
-	// Generate credentials
-	pass, salt := hashing.GenerateCredentials()
-	hash := hashing.GenerateHash(pass, salt)
-
-	err = invites.SaveCredentials(invite.Invitee)
-
-	if err != nil {
-		return errors.New("something went wrong - credential generation failed")
-	}
-
-	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = invites.SaveInvite(invite.Inviter, invite.Invitee.Email, invite.Expires, hash, salt, false)
-
-	if err != nil {
-		return errors.New("something went wrong - saving invite failed")
 	}
 
 	// TODO - email URL
-	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
-	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
-	err = provision.MailProvisionedCreds(sourceEmail, provision.ProvisionCredsData{
-		Invitee:     invite.Invitee,
-		TmpPassword: pass,
-		Url:         redirectUrl,
-	})
+	err = provision.MailProvisionedCreds(invite.Invitee, pass)
 
 	return err
 }

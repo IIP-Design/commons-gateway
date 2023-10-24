@@ -1,8 +1,12 @@
 package creds
 
 import (
+	"errors"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 )
 
 type CredentialsData struct {
@@ -63,4 +67,37 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 	}
 
 	return creds, err
+}
+
+func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
+	var pass string
+
+	// Ensure invitee doesn't already have access.
+	_, guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
+
+	if err != nil {
+		return pass, err
+	} else if guestHasAccess {
+		return pass, errors.New("guest user already exists")
+	}
+
+	// Save credentials
+	err = invites.SaveCredentials(invite.Invitee)
+
+	if err != nil {
+		return pass, errors.New("something went wrong - credential generation failed")
+	}
+
+	// PASSWORD IS UNRECOVERABLE
+	pass, salt := hashing.GenerateCredentials()
+	hash := hashing.GenerateHash(pass, salt)
+
+	// Record the invitation - has to follow cred generation due to foreign key constraint
+	err = invites.SaveInvite(invite.Proposer, invite.Invitee.Email, invite.Expires, hash, salt, setPending, true)
+
+	if err != nil {
+		return pass, errors.New("something went wrong - saving invite failed")
+	}
+
+	return pass, nil
 }

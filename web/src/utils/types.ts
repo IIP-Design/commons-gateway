@@ -30,6 +30,7 @@ export interface IUiData {
 export interface IInvite {
   pending: boolean;
   expired: boolean;
+  passwordReset: boolean;
   dateInvited: string;
   accessEndDate: string;
 }

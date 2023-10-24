@@ -75,6 +75,8 @@ func retrieveScopes(endpoint string, method string) []string {
 		}
 	case "guest/approve":
 		return StateAdmins.Array()
+	case "guest/reauth":
+		return AllAdmins.Array()
 	case "guests":
 		return StateAdmins.Array()
 	case "guests/pending":

@@ -99,7 +99,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	_, exists, err := data.CheckForExistingUser(username, "guests")
 
 	if err != nil || !exists {
-		return msgs.SendAuthError(errors.New("internal error"), 500)
+		return msgs.SendCustomError(errors.New("internal error"), 500)
 	}
 
 	// Generate the 2FA code.
@@ -124,7 +124,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 
 	if err != nil {
 		logs.LogError(err, "Failed to Send 2FA Code")
-		return msgs.SendAuthError(errors.New("internal error"), 500)
+		return msgs.SendCustomError(errors.New("internal error"), 500)
 	}
 
 	// DBG

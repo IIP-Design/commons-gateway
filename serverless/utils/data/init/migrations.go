@@ -18,6 +18,7 @@ const mig20231002 = "20231002_aprimo_tokens"
 const mig20231010 = "20231010_login_lockouts"
 const mig20231016 = "20231016_s3_id_column_size"
 const mig20231023 = "20231023_auth_with_invites"
+const mig20231024 = "20231024_invite_password_reset"
 
 // getAppliedMigrations queries the `migrations` table in that database
 // for a list of schema updates that have already been executed.
@@ -144,6 +145,17 @@ func ApplyMigrations() error {
 		fmt.Printf("Applying migration - %s\n", mig20231023)
 
 		err = applyMigration20231023(mig20231023)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// Apply the migration from October 24, 2023
+	if !stringArrayContains(applied, mig20231024) {
+		fmt.Printf("Applying migration - %s\n", mig20231024)
+
+		err = applyMigration20231024(mig20231024)
 
 		if err != nil {
 			return err

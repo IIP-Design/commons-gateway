@@ -22,7 +22,7 @@ func deactivateGuest(email string) error {
 	currentTime := time.Now()
 	deactivatedTime := currentTime.Add(time.Duration(-1) * time.Minute)
 
-	query := `UPDATE invites SET expiration = $1 WHERE email = $3`
+	query := `UPDATE invites SET expiration = $1 WHERE invitee = $2`
 	_, err := pool.Exec(query, deactivatedTime, email)
 
 	if err != nil {

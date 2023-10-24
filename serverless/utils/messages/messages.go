@@ -92,7 +92,7 @@ func statusCodeToBody(statusCode int) string {
 	return code
 }
 
-func SendAuthError(err error, statusCode int) (Response, error) {
+func SendCustomError(err error, statusCode int) (Response, error) {
 	var msg string
 
 	if err != nil {

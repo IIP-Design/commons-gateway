@@ -37,8 +37,8 @@ export const dateSelectionIsValid = ( dateStr?: string ) => {
   return date && isAfter( date, now ) && isBefore( date, addDays( now, MAX_ACCESS_GRANT_DAYS ) );
 };
 
-export const userWillNeedNewPassword = ( grantDateStr: string, endDateStr: string, expired: boolean ) => {
-  if ( expired ) {
+export const userWillNeedNewPassword = ( grantDateStr: string, endDateStr: string, expired: boolean, passwordResetLastAuth: boolean ) => {
+  if ( expired || !passwordResetLastAuth ) {
     return true;
   }
 

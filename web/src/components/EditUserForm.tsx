@@ -53,6 +53,7 @@ const initialInvites: IInvite[] = [
   {
     pending: false,
     expired: false,
+    passwordReset: false,
     dateInvited: getYearMonthDay(new Date()),
     accessEndDate: getYearMonthDay(addDays(new Date(), 14)),
   }
@@ -190,13 +191,25 @@ const UserForm: FC = () => {
   };
 
   const handleReauth = async () => {
+    if (!validateAccessSub()) {
+      return;
+    }
+
     const { email } = userData;
-    const { dateInvited, accessEndDate, expired } = currentInvite;
+    const { dateInvited, accessEndDate, expired, passwordReset } = currentInvite;
 
-    const shouldPrompt = userWillNeedNewPassword( dateInvited, accessEndDate, expired );
+    const shouldPrompt = userWillNeedNewPassword( dateInvited, accessEndDate, expired, passwordReset );
     if( shouldPrompt ) {
-      const { isConfirmed } = await showConfirm(`Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`);
+      let prompText = '';
+      if( expired ) {
+        prompText = 'Because the user\'s access has expired, they will need to reset their password.';
+      } else if( !passwordReset ) {
+        prompText = 'Because the user did not reset their password following the last invite, they must reset it after this one.';
+      } else {
+        prompText = `Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`;
+      }
 
+      const { isConfirmed } = await showConfirm(prompText);
       if (!isConfirmed) {
         return;
       }
@@ -207,6 +220,7 @@ const UserForm: FC = () => {
     
     const body = {
       email,
+      admin: currentUser.get().email,
       expiration,
     };
 

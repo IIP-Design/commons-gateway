@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Reauthorize User",
+  "description": "Data required to requthorize an existing guest user",
+  "type": "object",
+  "properties": {
+    "expiration": {
+      "description": "The date at which the user's access expires",
+      "type": "string",
+      "format": "date-time"
+    },
+    "email": {
+      "description": "The guest user's email, used as a unique id",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
+    },
+    "admin": {
+      "description": "The admin user's email",
+      "type": "string",
+      "format": "email",
+      "minLength": 6,
+      "maxLength": 127
+    }
+  },
+  "required": ["expiration", "email", "admin"],
+  "additionalProperties": false
+}

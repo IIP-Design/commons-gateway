@@ -1,4 +1,4 @@
-package main
+package propose
 
 import (
 	"context"
@@ -116,7 +116,10 @@ func formatEmail(
 	}
 }
 
-func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSupportStaffData) error {
+func MailProposedCreds(proposer data.User, invitee data.User) error {
+	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
+	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
+
 	if sourceEmail == "" {
 		log.Println("Not configured for sending emails")
 		return nil
@@ -131,7 +134,7 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 		return err
 	}
 
-	admins, err := getAdmins(supportStaffRequestData.Proposer.Team)
+	admins, err := getAdmins(proposer.Team)
 	if err != nil {
 		return err
 	}
@@ -140,10 +143,10 @@ func MailProposedCreds(sourceEmail string, supportStaffRequestData RequestSuppor
 
 	for _, admin := range admins {
 		e := formatEmail(
-			supportStaffRequestData.Proposer,
-			supportStaffRequestData.Invitee,
+			proposer,
+			invitee,
 			admin,
-			supportStaffRequestData.Url,
+			redirectUrl,
 			sourceEmail,
 		)
 

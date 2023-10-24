@@ -5,14 +5,17 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 )
 
 type InviteRecord struct {
-	Pending     bool   `json:"pending"`
-	DateInvited string `json:"dateInvited"`
-	Expiration  string `json:"expiration"`
-	Expired     bool   `json:"expired"`
+	Pending       bool   `json:"pending"`
+	DateInvited   string `json:"dateInvited"`
+	Expiration    string `json:"expiration"`
+	Expired       bool   `json:"expired"`
+	PasswordReset bool   `json:"passwordReset"`
 }
 
 type GuestData struct {
@@ -43,7 +46,7 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 		return guest, err
 	}
 
-	query = `SELECT pending, date_invited, expiration, expiration < NOW() AS expired FROM invites WHERE invitee = $1 ORDER BY expiration DESC`
+	query = `SELECT pending, date_invited, expiration, expiration < NOW() AS expired, password_reset FROM invites WHERE invitee = $1 ORDER BY expiration DESC`
 	rows, err := pool.Query(query, email)
 
 	if err != nil {
@@ -58,16 +61,19 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 		var dateInvited time.Time
 		var expiration time.Time
 		var expired bool
+		var passwordReset bool
 
-		if err := rows.Scan(&pending, &dateInvited, &expiration, &expired); err != nil {
+		if err := rows.Scan(&pending, &dateInvited, &expiration, &expired, &passwordReset); err != nil {
 			logs.LogError(err, "Scan Guests Query Error")
 			return guest, err
 		}
 
 		var invite = InviteRecord{
-			Pending:     pending,
-			DateInvited: dateInvited.Format(time.RFC3339),
-			Expiration:  expiration.Format(time.RFC3339),
+			Pending:       pending,
+			DateInvited:   dateInvited.Format(time.RFC3339),
+			Expiration:    expiration.Format(time.RFC3339),
+			Expired:       expired,
+			PasswordReset: passwordReset,
 		}
 
 		guest.Invites = append(guest.Invites, invite)
@@ -275,15 +281,66 @@ func UpdateGuest(guest data.GuestUser) error {
 		logs.LogError(err, "Update Guest Query Error")
 	}
 
-	query =
-		`UPDATE invites SET expiration = $1 WHERE invitee = $3`
-	_, err = pool.Exec(query, guest.Expires, guest.Email)
+	return err
+}
 
-	if err != nil {
-		logs.LogError(err, "Update Invites Query Error")
+func shouldResetPassword(dateInvited string, nextExpiration time.Time, passwordWasReset bool) (bool, error) {
+	var err error
+	requireReset := true
+
+	// Allow at most one reauthorization without a password reset
+	if !passwordWasReset {
+		return requireReset, err
 	}
 
-	return err
+	parsedPrevInviteDate, err := time.Parse(time.RFC3339, dateInvited)
+
+	if err != nil {
+		return requireReset, err
+	}
+
+	// Reset after at most 60 days (use hours b/c no Days builtin)
+	dateToReset := parsedPrevInviteDate.Add(time.Duration(60*24) * time.Hour)
+
+	requireReset = dateToReset.Before(nextExpiration)
+
+	return requireReset, err
+}
+
+func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, error) {
+	var pass string
+
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	var dateInvited string
+	var pending bool
+	var salt string
+	var passHash string
+	var passwordWasReset bool
+
+	query := `SELECT date_invited, pending, salt, pass_hash, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1;`
+	err := pool.QueryRow(query, guest.Email).Scan(&dateInvited, &pending, &salt, &passHash, &passwordWasReset)
+
+	if err != nil {
+		return pass, 500, err
+	} else if pending {
+		return pass, 409, err
+	}
+
+	resetPassword, err := shouldResetPassword(dateInvited, guest.Expires, passwordWasReset)
+	if err != nil {
+		return pass, 500, err
+	}
+
+	if resetPassword {
+		pass, salt = hashing.GenerateCredentials()
+		passHash = hashing.GenerateHash(pass, salt)
+	}
+
+	err = invites.SaveInvite(guest.Admin, guest.Email, guest.Expires, passHash, salt, clientIsGuestAdmin, resetPassword)
+
+	return pass, 200, err
 }
 
 func AcceptGuest(guest data.AcceptInvite, hash string, salt string) error {
