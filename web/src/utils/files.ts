@@ -89,12 +89,14 @@ const validateSubmission = ( descriptionElem: HTMLInputElement ) => {
 const switchSubmitDisplay = () => {
   const btn = document.getElementById( 'upload-files-btn' ) as HTMLInputElement;
   const btnHidden = ( btn.style.display === 'none' );
+
   btn.style.display = ( btnHidden ? 'block' : 'none' );
 
   const loader = document.getElementById( 'loader' ) as HTMLInputElement;
   const loaderHidden = ( loader.style.display === 'none' );
+
   loader.style.display = ( loaderHidden ? 'block' : 'none' );
-}
+};
 
 // ////////////////////////////////////////////////////////////////////////////
 // Exports
@@ -141,6 +143,7 @@ export const submitHandler = async () => {
 
   if ( error ) {
     switchSubmitDisplay();
+
     return;
   }
 

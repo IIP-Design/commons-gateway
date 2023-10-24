@@ -20,14 +20,13 @@ import { showConfirm, showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
-import { addDaysToNow, dateSelectionIsValid, getYearMonthDay } from '../utils/dates';
+import { addDaysToNow, dateSelectionIsValid, getYearMonthDay, userWillNeedNewPassword } from '../utils/dates';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import '../styles/form.scss';
 import styles from '../styles/button.module.scss';
-import tableStyles from '../styles/table.module.scss';
 import { InviteModal } from './InviteModal';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -39,10 +38,6 @@ interface IUserFormData {
   email: string;
   team: string;
   role: TUserRole,
-}
-
-interface IUserFormProps {
-  readonly user?: boolean;
 }
 
 const initialUserState: IUserFormData = {
@@ -66,12 +61,12 @@ const initialInvites: IInvite[] = [
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
 // ////////////////////////////////////////////////////////////////////////////
-const UserForm: FC<IUserFormProps> = ({ user }) => {
+const UserForm: FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
-  const [userExists, setUserExists] = useState(false);
   const [teamList, setTeamList] = useState([]);
 
   const [userData, setUserData] = useState<IUserFormData>(initialUserState);
+  const [currentInvite, setCurrentInvite] = useState<IInvite>(initialInvites[0]);
   const [invites, setInvites] = useState<IInvite[]>(initialInvites);
 
   const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
@@ -112,50 +107,59 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
           accessEndDate: getYearMonthDay(parse(data.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
         });
 
-        setInvites(data.invites.map((invite) => ({
+        const fmtInvites: IInvite[] = data.invites.map((invite: any) => ({
           pending: invite.pending,
           expired: invite.expired,
           dateInvited: getYearMonthDay(parse(invite.dateInvited, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
           accessEndDate: getYearMonthDay(parse(invite.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
-        })));
+        }))
 
-        setUserExists(true);
+        setCurrentInvite(fmtInvites[0])
+        setInvites(fmtInvites);
       }
     };
 
-    if (user) {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const { id } = Object.fromEntries(urlSearchParams.entries());
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const { id } = Object.fromEntries(urlSearchParams.entries());
 
-      getUser(id);
-    }
-  }, [user]);
+    getUser(id);
+  }, []);
 
   /**
    * Updates the user state on changed to the form inputs.
    * @param key The user property being updated.
    */
-  // FIXME LOGIC
-  const handleUpdate = (key: keyof IUserFormData, value?: string | Date) => {
+  const handleUserUpdate = (key: keyof IUserFormData, value?: string | Date) => {
     setUserData({ ...userData, [key]: value });
   };
+
+  const handleAccessUpdate = (value: string) => {
+    setCurrentInvite({ ...currentInvite, accessEndDate: value });
+  }
 
   /**
    * Ensure that the form submissions are valid before sending data to the API.
    */
-  // FIXME LOGIC
-  const validateSubmission = () => {
+  const validateUserSub = () => {
     if (!userData.email?.match(/^.+@.+$/)) {
       showError('Email address is not valid');
 
       return false;
-    } if (!dateSelectionIsValid(userData.accessEndDate)) {
-      showError(`Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future`);
+    } 
+    
+    if (isAdmin && !userData.team) {
+      // Admin users have the option to set a team, so a team should be set
+      showError('Please assign this user to a valid team');
 
       return false;
-    } if (isAdmin && !userData.team) {
-      // Admin users have the option to set a team, so a team should be
-      showError('Please assign this user to a valid team');
+    }
+
+    return true;
+  };
+
+  const validateAccessSub = () => {
+    if ( !dateSelectionIsValid( currentInvite.accessEndDate ) ) {
+      showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
 
       return false;
     }
@@ -167,16 +171,12 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
    * Validates the form inputs and sends the provided data to the API.
    * @param e The submission event - simply used to prevent the default page refresh.
    */
-  // FIXME LOGIC
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleUserSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!validateSubmission()) {
+    if (!validateUserSub()) {
       return;
     }
-
-    // Conversion to iso required by Lambda
-    const expiration = new Date(userData.accessEndDate).toISOString();
 
     const invitee = {
       email: userData.email.trim(),
@@ -186,38 +186,38 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
       role: userData.role,
     };
 
-    if (user) {
-      buildQuery('guest', { ...invitee, expiration }, 'PUT')
-        .then(() => window.location.assign((isAdmin ? '/' : '/uploader-users')))
-        .catch(err => console.error(err));
-    } else if (isAdmin) {
-      const invitation = {
-        inviter: currentUser.get().email,
-        invitee,
-        expiration,
-      };
+    buildQuery('guest', invitee, 'PUT').catch(err => console.error(err));
+  };
 
-      buildQuery('creds/provision', invitation, 'POST')
-        .then(() => window.location.assign('/'))
-        .catch(err => console.error(err));
-    } else {
-      const invitation = {
-        proposer: currentUser.get().email,
-        invitee,
-        expiration,
-      };
+  const handleReauth = async () => {
+    const { email } = userData;
+    const { dateInvited, accessEndDate, expired } = currentInvite;
 
-      try {
-        await buildQuery('creds/propose', invitation, 'POST');
-        window.location.assign('/uploader-users');
-      } catch (err: any) {
-        console.error(err);
+    const shouldPrompt = userWillNeedNewPassword( dateInvited, accessEndDate, expired );
+    if( shouldPrompt ) {
+      const { isConfirmed } = await showConfirm(`Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`);
+
+      if (!isConfirmed) {
+        return;
       }
+    }
+
+    // Conversion to iso required by Lambda
+    const expiration = new Date( accessEndDate ).toISOString();
+    
+    const body = {
+      email,
+      expiration,
+    };
+
+    const { ok } = await buildQuery('guest/reauth', body, 'POST');
+
+    if (!ok) {
+      showError('Unable to re-authorize user');
     }
   };
 
-  // FIXME LOGIC
-  const handleDeactivate = async () => {
+  const handleRevoke = async () => {
     const { email, givenName, familyName } = userData;
     const { isConfirmed } = await showConfirm(`Are you sure you want to deactivate ${givenName} ${familyName}?`);
 
@@ -238,7 +238,7 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
     <div>
       <div id="guest-data-form">
         <h3>Guest Information</h3>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleUserSubmit}>
           <div className="field-group">
             <label>
               <span>Given (First) Name</span>
@@ -247,7 +247,7 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
                 type="text"
                 required
                 value={userData.givenName}
-                onChange={e => handleUpdate('givenName', e.target.value)}
+                onChange={e => handleUserUpdate('givenName', e.target.value)}
               />
             </label>
             <label>
@@ -257,7 +257,7 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
                 type="text"
                 required
                 value={userData.familyName}
-                onChange={e => handleUpdate('familyName', e.target.value)}
+                onChange={e => handleUserUpdate('familyName', e.target.value)}
               />
             </label>
           </div>
@@ -268,9 +268,8 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
                 id="email-input"
                 type="text"
                 required
-                disabled={user} // Email is the primary key for users so we prevent changes for existing users.
+                disabled={true} // Email is the primary key for users so we prevent changes for existing users.
                 value={userData.email}
-                onChange={e => handleUpdate('email', e.target.value)}
               />
             </label>
             <label>
@@ -280,7 +279,7 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
                 disabled={!isAdmin}
                 required
                 value={userData.team}
-                onChange={e => handleUpdate('team', e.target.value)}
+                onChange={e => handleUserUpdate('team', e.target.value)}
               >
                 <option value="">- Select a team -</option>
                 {teamList.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
@@ -295,7 +294,7 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
                   id="role-input"
                   required
                   value={userData.role}
-                  onChange={e => handleUpdate('role', e.target.value)}
+                  onChange={e => handleUserUpdate('role', e.target.value)}
                 >
                   {partnerRoles.map(({ name, value }) => <option key={value} value={value}>{name}</option>)}
                 </select>
@@ -311,39 +310,49 @@ const UserForm: FC<IUserFormProps> = ({ user }) => {
           </button>
         </form>
       </div>
-      <div id="guest-data-form">
-        <h3>{user ? (invites.length && !invites[0].expired ? 'Current' : 'Recent') : 'Proposed'} Access</h3>
-        <label>
-          <span>Access End Date</span>
-          <input
-            id="date-input"
-            type="date"
-            disabled={!isAdmin && userExists}
-            min={getYearMonthDay(new Date())}
-            max={getYearMonthDay(addDaysToNow(60))}
-            value={invites[0].accessEndDate}
-            onChange={e => handleUpdate('accessEndDate', e.target.value)}
-          />
-        </label>
+      <div id="invite-data-form">
+        <h3>{currentInvite.expired ? 'Recent' : 'Current'} Access</h3>
+        <div className="field-group">
+          <label>
+            <span>Access End Date</span>
+            <input
+              id="date-input"
+              type="date"
+              disabled={!isAdmin}
+              min={getYearMonthDay(new Date())}
+              max={getYearMonthDay(addDaysToNow(60))}
+              value={currentInvite.accessEndDate}
+              onChange={e => handleAccessUpdate(e.target.value)}
+            />
+          </label>
+          <label>
+            <span>Date Invited</span>
+            <input
+              id="date-invited-input"
+              type="date"
+              disabled={true}
+              value={currentInvite.dateInvited}
+            />
+          </label>
+        </div>
         <button
           className={`${styles.btn} ${styles['spaced-btn']}`}
           id="update-btn"
           type="button"
+          onClick={handleReauth}
         >
           Reauthorize
         </button>
-        {user && (
-          <button
-            className={`${styles['btn-light']} ${styles['spaced-btn']}`}
-            id="deactivate-btn"
-            type="button"
-            onClick={handleDeactivate}
-          >
-            Revoke Access
-          </button>
-        )}
+        <button
+          className={`${styles['btn-light']} ${styles['spaced-btn']}`}
+          id="deactivate-btn"
+          type="button"
+          onClick={handleRevoke}
+        >
+          Revoke Access
+        </button>
       </div>
-      <div>
+      <div id="additional-options">
         <h3>Additional Options</h3>
         <InviteModal invites={invites} anchor={"Invite History"} />
         <BackButton text="Cancel" showConfirmDialog />
