@@ -49,6 +49,12 @@ const InviteEntry = ( invite: IInvite ) => {
           </label>
         </div>
         <table className={`${tableStyles.table}`}>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Result</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
               <td>
@@ -66,6 +72,7 @@ const InviteEntry = ( invite: IInvite ) => {
             </tr>
           </tbody>
         </table>
+        <hr style={{marginBottom: '10px'}} />
       </div>
     );
   }
@@ -90,8 +97,9 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
   const modalStyle = {
     content: {
       height: 'fit-content',
+      maxHeight: '80%',
       width: '400px',
-      minWidth: 'fit-content',
+      maxWidth: '80%',
       top: '50%',
       left: '50%',
       right: 'auto',
@@ -100,12 +108,13 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
       padding: '2rem',
       transform: 'translate(-50%, -50%)',
       boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
+      'overflow-y': 'scroll',
     },
   };
 
   return (
     <>
-      <button className={ btnStyle.btn } onClick={ openModal } type="button">{ anchor }</button>
+      <button className={ `${btnStyle.btn} ${invites.length === 1 ? btnStyle['disabled-btn'] : ""}` } onClick={ openModal } type="button">{ anchor }</button>
       <Modal
         isOpen={ modalIsOpen }
         onRequestClose={ closeModal }
@@ -115,6 +124,13 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
         {
             invites.slice(0).map( InviteEntry )
         }
+        <button
+          className={btnStyle.btn}
+          onClick={ closeModal }
+          type="button"
+        >
+          Close
+        </button>
       </Modal>
     </>
   );

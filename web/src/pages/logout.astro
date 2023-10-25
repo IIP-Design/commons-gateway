@@ -1,0 +1,15 @@
+---
+import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
+
+import '../styles/form.scss';
+---
+
+<script>
+  import { logout } from '../utils/login';
+
+  logout();
+</script>
+
+<LoggedOutLayout title="Content Commons Login">
+  <p>Ah, we meet again!</p>
+</LoggedOutLayout>

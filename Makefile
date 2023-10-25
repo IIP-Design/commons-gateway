@@ -54,6 +54,7 @@ build:
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-metadata funcs/upload-metadata/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload-presigned-url funcs/upload-presigned-url/*.go;\
 	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/uploader-get funcs/uploader-get/*.go;\
+	env GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/tmp-sql funcs/tmp-sql/*.go;\
 
 clean:
 	cd serverless; rm -rf ./bin ./vendor Gopkg.lock;\

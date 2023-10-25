@@ -46,7 +46,7 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 		return guest, err
 	}
 
-	query = `SELECT pending, date_invited, expiration, expiration < NOW() AS expired, password_reset FROM invites WHERE invitee = $1 ORDER BY expiration DESC`
+	query = `SELECT pending, date_invited, expiration, expiration < NOW() AS expired, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC`
 	rows, err := pool.Query(query, email)
 
 	if err != nil {
@@ -315,16 +315,17 @@ func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, 
 
 	var dateInvited string
 	var pending bool
+	var active bool
 	var salt string
 	var passHash string
 	var passwordWasReset bool
 
-	query := `SELECT date_invited, pending, salt, pass_hash, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1;`
-	err := pool.QueryRow(query, guest.Email).Scan(&dateInvited, &pending, &salt, &passHash, &passwordWasReset)
+	query := `SELECT date_invited, pending, expiration >= NOW() AS active, salt, pass_hash, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1;`
+	err := pool.QueryRow(query, guest.Email).Scan(&dateInvited, &pending, &active, &salt, &passHash, &passwordWasReset)
 
 	if err != nil {
 		return pass, 500, err
-	} else if pending {
+	} else if pending || active {
 		return pass, 409, err
 	}
 

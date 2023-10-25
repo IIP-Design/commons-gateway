@@ -33,7 +33,7 @@ export const makeApproveUserHandler = ( inviteeEmail: string ) => {
 
   return async () => {
     const { isConfirmed, isDenied } = await showTernary(
-      'By approving this user they will be allowed to upload media to the Content Commons system until deactivated or their login expires.  Denying access will blacklist this email address indefinitely.',
+      'By approving this user they will be allowed to upload media to the Content Commons system until deactivated or their login expires.  Denying access will allow an external partner to re-propose an invitation.',
       { confirmButtonText: 'Approve' },
     );
     let wasUpdated = false;

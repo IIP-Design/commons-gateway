@@ -93,7 +93,15 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 	hash := hashing.GenerateHash(pass, salt)
 
 	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = invites.SaveInvite(invite.Proposer, invite.Invitee.Email, invite.Expires, hash, salt, setPending, true)
+	var email string
+
+	if setPending {
+		email = invite.Proposer
+	} else {
+		email = invite.Inviter
+	}
+
+	err = invites.SaveInvite(email, invite.Invitee.Email, invite.Expires, hash, salt, setPending, true)
 
 	if err != nil {
 		return pass, errors.New("something went wrong - saving invite failed")

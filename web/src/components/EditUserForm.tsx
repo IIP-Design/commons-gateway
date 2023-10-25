@@ -15,7 +15,7 @@ import { addDays, parse } from 'date-fns';
 import BackButton from './BackButton';
 
 import currentUser from '../stores/current-user';
-import { showConfirm, showError } from '../utils/alert';
+import { showConfirm, showError, showSuccess } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
@@ -23,17 +23,22 @@ import { addDaysToNow, dateSelectionIsValid, getYearMonthDay, userWillNeedNewPas
 
 import type { IInvite } from '../utils/types';
 import { makeDummyUserForm, type IUserFormData, makeApproveUserHandler } from '../utils/users';
+import { InviteModal } from './InviteModal';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import '../styles/form.scss';
-import styles from '../styles/button.module.scss';
-import { InviteModal } from './InviteModal';
+import btnStyles from '../styles/button.module.scss';
+import tblStyles from '../styles/table.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
+interface IStatusTokenProps {
+  active: boolean;
+}
+
 interface IInviteWidgetParams {
   readonly userData: IUserFormData;
   readonly invite: IInvite;
@@ -43,11 +48,21 @@ interface IInviteWidgetParams {
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
+const StatusToken: FC<IStatusTokenProps> = ( { active }: IStatusTokenProps ) => {
+  return (
+    <span className={ tblStyles.status } style={{display: "inline"}}>
+      <span className={ active ? tblStyles.active : tblStyles.inactive } />
+    </span>
+  );
+}
+
 const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: IInviteWidgetParams ) => {
   const [currentInvite, setCurrentInvite] = useState<IInvite>( invite );
+  const [updated, setUpdated] = useState( false );
 
   const handleAccessUpdate = (value: string) => {
     setCurrentInvite({ ...currentInvite, accessEndDate: value });
+    setUpdated(true);
   };
 
   const validateAccessSub = () => {
@@ -98,15 +113,20 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
 
     if (!ok) {
       showError('Unable to re-authorize user');
+    } else {
+      showSuccess(`User reauthorized until ${accessEndDate}`)
+      window.location.reload();
     }
   };
 
   const handlePasswordReset = async () => {
     const { email } = userData;
-    const { ok } = await buildQuery(`resetPassword?id=${email}`, null, 'POST');
+    const { ok } = await buildQuery(`passwordReset?id=${email}`, null, 'POST');
 
     if (!ok) {
       showError('Unable to reset password');
+    } else {
+      showSuccess('User password reset')
     }
   };
 
@@ -129,7 +149,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
   
   return (
     <div id="invite-data-form">
-        <h3>{currentInvite.expired ? 'Recent' : 'Current'} Access</h3>
+        <h3>{currentInvite.expired ? 'Most Recent' : 'Current'} Access <StatusToken active={!currentInvite.expired} /></h3>
         <div className="field-group">
           <label>
             <span>Access End Date</span>
@@ -154,23 +174,25 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
           </label>
         </div>
         <button
-          className={`${styles.btn} ${styles['spaced-btn']}`}
+          className={`${btnStyles.btn} ${updated ? "" : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}`}
           id="update-btn"
           type="button"
           onClick={handleReauth}
+          disabled={!updated}
         >
           Reauthorize
         </button>
         <button
-          className={`${styles['btn-light']} ${styles['spaced-btn']}`}
+          className={`${btnStyles['btn-light']} ${!currentInvite.expired ? "" : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}`}
           id="reset-password-btn"
           type="button"
           onClick={handlePasswordReset}
+          disabled={!currentInvite.expired}
         >
           Reset Password
         </button>
         <button
-          className={`${styles['back-btn']} ${styles['spaced-btn']}`}
+          className={`${btnStyles.btn} ${btnStyles['back-btn']} ${btnStyles['spaced-btn']}`}
           id="deactivate-btn"
           type="button"
           onClick={handleRevoke}
@@ -208,7 +230,7 @@ const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite }
           </label>
         </div>
         <button
-          className={`${styles['btn-light']}`}
+          className={`${btnStyles['btn-light']}`}
           id="finalize-btn"
           type="button"
           onClick={makeApproveUserHandler(email)}
@@ -406,7 +428,7 @@ const UserForm: FC = () => {
             )}
           </div>
           <button
-            className={`${styles.btn} ${styles['spaced-btn']}`}
+            className={`${btnStyles.btn} ${btnStyles['spaced-btn']}`}
             id="update-btn"
             type="submit"
           >

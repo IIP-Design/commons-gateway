@@ -46,6 +46,7 @@
 
 .spaced-btn {
   margin: 0.3125em;
+  width: fit-content;
 }
 
 .link-btn {
@@ -73,5 +74,6 @@
 .disabled-btn {
   color: white;
   background-color: darkgray;
+  border: none;
   cursor: default;
 }
