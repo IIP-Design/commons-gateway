@@ -27,9 +27,9 @@ interface IModalProps {
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
-const InviteEntry = ( invite: IInvite ) => {
+const InviteEntry = ( invite: IInvite, idx: number ) => {
     return (
-      <div key={invite.dateInvited}>
+      <div key={`${invite.dateInvited}-${idx}`}>
         <div className="field-group">
           <label>
             <span>Invite Date</span>
@@ -88,6 +88,7 @@ Modal.setAppElement( document.getElementById( 'root' ) as HTMLElement );
 export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps ) => {
   // Modal Setup
   const [modalIsOpen, setModalIsOpen] = useState( false );
+  const noHistory = ( invites.length === 1 );
 
   // Modal Controls
   const openModal = () => setModalIsOpen( true );
@@ -108,13 +109,20 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
       padding: '2rem',
       transform: 'translate(-50%, -50%)',
       boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
-      'overflow-y': 'scroll',
+      overflowY: 'scroll',
     },
   };
 
   return (
     <>
-      <button className={ `${btnStyle.btn} ${invites.length === 1 ? btnStyle['disabled-btn'] : ""}` } onClick={ openModal } type="button">{ anchor }</button>
+      <button
+        className={ `${btnStyle.btn} ${noHistory ? btnStyle['disabled-btn'] : ""}` }
+        onClick={ openModal }
+        type="button"
+        disabled={noHistory}
+      >
+        { anchor }
+      </button>
       <Modal
         isOpen={ modalIsOpen }
         onRequestClose={ closeModal }
@@ -122,7 +130,7 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
         style={ modalStyle }
       >
         {
-            invites.slice(0).map( InviteEntry )
+            invites.slice(0).map( ( invite, idx ) => InviteEntry( invite, idx ) )
         }
         <button
           className={btnStyle.btn}

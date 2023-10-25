@@ -4,11 +4,6 @@
   "description": "Data required to update an existing guest user",
   "type": "object",
   "properties": {
-    "expiration": {
-      "description": "The date at which the user's access expires",
-      "type": "string",
-      "format": "date-time"
-    },
     "email": {
       "description": "The admin user's email, used as a unique id",
       "type": "string",
@@ -37,6 +32,6 @@
       "minLength": 1
     }
   },
-  "required": ["expiration", "email", "familyName", "givenName", "role", "team"],
+  "required": ["email", "familyName", "givenName", "role", "team"],
   "additionalProperties": false
 }

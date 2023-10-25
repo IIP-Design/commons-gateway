@@ -34,6 +34,8 @@ const BackButton: FC<IBackButtonProps> = ( { id, text, showConfirmDialog }: IBac
                         window.history.back();
                     }
                 } );
+        } else {
+          window.history.back();
         }
     }
 

@@ -33,6 +33,7 @@ export interface IInvite {
   passwordReset: boolean;
   dateInvited: string;
   accessEndDate: string;
+  proposer?: string;
 }
 
 // ////////////////////////////////////////////////////////////////////////////

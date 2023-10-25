@@ -11,11 +11,12 @@ import (
 )
 
 type InviteRecord struct {
-	Pending       bool   `json:"pending"`
-	DateInvited   string `json:"dateInvited"`
-	Expiration    string `json:"expiration"`
-	Expired       bool   `json:"expired"`
-	PasswordReset bool   `json:"passwordReset"`
+	Proposer      sql.NullString `json:"proposer"`
+	Pending       bool           `json:"pending"`
+	DateInvited   string         `json:"dateInvited"`
+	Expiration    string         `json:"expiration"`
+	Expired       bool           `json:"expired"`
+	PasswordReset bool           `json:"passwordReset"`
 }
 
 type GuestData struct {
@@ -46,7 +47,7 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 		return guest, err
 	}
 
-	query = `SELECT pending, date_invited, expiration, expiration < NOW() AS expired, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC`
+	query = `SELECT proposer, pending, date_invited, expiration, expiration < NOW() AS expired, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC`
 	rows, err := pool.Query(query, email)
 
 	if err != nil {
@@ -57,18 +58,20 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 	defer rows.Close()
 
 	for rows.Next() {
+		var proposer sql.NullString
 		var pending bool
 		var dateInvited time.Time
 		var expiration time.Time
 		var expired bool
 		var passwordReset bool
 
-		if err := rows.Scan(&pending, &dateInvited, &expiration, &expired, &passwordReset); err != nil {
+		if err := rows.Scan(&proposer, &pending, &dateInvited, &expiration, &expired, &passwordReset); err != nil {
 			logs.LogError(err, "Scan Guests Query Error")
 			return guest, err
 		}
 
 		var invite = InviteRecord{
+			Proposer:      proposer,
 			Pending:       pending,
 			DateInvited:   dateInvited.Format(time.RFC3339),
 			Expiration:    expiration.Format(time.RFC3339),

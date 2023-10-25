@@ -156,7 +156,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
             <input
               id="date-input"
               type="date"
-              disabled={!isAdmin}
+              disabled={!isAdmin && !currentInvite.expired}
               min={getYearMonthDay(new Date())}
               max={getYearMonthDay(addDaysToNow(60))}
               value={currentInvite.accessEndDate}
@@ -180,7 +180,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
           onClick={handleReauth}
           disabled={!updated}
         >
-          Reauthorize
+          { isAdmin ? "Reauthorize" : "Re-Propose" }
         </button>
         <button
           className={`${btnStyles['btn-light']} ${!currentInvite.expired ? "" : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}`}
@@ -203,7 +203,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
   );
 };
 
-const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite }: IInviteWidgetParams ) => {
+const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite, isAdmin }: IInviteWidgetParams ) => {
   const [pendingInvite] = useState<IInvite>( invite );
   
   return (
@@ -229,14 +229,19 @@ const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite }
             />
           </label>
         </div>
-        <button
-          className={`${btnStyles['btn-light']}`}
-          id="finalize-btn"
-          type="button"
-          onClick={makeApproveUserHandler(email)}
-        >
-          Finalize
-        </button>
+        {
+          isAdmin ?
+            <button
+              className={`${btnStyles['btn-light']}`}
+              id="finalize-btn"
+              type="button"
+              onClick={makeApproveUserHandler(email)}
+            >
+              Finalize
+            </button>
+          : <p>Proposed by { pendingInvite.proposer || "N/A" }</p>
+        }
+        
       </div>
   );
 };
@@ -246,6 +251,7 @@ const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite }
 // ////////////////////////////////////////////////////////////////////////////
 const UserForm: FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [updated, setUpdated] = useState(false);
   const [teamList, setTeamList] = useState([]);
 
   const [userData, setUserData] = useState<IUserFormData>(makeDummyUserForm());
@@ -292,6 +298,7 @@ const UserForm: FC = () => {
         });
 
         const fmtInvites: IInvite[] = data.invites.map((invite: any) => ({
+          proposer: invite.proposer?.String || null,
           pending: invite.pending,
           expired: invite.expired,
           dateInvited: getYearMonthDay(parse(invite.dateInvited, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
@@ -316,6 +323,7 @@ const UserForm: FC = () => {
    */
   const handleUserUpdate = (key: keyof IUserFormData, value?: string | Date) => {
     setUserData({ ...userData, [key]: value });
+    setUpdated( true );
   };
 
   /**
@@ -357,7 +365,9 @@ const UserForm: FC = () => {
       role: userData.role,
     };
 
-    buildQuery('guest', invitee, 'PUT').catch(err => console.error(err));
+    buildQuery('guest', invitee, 'PUT')
+      .then( () => setUpdated( false ) )
+      .catch(err => console.error(err));
   };
 
   return (
@@ -441,7 +451,7 @@ const UserForm: FC = () => {
       <div id="additional-options">
         <h3>Additional Options</h3>
         <InviteModal invites={invites} anchor={"Invite History"} />
-        <BackButton text="Cancel" showConfirmDialog />
+        <BackButton text="Cancel" showConfirmDialog={updated} />
       </div>
     </div>
   );
