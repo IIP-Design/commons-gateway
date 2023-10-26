@@ -13,8 +13,8 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetGuestHandler handles the request to retrieve a single admin user based on email address.
-func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// PasswordResetHandler handles the request to retrieve a single admin user based on email address.
+func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	id := event.QueryStringParameters["id"]
 
 	if id == "" {
@@ -41,5 +41,5 @@ func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(GetGuestHandler)
+	lambda.Start(PasswordResetHandler)
 }
