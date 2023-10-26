@@ -1,7 +1,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
-import currentUser from '../stores/current-user';
+import currentUser, { loginStatus } from '../stores/current-user';
 import type { TUserRole } from './types';
 import { buildQuery } from './api';
 
@@ -135,6 +135,8 @@ const protectPage = (
 
   if ( !authenticated ) {
     window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
+  } else if ( loginStatus.get() === 'firstLogin' && !window.location.pathname.endsWith( '/update-password' ) ) {
+    window.location.replace( '/update-password' );
   }
 
   // Returns async to catch malicious users trying to bypass normal login rules

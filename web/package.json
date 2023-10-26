@@ -24,7 +24,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
-    "sweetalert2": "^11.6.13"
+    "sweetalert2": "^11.6.13",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@astrojs/react": "^2.2.1",
@@ -32,6 +33,7 @@
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@types/react-modal": "^3.16.0",
+    "@types/zxcvbn": "^4.4.3",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "astro": "^2.9.6",

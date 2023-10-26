@@ -10,12 +10,13 @@ import (
 )
 
 type CredentialsData struct {
-	Hash     string `json:"hash"`
-	Salt     string `json:"salt"`
-	Expired  bool   `json:"expired"`
-	Approved bool   `json:"approved"`
-	Locked   bool   `json:"locked"`
-	Role     string `json:"role"`
+	Hash       string `json:"hash"`
+	Salt       string `json:"salt"`
+	Expired    bool   `json:"expired"`
+	Approved   bool   `json:"approved"`
+	Locked     bool   `json:"locked"`
+	FirstLogin bool   `json:"firstLogin"`
+	Role       string `json:"role"`
 }
 
 // ClearUnsuccessfulLoginAttempts resets the given user's login counter to zero.
@@ -45,25 +46,27 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 	var expired bool
 	var approved bool
 	var locked bool
+	var firstLogin bool
 	var role string
 
 	query :=
-		`SELECT pass_hash, salt, expiration < NOW() AS expired, pending=FALSE AS approved, locked, role
+		`SELECT pass_hash, salt, expiration < NOW() AS expired, pending=FALSE AS approved, locked, first_login, role
 		 FROM guest_auth_data WHERE email = $1;`
 
-	err = pool.QueryRow(query, email).Scan(&pass_hash, &salt, &expired, &approved, &locked, &role)
+	err = pool.QueryRow(query, email).Scan(&pass_hash, &salt, &expired, &approved, &locked, &firstLogin, &role)
 
 	if err != nil {
 		logs.LogError(err, "Retrieve Credentials Query Error")
 	}
 
 	creds := CredentialsData{
-		Hash:     pass_hash,
-		Salt:     salt,
-		Expired:  expired,
-		Approved: approved,
-		Locked:   locked,
-		Role:     role,
+		Hash:       pass_hash,
+		Salt:       salt,
+		Expired:    expired,
+		Approved:   approved,
+		Locked:     locked,
+		FirstLogin: firstLogin,
+		Role:       role,
 	}
 
 	return creds, err

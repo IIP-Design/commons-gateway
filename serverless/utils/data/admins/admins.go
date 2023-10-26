@@ -105,7 +105,7 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 		return admin, err
 	}
 
-	jwt, err := jwt.GenerateJWT(username, role)
+	jwt, err := jwt.GenerateJWT(username, role, false)
 
 	if err != nil {
 		logs.LogError(err, "Admin token error")

@@ -23,6 +23,7 @@ type Scopes int
 const (
 	All         Scopes = iota // all users
 	AllAdmins                 // super admins, admins, external admins
+	AllGuests                 // external admins, guests
 	GuestAdmins               // external partner admins
 	StateAdmins               // super admins, admins
 	SuperAdmins               // super admins
@@ -34,6 +35,8 @@ func (s Scopes) Array() []string {
 		return []string{"super admin", "admin", "guest admin", "guest"}
 	case AllAdmins:
 		return []string{"super admin", "admin", "guest admin"}
+	case AllGuests:
+		return []string{"guest admin", "guest"}
 	case GuestAdmins:
 		return []string{"guest admin"}
 	case StateAdmins:
@@ -75,6 +78,8 @@ func retrieveScopes(endpoint string, method string) []string {
 		}
 	case "guest/approve":
 		return StateAdmins.Array()
+	case "guest/password":
+		return AllGuests.Array()
 	case "guest/reauth":
 		return AllAdmins.Array()
 	case "guests":

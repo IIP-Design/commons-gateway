@@ -131,7 +131,7 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.SendCustomError(errors.New("account locked"), 429)
 	}
 
-	jwt, err := jwt.FormatJWT(username, credentials.Role)
+	jwt, err := jwt.FormatJWT(username, credentials.Role, credentials.FirstLogin)
 
 	if err != nil {
 		return msgs.SendServerError(err)

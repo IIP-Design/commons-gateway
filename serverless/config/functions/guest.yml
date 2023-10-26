@@ -220,11 +220,12 @@ passwordChange:
           name: authorizer
           resultTtlInSeconds: 0
         cors: ${file(./config/${param:deployment}.json):cors}
-        schemas:
-            application/json:
-              schema: ${file(./funcs/password-change/schema.json)}
-              name: PostPasswordChangeModel
-              description: Validation model for changing a password.
+        request:
+          schemas:
+              application/json:
+                schema: ${file(./funcs/password-change/schema.json)}
+                name: PostPasswordChangeModel
+                description: Validation model for changing a password.
   package:
     patterns:
       - './bin/password-change'

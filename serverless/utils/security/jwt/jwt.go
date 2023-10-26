@@ -18,7 +18,7 @@ var secret = []byte(os.Getenv("JWT_SECRET"))
 // generateJWT creates a JSON web token that can be used to authenticate to the
 // web application. The token contains the user's name and access scope and is
 // valid for one hour.
-func GenerateJWT(username string, scope string) (string, error) {
+func GenerateJWT(username string, scope string, firstLogin bool) (string, error) {
 	// TODO: Switch to EdDSA signing key
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -28,12 +28,13 @@ func GenerateJWT(username string, scope string) (string, error) {
 	claims["exp"] = time.Now().Add(1 * time.Hour).Unix()
 	claims["scope"] = scope
 	claims["user"] = username
+	claims["firstLogin"] = firstLogin
 
 	return token.SignedString(secret)
 }
 
-func FormatJWT(username string, scope string) (string, error) {
-	tokenString, err := GenerateJWT(username, scope)
+func FormatJWT(username string, scope string, firstLogin bool) (string, error) {
+	tokenString, err := GenerateJWT(username, scope, firstLogin)
 
 	if err != nil {
 		return "", err
@@ -105,7 +106,7 @@ func VerifyJWT(tokenString string, scopes []string) error {
 	}
 
 	if !slices.Contains(scopes, scope) {
-		logs.LogError(err, "Bearer Token Has Incorrect Scope")
+		logs.LogError(errors.New("scope error"), "Bearer Token Has Incorrect Scope")
 		return errors.New("token has incorrect scope: " + scope)
 	}
 
