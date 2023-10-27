@@ -51,6 +51,7 @@ custom:
   PROXY_ENDPOINT: !GetAtt RDSProxy.Endpoint
 
 resources:
+  - ${file(./config/resources/auth.yml)}
   - ${file(./config/resources/vpc.yml)}
   - ${file(./config/resources/rds.yml)}
   - ${file(./config/resources/proxy.yml)}
