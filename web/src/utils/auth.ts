@@ -121,6 +121,8 @@ export const isLoggedInAsExternalPartner = () => isLoggedIn( userIsExternalPartn
 
 export const isLoggedInAsNotGuest = () => isLoggedIn( userIsNotGuest() );
 
+const requirePasswordReset = () => loginStatus.get() === 'firstLogin' && !window.location.pathname.endsWith( '/profile' );
+
 /**
  * Checks whether the current user is authenticated and if not,
  * redirects them to the specified page.
@@ -135,8 +137,8 @@ const protectPage = (
 
   if ( !authenticated ) {
     window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
-  } else if ( loginStatus.get() === 'firstLogin' && !window.location.pathname.endsWith( '/update-password' ) ) {
-    window.location.replace( '/update-password' );
+  } else if ( requirePasswordReset() ) {
+    window.location.replace( '/profile' );
   }
 
   // Returns async to catch malicious users trying to bypass normal login rules

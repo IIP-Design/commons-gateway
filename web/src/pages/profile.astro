@@ -112,11 +112,17 @@ const desc = "Because this is your first login with this invite, you must update
   };
 
   document.getElementById('submit-btn')?.addEventListener( 'click', submit );
+
+  const descElem = document.getElementById( 'desc-elem' ) as HTMLElement;
+  const isFirstLogin = loginStatus.get() === 'firstLogin';
+  if( !isFirstLogin ) {
+    descElem.style.display = 'none';
+  }
 </script>
 
 <PartnerPageLayout title={title}>
   <PageContainer narrow title={title}>
-      {desc && <p class="description">{desc}</p>}
+      <p id="desc-elem" class="description">{desc}</p>
       <div class="field-group" style="margin-top: 1em;">
         <label>
           <span>Current Password</span>
