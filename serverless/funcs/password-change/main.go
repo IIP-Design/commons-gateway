@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -13,6 +14,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/nbutton23/zxcvbn-go"
+	"github.com/rs/xid"
 )
 
 type PasswordReset struct {
@@ -54,7 +56,48 @@ func verifyUser(parsed PasswordReset) (creds.CredentialsData, error) {
 	return credentials, nil
 }
 
-func checkNewPassword(email string, role string, newPassword string) bool {
+func checkPasswordReused(email string, newPassword string) (bool, error) {
+	var err error
+	reused := false
+
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query := "SELECT creation_date, salt, pass_hash FROM password_history WHERE user_id = $1 ORDER BY creation_date DESC LIMIT 24;"
+	rows, err := pool.Query(query, email)
+
+	if err != nil {
+		logs.LogError(err, "Get Guests Query Error")
+		return reused, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var date time.Time
+		var salt string
+		var passHash string
+
+		if err := rows.Scan(&date, &salt, &passHash); err != nil {
+			logs.LogError(err, "Pass Reuse Scan Error")
+			return reused, err
+		}
+
+		newPassHash := hashing.GenerateHash(newPassword, salt)
+		if newPassHash == passHash {
+			reused = (newPassHash == passHash)
+			break
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		logs.LogError(err, "Pass Reuse Scan Error")
+	}
+
+	return reused, err
+}
+
+func checkNewPasswordStrength(email string, role string, newPassword string) bool {
 	result := zxcvbn.PasswordStrength(newPassword, []string{email, role})
 	success := (result.Score >= 3)
 	return success
@@ -73,6 +116,22 @@ func updatePassword(email string, salt string, newPassword string) error {
 		" AND date_invited = ( SELECT max(date_invited) FROM invites WHERE invitee = $2 AND pending = FALSE )"
 
 	_, err = pool.Exec(query, passHash, email, salt)
+	if err != nil {
+		return err
+	}
+
+	id := xid.New()
+	query = "INSERT INTO password_history ( id, user_id, creation_date, salt, pass_hash ) VALUES ( $1, $2, NOW(), $3, $4)"
+	_, err = pool.Exec(query, id, email, salt, passHash)
+	if err != nil {
+		return err
+	}
+
+	query = "DELETE FROM password_history WHERE user_id = $1 AND id NOT IN ( SELECT id FROM password_history WHERE user_id = $1 ORDER BY creation_date DESC LIMIT 24 )"
+	_, err = pool.Exec(query, email)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -88,9 +147,16 @@ func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequ
 		return msgs.SendServerError(err)
 	}
 
-	passwordIsSecure := checkNewPassword(parsed.Email, credentials.Role, parsed.NewPassword)
+	passwordIsSecure := checkNewPasswordStrength(parsed.Email, credentials.Role, parsed.NewPassword)
 	if !passwordIsSecure {
 		return msgs.SendCustomError(errors.New("password is not strong enough"), 422)
+	}
+
+	passwordIsResused, err := checkPasswordReused(parsed.Email, parsed.NewPassword)
+	if err != nil {
+		return msgs.SendServerError(err)
+	} else if passwordIsResused {
+		return msgs.SendCustomError(errors.New("password was reused"), 409)
 	}
 
 	err = updatePassword(parsed.Email, credentials.Salt, parsed.NewPassword)
