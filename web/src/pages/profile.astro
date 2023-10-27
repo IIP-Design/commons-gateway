@@ -87,6 +87,8 @@ const desc = "Because this is your first login with this invite, you must update
 
     const { email, currPassword, newPassword } = subData;
 
+    const isFirstLogin = ( loginStatus.get() === 'firstLogin' );
+
     try {
       const [salt] = await getUserPasswordSalt( email );
       const currentPasswordHash = await derivePasswordHash( currPassword, salt );
@@ -101,7 +103,11 @@ const desc = "Because this is your first login with this invite, you must update
       if( ok ) {
         loginStatus.set( 'loggedIn' );
         showSuccess('Password successfully updated')
-          .then( () => window.location.replace( "/partner-login" ) );
+          .then( () => {
+            if( isFirstLogin ) {
+              window.location.replace( "/partner-login" );
+            }
+          } );
       } else if( status === 422 ) {
         showWarning('Password is not strong enough');
       } else if( status === 409 ) {
