@@ -80,8 +80,9 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
       const response = await buildQuery( `admin?username=${username}`, null, 'GET' );
       const { data } = await response.json();
 
-
       if ( data ) {
+        delete data.token;
+
         setAdminData( {
           ...data,
           active: data.active === 'true', // value comes in as a string from lambda
