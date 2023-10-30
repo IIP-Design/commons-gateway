@@ -133,10 +133,8 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Return the 2FA request id to the application.
-	// FIXME
 	resp := map[string]any{
 		"requestId": requestId,
-		"code":      code,
 	}
 
 	body, err := msgs.MarshalBody(resp)

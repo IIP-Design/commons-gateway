@@ -96,20 +96,3 @@ adminsGet:
   package:
     patterns:
       - './bin/admins-get'
-# FIXME
-tmqSql:
-  name: gateway-${opt:stage}-tmp-sql
-  handler: bin/tmp-sql
-  description: DBG
-  runtime: go1.x
-  events:
-    - http:
-        path: /sql
-        method: post
-        authorizer:
-          name: authorizer
-          resultTtlInSeconds: 0
-        cors: ${file(./config/${param:deployment}.json):cors}
-  package:
-    patterns:
-      - './bin/tmp-sql'
