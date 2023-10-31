@@ -60,7 +60,8 @@ type AdminUser struct {
 
 // GuestUser extends the base User struct with unique guest properties.
 type GuestUser struct {
-	Expires string
+	Expires string `json:"expires"`
+	Pending bool   `json:"pending"`
 	User
 }
 

@@ -15,13 +15,13 @@ import type { ColumnDef } from '@tanstack/react-table';
 import currentUser from '../stores/current-user';
 import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
+import { isGuestActive } from '../utils/guest';
 import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import style from '../styles/table.module.scss';
-import { isGuestActive } from '../utils/guest';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -52,7 +52,7 @@ const UploaderTable: FC = () => {
           data.map( ( user: IUploader ) => ( {
             ...user,
             name: `${user.givenName} ${user.familyName}`,
-            active: isGuestActive( user.expiration ),
+            active: isGuestActive( user.expires ),
           } ) ),
         );
       }
@@ -85,28 +85,16 @@ const UploaderTable: FC = () => {
         },
       },
       {
-        ...defaultColumnDef( 'active' ),
+        ...defaultColumnDef( 'active', 'Status' ),
         cell: info => {
+          const isPending = info.row.original['pending'] as boolean;
           const isActive = info.getValue() as boolean;
 
-          return (
-            <span className={ style.status }>
-              <span className={ isActive ? style.active : style.inactive } />
-              { isActive ? 'Active' : 'Inactive' }
-            </span>
-          );
-        },
-      },
-      {
-        ...defaultColumnDef( 'pending' ),
-        header: 'Status',
-        cell: info => {
-          const isPending = info.getValue() as boolean;
 
           return (
             <span className={ style.status }>
-              <span className={ isPending ? style.inactive : style.active } />
-              { isPending ? 'Pending' : 'Approved' }
+              <span className={ isActive ? ( isPending ? style.pending : style.active ) : style.inactive } />
+              { isActive ? ( isPending ? 'Pending' : 'Active' ) : 'Inactive' }
             </span>
           );
         },

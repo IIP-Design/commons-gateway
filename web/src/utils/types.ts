@@ -8,10 +8,11 @@ export type TUserRole = 'super admin' | 'admin' | 'guest admin' | 'guest';
 // ////////////////////////////////////////////////////////////////////////////
 export interface IUserEntry {
   email: string;
-  expiration: string;
+  expires: string;
   familyName: string;
   name: string
   givenName: string;
+  pending: boolean;
   role: TUserRole;
   team: string;
 }

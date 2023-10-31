@@ -31,7 +31,7 @@ func getAdmins(team string) ([]data.User, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := "SELECT email, first_name, last_name, role, team FROM admins WHERE team = $1 OR role='super admin'"
+	query := "SELECT email, first_name, last_name, role, team FROM admins WHERE team = $1"
 	rows, err := pool.Query(query, team)
 
 	if err != nil {

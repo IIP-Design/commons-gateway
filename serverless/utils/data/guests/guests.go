@@ -86,8 +86,8 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 }
 
 // RetrieveGuests opens a database connection and retrieves the full list of guest users.
-func RetrieveGuests(team string, role string) ([]map[string]string, error) {
-	var guests []map[string]string
+func RetrieveGuests(team string, role string) ([]data.GuestUser, error) {
+	var guests []data.GuestUser
 	var err error
 	var query string
 	var rows *sql.Rows
@@ -96,11 +96,11 @@ func RetrieveGuests(team string, role string) ([]map[string]string, error) {
 	defer pool.Close()
 
 	if team == "" {
-		query = `SELECT email, first_name, last_name, role, team, expiration FROM guest_auth_data ORDER BY first_name;`
+		query = `SELECT email, first_name, last_name, role, team, pending, expiration FROM guest_auth_data ORDER BY first_name;`
 		rows, err = pool.Query(query)
 	} else {
 		query =
-			`SELECT email, first_name, last_name, role, team, expiration
+			`SELECT email, first_name, last_name, role, team, pending, expiration
 			 FROM guest_auth_data WHERE team = $1 ORDER BY first_name;`
 		rows, err = pool.Query(query, team)
 	}
@@ -114,22 +114,13 @@ func RetrieveGuests(team string, role string) ([]map[string]string, error) {
 
 	for rows.Next() {
 		var guest data.GuestUser
-		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Role, &guest.Team, &guest.Expires); err != nil {
+		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Role, &guest.Team, &guest.Pending, &guest.Expires); err != nil {
 			logs.LogError(err, "Get Guests Query Error")
 			return guests, err
 		}
 
-		guestData := map[string]string{
-			"email":      guest.Email,
-			"givenName":  guest.NameFirst,
-			"familyName": guest.NameLast,
-			"role":       guest.Role,
-			"team":       guest.Team,
-			"expiration": guest.Expires,
-		}
-
-		if role == "" || role == guestData["role"] {
-			guests = append(guests, guestData)
+		if role == "" || role == guest.Role {
+			guests = append(guests, guest)
 		}
 	}
 
@@ -247,7 +238,7 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 			"familyName":  guest.NameLast,
 			"role":        guest.Role,
 			"team":        guest.Team,
-			"expiration":  guest.Expires,
+			"expires":     guest.Expires,
 			"dateInvited": guest.DateInvited,
 			"proposer":    guest.Proposer,
 			"inviter":     guest.Inviter,

@@ -187,7 +187,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
           id="reset-password-btn"
           type="button"
           onClick={handlePasswordReset}
-          disabled={!currentInvite.expired}
+          disabled={currentInvite.expired}
         >
           Reset Password
         </button>
