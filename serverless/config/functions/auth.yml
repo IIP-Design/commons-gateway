@@ -75,6 +75,7 @@ credsPropose:
       - './bin/creds-propose'
   environment:
     SOURCE_EMAIL_ADDRESS: ${env:AWS_SES_EMAIL}
+    EMAIL_REDIRECT_URL: ${env:CLIENT_URL}/pending-invites
     AWS_SES_REGION: ${env:AWS_SES_REGION}
 credsProvision:
   name: gateway-${opt:stage}-creds-provision
