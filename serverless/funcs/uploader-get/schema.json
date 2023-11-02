@@ -4,17 +4,12 @@
   "description": "Data required to retrieve the guest from a given team",
   "type": "object",
   "properties": {
-    "teamName": {
-      "description": "The name of the team to be added",
-      "type": "string",
-      "minLength": 1
-    },
-    "teamAprimo": {
-      "description": "The name of the team as it appears in Aprimo",
+    "team": {
+      "description": "The ID of the team for which to retrieve uploaders",
       "type": "string",
       "minLength": 1
     }
   },
-  "required": ["teamName", "teamAprimo"],
+  "required": ["team"],
   "additionalProperties": false
 }

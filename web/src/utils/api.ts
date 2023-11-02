@@ -58,9 +58,9 @@ export const buildQuery = async ( endpoint: string, body: Nullable<Record<string
     };
   }
 
-  // 401 means the token is expired, so log out user for UX reasons
   const response = await fetch( constructUrl( endpoint ), opts );
 
+  // 401 means the token is expired, so log out user for UX reasons
   if ( response.status === 401 ) {
     logout();
   }

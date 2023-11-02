@@ -1,7 +1,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
-import currentUser from '../stores/current-user';
+import currentUser, { loginStatus } from '../stores/current-user';
 import type { TUserRole } from './types';
 import { buildQuery } from './api';
 
@@ -121,6 +121,8 @@ export const isLoggedInAsExternalPartner = () => isLoggedIn( userIsExternalPartn
 
 export const isLoggedInAsNotGuest = () => isLoggedIn( userIsNotGuest() );
 
+const requirePasswordReset = () => loginStatus.get() === 'firstLogin' && !window.location.pathname.endsWith( '/profile' );
+
 /**
  * Checks whether the current user is authenticated and if not,
  * redirects them to the specified page.
@@ -135,6 +137,8 @@ const protectPage = (
 
   if ( !authenticated ) {
     window.location.replace( redirect.startsWith( '/' ) ? redirect : `/${redirect}` );
+  } else if ( requirePasswordReset() ) {
+    window.location.replace( '/profile' );
   }
 
   // Returns async to catch malicious users trying to bypass normal login rules

@@ -8,10 +8,11 @@ export type TUserRole = 'super admin' | 'admin' | 'guest admin' | 'guest';
 // ////////////////////////////////////////////////////////////////////////////
 export interface IUserEntry {
   email: string;
-  expiration: string;
+  expires: string;
   familyName: string;
   name: string
   givenName: string;
+  pending: boolean;
   role: TUserRole;
   team: string;
 }
@@ -25,6 +26,15 @@ export interface ITeam {
 export interface IUiData {
   name: string;
   active: boolean;
+}
+
+export interface IInvite {
+  pending: boolean;
+  expired: boolean;
+  passwordReset: boolean;
+  dateInvited: string;
+  accessEndDate: string;
+  proposer?: string;
 }
 
 // ////////////////////////////////////////////////////////////////////////////

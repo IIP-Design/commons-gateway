@@ -18,12 +18,6 @@ const (
 	CharSet = "UTF-8"
 )
 
-type ProvisionCredsData struct {
-	Invitee     data.User `json:"invitee"`
-	TmpPassword string    `json:"tmpPassword"`
-	Url         string    `json:"url"`
-}
-
 func formatEmailBody(invitee data.User, tmpPassword string, url string) string {
 	return fmt.Sprintf(`<p>%s %s,</p>
 
@@ -62,7 +56,10 @@ func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail 
 	}
 }
 
-func MailProvisionedCreds(sourceEmail string, provisionCredsData ProvisionCredsData) error {
+func MailProvisionedCreds(invitee data.User, tmpPassword string) error {
+	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
+	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
+
 	if sourceEmail == "" {
 		log.Println("Not configured for sending emails")
 		return nil
@@ -80,9 +77,9 @@ func MailProvisionedCreds(sourceEmail string, provisionCredsData ProvisionCredsD
 	sesClient := ses.NewFromConfig(cfg)
 
 	e := formatEmail(
-		provisionCredsData.Invitee,
-		provisionCredsData.TmpPassword,
-		provisionCredsData.Url,
+		invitee,
+		tmpPassword,
+		redirectUrl,
 		sourceEmail,
 	)
 

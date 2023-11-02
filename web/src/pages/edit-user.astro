@@ -1,13 +1,13 @@
 ---
 import NotGuestPageLayout from '../layouts/NotGuestPageLayout.astro';
 import PageContainer from '../layouts/PageContainer.astro';
-import UserForm from '../components/UserForm';
+import EditUserForm from '../components/EditUserForm';
 
 const title = 'Edit User';
 ---
 
 <NotGuestPageLayout title={title}>
   <PageContainer narrow title={title}>
-    <UserForm client:only user />
+    <EditUserForm client:only />
   </PageContainer>
 </NotGuestPageLayout>

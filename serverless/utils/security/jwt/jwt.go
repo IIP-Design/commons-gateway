@@ -18,7 +18,7 @@ var secret = []byte(os.Getenv("JWT_SECRET"))
 // generateJWT creates a JSON web token that can be used to authenticate to the
 // web application. The token contains the user's name and access scope and is
 // valid for one hour.
-func GenerateJWT(username string, scope string) (string, error) {
+func GenerateJWT(username string, scope string, firstLogin bool) (string, error) {
 	// TODO: Switch to EdDSA signing key
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -28,12 +28,13 @@ func GenerateJWT(username string, scope string) (string, error) {
 	claims["exp"] = time.Now().Add(1 * time.Hour).Unix()
 	claims["scope"] = scope
 	claims["user"] = username
+	claims["firstLogin"] = firstLogin
 
 	return token.SignedString(secret)
 }
 
-func FormatJWT(username string, scope string) (string, error) {
-	tokenString, err := GenerateJWT(username, scope)
+func FormatJWT(username string, scope string, firstLogin bool) (string, error) {
+	tokenString, err := GenerateJWT(username, scope, firstLogin)
 
 	if err != nil {
 		return "", err
@@ -70,7 +71,9 @@ func extractBearerToken(headerVal string) (string, error) {
 	}
 }
 
-func VerifyJWT(tokenString string, scopes []string) error {
+func parseToken(tokenString string) (string, error) {
+	var scope string
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -81,19 +84,30 @@ func VerifyJWT(tokenString string, scopes []string) error {
 
 	if err != nil {
 		logs.LogError(err, "Error Parsing JWT Token")
-		return err
+		return scope, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid {
 		logs.LogError(err, "Bearer Token is Not Valid")
-		return errors.New("token is not valid")
+		return scope, errors.New("token is not valid")
 	}
 
-	if !slices.Contains(scopes, claims["scope"].(string)) {
-		logs.LogError(err, "Bearer Token Has Incorrect Scope")
-		return errors.New("token has incorrect scope: " + claims["scope"].(string))
+	scope = claims["scope"].(string)
+
+	return scope, err
+}
+
+func VerifyJWT(tokenString string, scopes []string) error {
+	scope, err := parseToken(tokenString)
+	if err != nil {
+		return err
+	}
+
+	if !slices.Contains(scopes, scope) {
+		logs.LogError(errors.New("scope error"), "Bearer Token Has Incorrect Scope")
+		return errors.New("token has incorrect scope: " + scope)
 	}
 
 	return nil
@@ -117,4 +131,14 @@ func CheckAuthToken(token string, scopes []string) error {
 	}
 
 	return err
+}
+
+func ExtractClientRole(token string) (string, error) {
+	tokenString, err := extractBearerToken(token)
+	if err != nil {
+		logs.LogError(err, "Error Extracting Bearer Token")
+		return "", err
+	}
+
+	return parseToken(tokenString)
 }

@@ -36,6 +36,7 @@ type RequestBodyOptions struct {
 	Hash     string          `json:"hash"`
 	Invitee  UserBodyOptions `json:"invitee"`
 	Inviter  string          `json:"inviter"`
+	Admin    string          `json:"admin"`
 	MFA      MFARequest      `json:"mfa"`
 	Proposer string          `json:"proposer"`
 	Username string          `json:"username"`
@@ -59,7 +60,8 @@ type AdminUser struct {
 
 // GuestUser extends the base User struct with unique guest properties.
 type GuestUser struct {
-	Expires string
+	Expires string `json:"expires"`
+	Pending bool   `json:"pending"`
 	User
 }
 
@@ -101,6 +103,12 @@ type AcceptInvite struct {
 
 type GuestUnlockInitEvent struct {
 	Username string `json:"username"`
+}
+
+type GuestReauth struct {
+	Email   string    `json:"email"`
+	Admin   string    `json:"admin"`
+	Expires time.Time `json:"expiration"`
 }
 
 // ParseBodyData converts the serialized JSON string provided in the body
@@ -193,18 +201,6 @@ func ExtractGuestUser(body string) (GuestUser, error) {
 	guest.Role = userData.Role
 	guest.Team = userData.Team
 
-	parsed, err := ParseBodyData(body)
-
-	expiration := parsed.Expires
-
-	if err != nil {
-		return guest, err
-	} else if expiration == "" {
-		return guest, errors.New("expiration data missing from request")
-	}
-
-	guest.Expires = expiration
-
 	return guest, err
 }
 
@@ -266,4 +262,29 @@ func ExtractAcceptInvite(body string) (AcceptInvite, error) {
 	}
 
 	return invite, err
+}
+
+func ExtractReauth(body string) (GuestReauth, error) {
+	var ret GuestReauth
+
+	parsed, err := ParseBodyData(body)
+	if err != nil {
+		return ret, err
+	}
+
+	email := parsed.Email
+	admin := parsed.Admin
+	expires := parsed.Expires
+
+	parsedTime, err := time.Parse(time.RFC3339, expires)
+
+	if err != nil {
+		return ret, err
+	}
+
+	ret.Email = email
+	ret.Admin = admin
+	ret.Expires = parsedTime
+
+	return ret, err
 }

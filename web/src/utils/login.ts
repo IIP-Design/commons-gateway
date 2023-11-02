@@ -15,7 +15,7 @@ import {
 import { buildQuery } from './api';
 import { AMPLIFY_CONFIG } from './constants';
 import { derivePasswordHash } from './hashing';
-import { tokenExpiration } from './jwt';
+import { extractTokenFields } from './jwt';
 import { isLoggedInAsAdmin } from './auth';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ export const handleAdminLogin = async () => {
  * @param username The name of the user to look up.
  * @returns The salt value (if the user exits).
  */
-const getUserPasswordSalt = async ( username: string ) => {
+export const getUserPasswordSalt = async ( username: string ) => {
   const response = await buildQuery( 'creds/salt', { username } );
   const { data, error } = await response.json();
 
@@ -158,7 +158,7 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
 
     accessToken.set( jwt );
 
-    const exp = tokenExpiration( jwt );
+    const { exp, firstLogin } = extractTokenFields( jwt );
 
     // Retrieve additional data from the application.
     const response = await buildQuery( `guest?id=${username}`, null, 'GET' );
@@ -167,7 +167,13 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
 
     // Add the required data from the id token to the current user store.
     setCurrentUser( { email: username, team, role, exp } );
-    loginStatus.set( 'loggedIn' );
+
+    if ( firstLogin ) {
+      loginStatus.set( 'firstLogin' );
+    } else {
+      loginStatus.set( 'loggedIn' );
+    }
+
 
     authenticated = true;
   } catch ( err ) {

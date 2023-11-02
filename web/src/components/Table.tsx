@@ -38,11 +38,11 @@ type ITableProps<DataType> = {
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-export const defaultColumnDef = <T, >( key: keyof T ): ColumnDef<T> => ( {
+export const defaultColumnDef = <T, >( key: keyof T, header?: string ): ColumnDef<T> => ( {
   accessorFn: row => row[key],
   id: key as string,
   cell: info => info.getValue(),
-  header: () => <span>{ titleCase( key as string ) }</span>,
+  header: () => <span>{ header || titleCase( key as string ) }</span>,
   footer: props => props.column.id,
   enableSorting: true,
 } );

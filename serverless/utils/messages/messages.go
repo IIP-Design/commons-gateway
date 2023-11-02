@@ -80,10 +80,16 @@ func statusCodeToBody(statusCode int) string {
 	var code string
 
 	switch statusCode {
+	case 400:
+		code = "bad request"
 	case 401:
 		code = "unauthorized"
 	case 403:
 		code = "forbidden"
+	case 409:
+		code = "resource conflict"
+	case 422:
+		code = "unprocessable entity"
 	case 500:
 	default:
 		code = "internal error"
@@ -92,7 +98,7 @@ func statusCodeToBody(statusCode int) string {
 	return code
 }
 
-func SendAuthError(err error, statusCode int) (Response, error) {
+func SendCustomError(err error, statusCode int) (Response, error) {
 	var msg string
 
 	if err != nil {

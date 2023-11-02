@@ -78,6 +78,10 @@ const AdminTable: FC = () => {
         ...defaultColumnDef( 'name' ),
         cell: info => <a href={ `/edit-admin?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
       },
+      {
+        ...defaultColumnDef( 'role' ),
+        cell: info => <span style={ { textTransform: 'capitalize' } }>{ info.getValue() as string }</span>,
+      },
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'team' ),

@@ -120,18 +120,18 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 
 	if credentials.Hash != clientHash {
 		recordUnsuccessfulLoginAttempt(username)
-		return msgs.SendAuthError(errors.New("forbidden"), 403)
+		return msgs.SendCustomError(errors.New("forbidden"), 403)
 	} else if credentials.Expired {
 		recordUnsuccessfulLoginAttempt(username)
-		return msgs.SendAuthError(errors.New("credentials expired"), 403)
+		return msgs.SendCustomError(errors.New("credentials expired"), 403)
 	} else if !credentials.Approved {
 		recordUnsuccessfulLoginAttempt(username)
-		return msgs.SendAuthError(errors.New("user is not yet approved"), 403)
+		return msgs.SendCustomError(errors.New("user is not yet approved"), 403)
 	} else if credentials.Locked {
-		return msgs.SendAuthError(errors.New("account locked"), 429)
+		return msgs.SendCustomError(errors.New("account locked"), 429)
 	}
 
-	jwt, err := jwt.FormatJWT(username, credentials.Role)
+	jwt, err := jwt.FormatJWT(username, credentials.Role, credentials.FirstLogin)
 
 	if err != nil {
 		return msgs.SendServerError(err)
@@ -168,7 +168,7 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 
 	if !verified {
 		recordUnsuccessfulLoginAttempt(username)
-		return msgs.SendAuthError(errors.New("forbidden"), 403)
+		return msgs.SendCustomError(errors.New("forbidden"), 403)
 	}
 
 	// Delete the existing 2FA entry

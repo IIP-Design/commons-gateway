@@ -1,3 +1,8 @@
+export interface ITokenFields {
+  exp: number;
+  firstLogin: boolean;
+}
+
 /**
  * Decode JWT authentication token
  *
@@ -19,8 +24,8 @@ export const decodeJwt = ( token:string ) => {
   return JSON.parse( jsonPayload );
 };
 
-export const tokenExpiration = ( token: string ) => {
-  const { exp } = decodeJwt( token );
+export const extractTokenFields = ( token: string ): ITokenFields => {
+  const { exp, firstLogin } = decodeJwt( token );
 
-  return exp;
+  return { exp, firstLogin };
 };

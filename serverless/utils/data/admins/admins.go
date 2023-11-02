@@ -39,7 +39,7 @@ func CheckForGuestAdmin(email string) (data.User, bool, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := `SELECT email, first_name, last_name, role, team, expiration > NOW() AS active FROM guests WHERE email = $1 AND role='guest admin';`
+	query := `SELECT email, first_name, last_name, role, team, expiration > NOW() AS active FROM guest_auth_data WHERE email = $1 AND role='guest admin';`
 	err = pool.QueryRow(query, email).Scan(
 		&proposer.Email, &proposer.NameFirst, &proposer.NameLast, &proposer.Role, &proposer.Team, &active)
 
@@ -105,7 +105,7 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 		return admin, err
 	}
 
-	jwt, err := jwt.GenerateJWT(username, role)
+	jwt, err := jwt.GenerateJWT(username, role, false)
 
 	if err != nil {
 		logs.LogError(err, "Admin token error")

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -42,14 +41,7 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendServerError(err)
 	}
 
-	// TODO - email URL
-	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
-	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
-	err = provision.MailProvisionedCreds(sourceEmail, provision.ProvisionCredsData{
-		Invitee:     invitee,
-		TmpPassword: pass,
-		Url:         redirectUrl,
-	})
+	err = provision.MailProvisionedCreds(invitee, pass)
 	if err != nil {
 		return msgs.SendServerError(err)
 	}

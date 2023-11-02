@@ -55,7 +55,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
           data.map( ( user: IUserEntry ) => ( {
             ...user,
             name: `${user.givenName} ${user.familyName}`,
-            active: isGuestActive( user.expiration ),
+            active: isGuestActive( user.expires ),
           } ) ),
         );
       }
@@ -89,14 +89,15 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
         cell: info => getTeamName( info.getValue() as string, teams ),
       },
       {
-        ...defaultColumnDef( 'active' ),
+        ...defaultColumnDef( 'active', 'Status' ),
         cell: info => {
+          const isPending = info.row.original["pending"] as boolean;
           const isActive = info.getValue() as boolean;
 
           return (
             <span className={ style.status }>
-              <span className={ isActive ? style.active : style.inactive } />
-              { isActive ? 'Active' : 'Inactive' }
+              <span className={ isActive ? ( isPending ? style.pending : style.active ) : style.inactive } />
+              { isPending ? 'Pending' : ( isActive ? 'Active' : 'Inactive' ) }
             </span>
           );
         },

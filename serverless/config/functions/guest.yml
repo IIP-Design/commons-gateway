@@ -185,3 +185,49 @@ uploaderGet:
   package:
     patterns:
       - './bin/uploader-get'
+guestReauth:
+  name: gateway-${opt:stage}-guest-reauth
+  handler: bin/guest-reauth
+  description: Attempt to reauthorize a guest.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest/reauth
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+            application/json:
+              schema: ${file(./funcs/guest-reauth/schema.json)}
+              name: PostGuestReauthModel
+              description: Validation model for reauthorizing a guest.
+  package:
+    patterns:
+      - './bin/guest-reauth'
+passwordChange:
+  name: gateway-${opt:stage}-password-change
+  handler: bin/password-change
+  description: Allow an existing guest to change their password.
+  runtime: go1.x
+  events:
+    - http:
+        path: /guest/password
+        method: post
+        authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+        cors: ${file(./config/${param:deployment}.json):cors}
+        request:
+          schemas:
+              application/json:
+                schema: ${file(./funcs/password-change/schema.json)}
+                name: PostPasswordChangeModel
+                description: Validation model for changing a password.
+  package:
+    patterns:
+      - './bin/password-change'
+  environment:
+    AWS_SES_REGION: ${env:AWS_SES_REGION}

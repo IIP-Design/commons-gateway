@@ -33,6 +33,11 @@ export const routes: IRoute[] = [
   {
     href: 'upload',
   },
+  {
+    href: 'profile',
+    name: 'Profile',
+    rolesAccessible: ['guest admin', 'guest'],
+  },
 ];
 
 export const filterRoutes = ( userRole: TUserRole ) => routes

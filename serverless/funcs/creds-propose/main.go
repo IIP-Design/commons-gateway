@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"errors"
-	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
+	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/data/invites"
+	"github.com/IIP-Design/commons-gateway/utils/email/propose"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -28,40 +27,12 @@ func handleProposedInvitation(invite data.Invite) error {
 		return errors.New("you are not authorized to propose user invites")
 	}
 
-	// Ensure invitee doesn't already have access.
-	_, guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
-
+	_, err = creds.SaveInitialInvite(invite, true)
 	if err != nil {
 		return err
-	} else if guestHasAccess {
-		return errors.New("guest user already has access")
 	}
 
-	// Generate credentials
-	pass, salt := hashing.GenerateCredentials()
-	hash := hashing.GenerateHash(pass, salt)
-
-	// PASSWORD IS UNRECOVERABLE
-	err = invites.SaveCredentials(invite.Invitee, invite.Expires, hash, salt)
-
-	if err != nil {
-		return errors.New("something went wrong - credential generation failed")
-	}
-
-	// Record the invitation - has to follow cred generation due to foreign key constraint
-	err = invites.SaveInvite(invite.Proposer, invite.Invitee.Email, true)
-
-	if err != nil {
-		return errors.New("something went wrong - saving invite failed")
-	}
-
-	// TODO - email URL
-	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
-	err = MailProposedCreds(sourceEmail, RequestSupportStaffData{
-		Invitee:  invite.Invitee,
-		Proposer: proposer,
-		Url:      "/invites",
-	})
+	err = propose.MailProposedCreds(invite.Invitee, proposer)
 
 	return err
 }
