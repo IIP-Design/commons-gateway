@@ -9,17 +9,22 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
-// generateCredentials creates a random 20 character string to be used as a password
-// as well as a random 10 character string to salt the password when hashing
+const (
+	PASS_LEN = 20
+	SALT_LEN = 10
+)
+
+// generateCredentials creates a random PASS_LEN character string to be used as a password
+// as well as a random SALT_LEN character string to salt the password when hashing
 // it for storage in the database.
 func GenerateCredentials() (string, string) {
-	pass, err := randstr.RandStringBytes(20)
+	pass, err := randstr.RandStringBytes(PASS_LEN)
 
 	if err != nil {
 		logs.LogError(err, "failed to generate credentials - password")
 	}
 
-	salt, err := randstr.RandStringBytes(10)
+	salt, err := randstr.RandStringBytes(SALT_LEN)
 
 	if err != nil {
 		logs.LogError(err, "failed to generate credentials - salt")

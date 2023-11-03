@@ -30,7 +30,7 @@ func registerMfaRequest(requestId xid.ID, code string) error {
 	currentTime := time.Now()
 
 	insertMfa := `INSERT INTO mfa( request_id, code, date_created ) VALUES ( $1, $2, $3 );`
-	_, err = pool.Exec(insertMfa, requestId, code, currentTime)
+	_, err = pool.Exec(insertMfa, requestId.String(), code, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Save MFA Request Query Error")
