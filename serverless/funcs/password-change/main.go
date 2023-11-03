@@ -103,26 +103,26 @@ func checkNewPasswordStrength(email string, role string, newPassword string) boo
 	return success
 }
 
-func updatePassword(email string, salt string, newPassword string) error {
+func updatePassword(email string, salt string, newPassword string, newSalt string) error {
 	var err error
-	passHash := hashing.GenerateHash(newPassword, salt)
+	passHash := hashing.GenerateHash(newPassword, newSalt)
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query := "UPDATE invites SET pass_hash = $1, first_login = FALSE " +
-		" WHERE invitee = $2 AND salt = $3 " +
+	query := "UPDATE invites SET pass_hash = $1, salt = $2, first_login = FALSE " +
+		" WHERE invitee = $3 AND salt = $4 " +
 		" AND pending = FALSE AND expiration > NOW() " +
-		" AND date_invited = ( SELECT max(date_invited) FROM invites WHERE invitee = $2 AND pending = FALSE )"
+		" AND date_invited = ( SELECT max(date_invited) FROM invites WHERE invitee = $3 AND pending = FALSE )"
 
-	_, err = pool.Exec(query, passHash, email, salt)
+	_, err = pool.Exec(query, passHash, newSalt, email, salt)
 	if err != nil {
 		return err
 	}
 
 	id := xid.New()
 	query = "INSERT INTO password_history ( id, user_id, creation_date, salt, pass_hash ) VALUES ( $1, $2, NOW(), $3, $4)"
-	_, err = pool.Exec(query, id, email, salt, passHash)
+	_, err = pool.Exec(query, id, email, newSalt, passHash)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,8 @@ func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequ
 		return msgs.SendCustomError(errors.New("password was reused"), 409)
 	}
 
-	err = updatePassword(parsed.Email, credentials.Salt, parsed.NewPassword)
+	_, newSalt := hashing.GenerateCredentials()
+	err = updatePassword(parsed.Email, credentials.Salt, parsed.NewPassword, newSalt)
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
