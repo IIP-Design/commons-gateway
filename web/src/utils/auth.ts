@@ -92,7 +92,7 @@ export const isLoggedIn = ( additionalCheck?: boolean ) => !userIsExpired() && (
 export const userIsExternalPartner = () => {
   const { role } = currentUser.get();
 
-  return role === 'guest admin';
+  return role === 'guest admin' || role === 'guest';
 };
 
 export const userIsAdmin = () => {
