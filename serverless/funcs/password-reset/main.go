@@ -34,8 +34,7 @@ func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyReque
 		return msgs.SendServerError(err)
 	}
 
-	err = provision.MailProvisionedCreds(user, pass, 3)
-
+	_, err = provision.MailProvisionedCreds(user, pass, 3)
 	if err != nil {
 		return msgs.SendServerError(err)
 	}

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func AddToEnv() {
+func AddToEnv(env map[string]string) {
 	currentEnv := map[string]bool{}
 	rawEnv := os.Environ()
 	for _, rawEnvLine := range rawEnv {
@@ -13,7 +13,7 @@ func AddToEnv() {
 		currentEnv[key] = true
 	}
 
-	for key, value := range Env {
+	for key, value := range env {
 		if !currentEnv[key] {
 			_ = os.Setenv(key, value)
 		}

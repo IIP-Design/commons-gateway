@@ -7,7 +7,7 @@ import (
 )
 
 func TestConnect(t *testing.T) {
-	test.AddToEnv()
+	test.ConfigureDb()
 
 	pool := ConnectToDB()
 	defer pool.Close()
