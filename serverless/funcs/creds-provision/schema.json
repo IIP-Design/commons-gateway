@@ -49,6 +49,6 @@
       "maxLength": 127
     }
   },
-  "required": ["expiration"],
+  "required": ["expiration", "invitee", "inviter"],
   "additionalProperties": false
 }
