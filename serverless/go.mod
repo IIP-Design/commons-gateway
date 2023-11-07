@@ -13,7 +13,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.24.5
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/lib/pq v1.10.9
-	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354
 	github.com/rs/xid v1.5.0
 	golang.org/x/crypto v0.13.0
 )

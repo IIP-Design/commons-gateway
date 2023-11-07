@@ -13,7 +13,6 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/nbutton23/zxcvbn-go"
 	"github.com/rs/xid"
 )
 
@@ -106,12 +105,6 @@ func checkPasswordReused(email string, hashedPriorSalts []string) (bool, error) 
 	}
 
 	return reused, err
-}
-
-func checkNewPasswordStrength(email string, role string, newPassword string) bool {
-	result := zxcvbn.PasswordStrength(newPassword, []string{email, role})
-	success := (result.Score >= 3)
-	return success
 }
 
 func updatePassword(email string, salt string, newPassword string, newSalt string) error {
