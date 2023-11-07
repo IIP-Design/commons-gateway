@@ -28,7 +28,9 @@ func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyReque
 		return msgs.SendServerError(err)
 	}
 
+	// Ensure the user exists doesn't already have access.
 	user, _, err := users.CheckForExistingUser(id, "guests")
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
