@@ -34,7 +34,7 @@ func formatEmailBody(user data.User, code string) string {
 		`<p>%s %s,</p>
 		<p>Please use this verification code to complete your sign in:</p>
 		<p>%s</p>
-		<p>If you did not make this request, please disregard this email. </p>`,
+		<p>Please note that this verification code will expire in 20 minutes. If you did not make this request, please disregard this email. </p>`,
 		user.NameFirst, user.NameLast, code,
 	)
 }
