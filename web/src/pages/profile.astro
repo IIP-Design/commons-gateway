@@ -17,6 +17,7 @@ const desc = 'Because this is your first login with this invite, you must update
   import currentUser, { loginStatus } from '../stores/current-user';
   import { derivePasswordHash } from '../utils/hashing';
   import { buildQuery } from '../utils/api';
+  import { randomString } from '../utils/string';
 
   interface ISubData {
     email: string;
@@ -136,9 +137,14 @@ const desc = 'Because this is your first login with this invite, you must update
         prevSalts.map(async (prev: string) => await derivePasswordHash(newPassword, prev))
       );
 
+      // Generate random salt and use it to hash the user's new password.
+      const newSalt = randomString(10);
+      const newPasswordHash = await derivePasswordHash(newPassword, newSalt);
+
       const body = {
         currentPasswordHash,
-        newPassword,
+        newPasswordHash,
+        newSalt,
         hashesWithPriorSalts,
         email,
       };

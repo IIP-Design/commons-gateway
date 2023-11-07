@@ -10,7 +10,6 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/rs/xid"
@@ -18,9 +17,10 @@ import (
 
 type PasswordReset struct {
 	CurrentPasswordHash string   `json:"currentPasswordHash"`
-	NewPassword         string   `json:"newPassword"`
-	HashedPriorSalts    []string `json:"hashesWithPriorSalts"`
 	Email               string   `json:"email"`
+	HashedPriorSalts    []string `json:"hashesWithPriorSalts"`
+	NewPasswordHash     string   `json:"newPasswordHash"`
+	NewSalt             string   `json:"newSalt"`
 }
 
 func extractBody(body string) (PasswordReset, error) {
@@ -60,6 +60,9 @@ func verifyUser(parsed PasswordReset) (creds.CredentialsData, error) {
 	return credentials, nil
 }
 
+// checkPasswordReused compares a list of provided password hashes (generally a new
+// password hashed with the salts from previous passwords) against a list of a user's
+// previous password hashes. A match between these lists indicates password reuse.
 func checkPasswordReused(email string, hashedPriorSalts []string) (bool, error) {
 	var err error
 	reused := false
@@ -96,6 +99,7 @@ func checkPasswordReused(email string, hashedPriorSalts []string) (bool, error) 
 
 		if found {
 			reused = true
+			logs.LogError(errors.New("matching hash found"), "Password Hash Collision Error")
 			break
 		}
 	}
@@ -107,32 +111,37 @@ func checkPasswordReused(email string, hashedPriorSalts []string) (bool, error) 
 	return reused, err
 }
 
-func updatePassword(email string, salt string, newPassword string, newSalt string) error {
+// updatePassword stores a hash of the newly created password as needed in the database.
+func updatePassword(email string, salt string, newPasswordHash string, newSalt string) error {
 	var err error
-	passHash := hashing.GenerateHash(newPassword, newSalt)
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
+	// Save new credentials to invites table.
 	query := "UPDATE invites SET pass_hash = $1, salt = $2, first_login = FALSE " +
 		" WHERE invitee = $3 AND salt = $4 " +
 		" AND pending = FALSE AND expiration > NOW() " +
 		" AND date_invited = ( SELECT max(date_invited) FROM invites WHERE invitee = $3 AND pending = FALSE )"
+	_, err = pool.Exec(query, newPasswordHash, newSalt, email, salt)
 
-	_, err = pool.Exec(query, passHash, newSalt, email, salt)
 	if err != nil {
 		return err
 	}
 
+	// Save new credentials to password history table.
 	id := xid.New()
 	query = "INSERT INTO password_history ( id, user_id, creation_date, salt, pass_hash ) VALUES ( $1, $2, NOW(), $3, $4)"
-	_, err = pool.Exec(query, id, email, newSalt, passHash)
+	_, err = pool.Exec(query, id, email, newSalt, newPasswordHash)
+
 	if err != nil {
 		return err
 	}
 
+	// Limits the number of history entries stored per user.
 	query = "DELETE FROM password_history WHERE user_id = $1 AND id NOT IN ( SELECT id FROM password_history WHERE user_id = $1 ORDER BY creation_date DESC LIMIT 24 )"
 	_, err = pool.Exec(query, email)
+
 	if err != nil {
 		return err
 	}
@@ -161,8 +170,7 @@ func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequ
 		return msgs.SendCustomError(errors.New("password was reused"), 409)
 	}
 
-	_, newSalt := hashing.GenerateCredentials()
-	err = updatePassword(parsed.Email, credentials.Salt, parsed.NewPassword, newSalt)
+	err = updatePassword(parsed.Email, credentials.Salt, parsed.NewPasswordHash, parsed.NewSalt)
 
 	if err != nil {
 		return msgs.SendServerError(err)
