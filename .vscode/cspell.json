@@ -9,20 +9,28 @@
       "path": "../.config/dictionaries/dependencies.txt"
     },
     {
+      "name": "HTML",
+      "path": "../.config/dictionaries/html.txt"
+    },
+    {
       "name": "Postgres",
       "path": "../.config/dictionaries/postgres.txt"
     }
   ],
   "dictionaries": [
     "CloudFormation",
+    "HTML",
     "Dependencies",
     "Postgres"
   ],
   "words": [
+    "animloader",
     "Aprimo",
+    "curr",
     "funcs",
     "querystrings",
     "signout",
+    "sitekey",
     "somepage"
   ]
 }

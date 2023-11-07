@@ -10,3 +10,4 @@ sweetalert
 tanstack
 thanhpk
 tsconfigs
+zxcvbn
