@@ -1,4 +1,6 @@
 ---
+import styles from '../styles/button.module.scss';
+
 interface Props {
   class?: string;
   id?: string;
@@ -10,17 +12,13 @@ const { class: classes, id, promptText, buttonText } = Astro.props;
 ---
 
 <div style="display: inline;">
-    <label for={id}>{promptText}</label>
-    <input
-        class:list={[classes]}
-        id={id || ''}
-        type="file"
-        style="display: none;"
-    />
-    <input
-        type="button"
-        value={buttonText || 'Browse...'}
-        onclick=`document.getElementById("${id}").click();`
-        style="display: inline;"
-    />
+  <label for={id}>{promptText}</label>
+  <input class:list={[classes]} id={id || ''} type="file" style="display: none;" />
+  <input
+    type="button"
+    class={styles.btn}
+    value={buttonText || 'Browse'}
+    onclick=`document.getElementById("${id}").click();`
+    style="display: inline; cursor: pointer;"
+  />
 </div>

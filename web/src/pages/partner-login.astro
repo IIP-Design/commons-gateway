@@ -156,11 +156,11 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
         type="checkbox"
         style="display: inline; white-space: pre; margin: 0 0.5rem 0 0"
       />
-      I acknowledge the&nbsp;<button
-        id="monitoring-consent"
-        class={`consent ${btnStyles['link-btn']}`}
-        type="button">monitoring consent notice</button
-      >&nbsp;while using this system
+      <span>I acknowledge the&nbsp;</span>
+      <button id="monitoring-consent" class={`consent ${btnStyles['link-btn']}`} type="button">
+        monitoring consent notice
+      </button>
+      <span>&nbsp;while using this system</span>
     </label>
     <Button id="mfa-btn" class={btnStyles['disabled-btn']} type="button" disabled>
       Request 2FA Code
