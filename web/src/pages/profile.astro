@@ -48,13 +48,21 @@ const desc = 'Because this is your first login with this invite, you must update
   inputs.forEach((input) => input?.addEventListener('blur', toggleInputType));
 
   // Handle the submission of new passwords
+  const currPassElem = document.getElementById('current-password-input') as HTMLInputElement;
+  const newPassElem = document.getElementById('new-password-input') as HTMLInputElement;
+
+  /**
+   * Reset the current and new password fields to be empty.
+   */
+  const clearInputs = () => {
+    currPassElem.value = '';
+    newPassElem.value = '';
+  };
+
   const collectSubmissionData = (): ISubData => {
     const user = currentUser.get();
     const email = user.email || '';
     const role = user.role || '';
-
-    const currPassElem = document.getElementById('current-password-input') as HTMLInputElement;
-    const newPassElem = document.getElementById('new-password-input') as HTMLInputElement;
 
     const currPassword = currPassElem.value;
     const newPassword = newPassElem.value;
@@ -140,6 +148,7 @@ const desc = 'Because this is your first login with this invite, you must update
       if (ok) {
         loginStatus.set('loggedIn');
         showSuccess('Password successfully updated').then(() => {
+          clearInputs();
           if (isFirstLogin) {
             window.location.replace('/partner-login');
           }
