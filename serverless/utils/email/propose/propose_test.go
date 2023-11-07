@@ -1,4 +1,4 @@
-package provision
+package propose
 
 import (
 	"os"
@@ -11,6 +11,14 @@ import (
 func TestFormatEmail(t *testing.T) {
 	test.ConfigureEmail()
 
+	proposer := types.User{
+		Email:     "test@test.com",
+		NameFirst: "John",
+		NameLast:  "Public",
+		Role:      "guest",
+		Team:      "Fox",
+	}
+
 	invitee := types.User{
 		Email:     "test@test.com",
 		NameFirst: "John",
@@ -19,21 +27,29 @@ func TestFormatEmail(t *testing.T) {
 		Team:      "Fox",
 	}
 
-	tmpPassword := "abcfef"
-	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
+	admin := types.User{
+		Email:     "test@test.com",
+		NameFirst: "John",
+		NameLast:  "Public",
+		Role:      "guest",
+		Team:      "Fox",
+	}
+
+	url := os.Getenv("EMAIL_REDIRECT_URL")
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 
 	e := formatEmail(
+		proposer,
 		invitee,
-		tmpPassword,
-		redirectUrl,
+		admin,
+		url,
 		sourceEmail,
 	)
 
 	if len(e.Destination.ToAddresses) != 1 {
 		t.Fatalf(`ToAddresses length %d, want 1`, len(e.Destination.ToAddresses))
 	}
-	if e.Destination.ToAddresses[0] != invitee.Email {
+	if e.Destination.ToAddresses[0] != admin.Email {
 		t.Fatalf(`ToAddresses %s, want %s`, e.Destination.ToAddresses[0], invitee.Email)
 	}
 }

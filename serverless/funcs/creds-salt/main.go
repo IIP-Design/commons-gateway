@@ -6,6 +6,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -18,7 +19,7 @@ func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	var err error
 	var credentials creds.CredentialsData
 
-	_, exists, err := data.CheckForExistingUser(username, "guests")
+	_, exists, err := users.CheckForExistingUser(username, "guests")
 
 	if err != nil {
 		return credentials, err

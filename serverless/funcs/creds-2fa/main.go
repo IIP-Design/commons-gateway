@@ -13,10 +13,12 @@ import (
 	"github.com/rs/xid"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/queue"
 	"github.com/IIP-Design/commons-gateway/utils/randstr"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 // registerMfaRequest saves the generated 2FA and request id to the database.
@@ -48,7 +50,7 @@ func initiateEmailQueue(username string, code string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	var user data.User
+	var user types.User
 
 	query := `SELECT email, first_name, last_name FROM guests WHERE email = $1;`
 	err = pool.QueryRow(query, username).Scan(&user.Email, &user.NameFirst, &user.NameLast)
@@ -97,7 +99,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user requesting a 2FA code exists.
-	_, exists, err := data.CheckForExistingUser(username, "guests")
+	_, exists, err := users.CheckForExistingUser(username, "guests")
 
 	if err != nil {
 		logs.LogError(err, "Check For User Error")

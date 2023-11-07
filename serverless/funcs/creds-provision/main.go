@@ -12,10 +12,11 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
-func handleInvitation(invite data.Invite) error {
+func handleInvitation(invite types.Invite) error {
 	// Ensure inviter is an active admin user.
 	_, adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
 

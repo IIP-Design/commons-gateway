@@ -1,120 +1,18 @@
 package data
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 )
-
-// UserBodyOptions represents the possible properties on the body
-// JSON object sent to the serverless functions by the API Gateway
-// for operations that update guest or admin users.
-type UserBodyOptions struct {
-	Email      string `json:"email"`
-	Expires    string `json:"expiration"`
-	NameFirst  string `json:"givenName"`
-	NameLast   string `json:"familyName"`
-	Role       string `json:"role"`
-	TeamId     string `json:"team"`
-	TeamName   string `json:"teamName"`
-	AprimoName string `json:"teamAprimo"`
-}
-
-type MFARequest struct {
-	Id   string `json:"id"`
-	Code string `json:"code"`
-}
-
-// RequestBodyOptions represents the possible properties on the body
-// JSON object sent to the serverless functions by the API Gateway.
-type RequestBodyOptions struct {
-	UserBodyOptions
-	Active   bool            `json:"active"`
-	Hash     string          `json:"hash"`
-	Invitee  UserBodyOptions `json:"invitee"`
-	Inviter  string          `json:"inviter"`
-	Admin    string          `json:"admin"`
-	MFA      MFARequest      `json:"mfa"`
-	Proposer string          `json:"proposer"`
-	Username string          `json:"username"`
-	Token    string          `json:"token"`
-}
-
-// User represents the properties required to record a user.
-type User struct {
-	Email     string `json:"email"`
-	NameFirst string `json:"givenName"`
-	NameLast  string `json:"familyName"`
-	Role      string `json:"role"`
-	Team      string `json:"team"`
-}
-
-// AdminUser extends the base User struct with unique admin properties.
-type AdminUser struct {
-	Active bool
-	User
-}
-
-// GuestUser extends the base User struct with unique guest properties.
-type GuestUser struct {
-	Expires string `json:"expires"`
-	Pending bool   `json:"pending"`
-	User
-}
-
-// GuestInvite extends the GuestUser struct with unique invite properties.
-type GuestInvite struct {
-	DateInvited string
-	Proposer    string
-	GuestUser
-}
-
-type UploaderUser struct {
-	GuestUser
-	DateInvited string
-	Proposer    sql.NullString
-	Inviter     sql.NullString
-	Pending     bool
-}
-
-// Team represents the properties required to record a team.
-type Team struct {
-	Id         string
-	Name       string
-	AprimoName string
-	Active     bool
-}
-
-// User represents the properties required to record an invite.
-type Invite struct {
-	Invitee  User
-	Inviter  string
-	Proposer string
-	Expires  time.Time
-}
-
-type AcceptInvite struct {
-	Invitee string `json:"inviteeEmail"`
-	Inviter string `json:"inviterEmail"`
-}
-
-type GuestUnlockInitEvent struct {
-	Username string `json:"username"`
-}
-
-type GuestReauth struct {
-	Email   string    `json:"email"`
-	Admin   string    `json:"admin"`
-	Expires time.Time `json:"expiration"`
-}
 
 // ParseBodyData converts the serialized JSON string provided in the body
 // of the API Gateway request into a usable data format.
-func ParseBodyData(body string) (RequestBodyOptions, error) {
-	var parsed RequestBodyOptions
+func ParseBodyData(body string) (types.RequestBodyOptions, error) {
+	var parsed types.RequestBodyOptions
 
 	b := []byte(body)
 	err := json.Unmarshal(b, &parsed)
@@ -128,8 +26,8 @@ func ParseBodyData(body string) (RequestBodyOptions, error) {
 
 // ExtractUser parses an API Gateway request body returning the data
 // need to create a new user.
-func ExtractUser(body string) (User, error) {
-	var user User
+func ExtractUser(body string) (types.User, error) {
+	var user types.User
 
 	parsed, err := ParseBodyData(body)
 
@@ -156,8 +54,8 @@ func ExtractUser(body string) (User, error) {
 
 // ExtractAdminUser parses an API Gateway request body returning the data
 // need to modify an existing admin user.
-func ExtractAdminUser(body string) (AdminUser, error) {
-	var admin AdminUser
+func ExtractAdminUser(body string) (types.AdminUser, error) {
+	var admin types.AdminUser
 
 	userData, err := ExtractUser(body)
 
@@ -186,8 +84,8 @@ func ExtractAdminUser(body string) (AdminUser, error) {
 
 // ExtractGuestUser parses an API Gateway request body returning the data
 // need to modify an existing guest user.
-func ExtractGuestUser(body string) (GuestUser, error) {
-	var guest GuestUser
+func ExtractGuestUser(body string) (types.GuestUser, error) {
+	var guest types.GuestUser
 
 	userData, err := ExtractUser(body)
 
@@ -206,8 +104,8 @@ func ExtractGuestUser(body string) (GuestUser, error) {
 
 // ExtractInvite parses an API Gateway request body returning the data
 // need to create a guest user invitation.
-func ExtractInvite(body string) (Invite, error) {
-	var invite Invite
+func ExtractInvite(body string) (types.Invite, error) {
+	var invite types.Invite
 
 	parsed, err := ParseBodyData(body)
 
@@ -251,8 +149,8 @@ func ExtractInvite(body string) (Invite, error) {
 	return invite, err
 }
 
-func ExtractAcceptInvite(body string) (AcceptInvite, error) {
-	var invite AcceptInvite
+func ExtractAcceptInvite(body string) (types.AcceptInvite, error) {
+	var invite types.AcceptInvite
 
 	b := []byte(body)
 	err := json.Unmarshal(b, &invite)
@@ -264,8 +162,8 @@ func ExtractAcceptInvite(body string) (AcceptInvite, error) {
 	return invite, err
 }
 
-func ExtractReauth(body string) (GuestReauth, error) {
-	var ret GuestReauth
+func ExtractReauth(body string) (types.GuestReauth, error) {
+	var ret types.GuestReauth
 
 	parsed, err := ParseBodyData(body)
 	if err != nil {

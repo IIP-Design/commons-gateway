@@ -6,6 +6,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/email/propose"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
@@ -34,7 +35,7 @@ func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	user, userExists, err := data.CheckForExistingUser(guest.Email, "guests")
+	user, userExists, err := users.CheckForExistingUser(guest.Email, "guests")
 
 	if err != nil {
 		logs.LogError(err, "User Check Error")
@@ -55,8 +56,7 @@ func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 
 	// For guest admins, we always need to email an admin to approve the new creds
 	if clientIsGuestAdmin {
-		proposer, _, err := data.CheckForExistingUser(guest.Admin, "guests")
-
+		proposer, _, err := users.CheckForExistingUser(guest.Admin, "guests")
 		if err != nil {
 			return msgs.SendServerError(err)
 		}

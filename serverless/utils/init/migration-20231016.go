@@ -3,7 +3,6 @@ package init
 import (
 	"database/sql"
 
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -26,7 +25,7 @@ func updateS3KeyColumn(pool *sql.DB) error {
 func applyMigration20231016(title string) error {
 	var err error
 
-	pool := data.ConnectToDB()
+	pool := connectToDB()
 	defer pool.Close()
 
 	err = updateS3KeyColumn(pool)

@@ -9,13 +9,14 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/email/propose"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // handleInvitation coordinates all the actions associated with inviting a guest user.
-func handleProposedInvitation(invite data.Invite) error {
+func handleProposedInvitation(invite types.Invite) error {
 	var err error
 
 	// Ensure proposer is an active admin user.

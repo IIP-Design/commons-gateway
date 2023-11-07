@@ -11,6 +11,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
@@ -26,7 +27,7 @@ func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, userExists, err := data.CheckForExistingUser(guest.Email, "guests")
+	_, userExists, err := users.CheckForExistingUser(guest.Email, "guests")
 
 	if err != nil {
 		logs.LogError(err, "Check For User Error")

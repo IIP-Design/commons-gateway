@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
@@ -21,7 +21,7 @@ func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 	}
 
 	// Ensure the user exists doesn't already have access.
-	_, exists, err := data.CheckForExistingUser(username, "admins")
+	_, exists, err := users.CheckForExistingUser(username, "admins")
 
 	if err != nil || !exists {
 		return msgs.SendServerError(errors.New("user is not an admin"))

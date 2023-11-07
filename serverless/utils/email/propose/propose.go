@@ -8,10 +8,11 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 const (
@@ -20,13 +21,13 @@ const (
 )
 
 type RequestSupportStaffData struct {
-	Proposer data.User `json:"externalTeamLead"`
-	Invitee  data.User `json:"supportStaffuser"`
-	Url      string    `json:"url"`
+	Proposer types.User `json:"externalTeamLead"`
+	Invitee  types.User `json:"supportStaffuser"`
+	Url      string     `json:"url"`
 }
 
-func getAdmins(team string) ([]data.User, error) {
-	var admins []data.User
+func getAdmins(team string) ([]types.User, error) {
+	var admins []types.User
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -42,7 +43,7 @@ func getAdmins(team string) ([]data.User, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var admin data.User
+		var admin types.User
 		err := rows.Scan(
 			&admin.Email,
 			&admin.NameFirst,
@@ -68,9 +69,9 @@ func getAdmins(team string) ([]data.User, error) {
 }
 
 func formatEmailBody(
-	proposer data.User,
-	invitee data.User,
-	admin data.User,
+	proposer types.User,
+	invitee types.User,
+	admin types.User,
 	url string,
 ) string {
 	return fmt.Sprintf(`<p>%s %s,</p> 
@@ -85,28 +86,28 @@ func formatEmailBody(
 }
 
 func formatEmail(
-	proposer data.User,
-	invitee data.User,
-	admin data.User,
+	proposer types.User,
+	invitee types.User,
+	admin types.User,
 	url string,
 	sourceEmail string,
 ) ses.SendEmailInput {
 	return ses.SendEmailInput{
-		Destination: &types.Destination{
+		Destination: &sesTypes.Destination{
 			CcAddresses: []string{},
 			ToAddresses: []string{
 				admin.Email,
 			},
 		},
-		Content: &types.EmailContent{
-			Simple: &types.Message{
-				Body: &types.Body{
-					Html: &types.Content{
+		Content: &sesTypes.EmailContent{
+			Simple: &sesTypes.Message{
+				Body: &sesTypes.Body{
+					Html: &sesTypes.Content{
 						Charset: aws.String(CharSet),
 						Data:    aws.String(formatEmailBody(proposer, invitee, admin, url)),
 					},
 				},
-				Subject: &types.Content{
+				Subject: &sesTypes.Content{
 					Charset: aws.String(CharSet),
 					Data:    aws.String(Subject),
 				},
@@ -116,7 +117,7 @@ func formatEmail(
 	}
 }
 
-func MailProposedCreds(proposer data.User, invitee data.User) error {
+func MailProposedCreds(proposer types.User, invitee types.User) error {
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
 

@@ -14,9 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	"github.com/IIP-Design/commons-gateway/utils/data/admins"
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	seed "github.com/IIP-Design/commons-gateway/utils/init"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -70,39 +68,10 @@ func seedDatabaseHandler(ctx context.Context, event events.S3Event) error {
 				return err
 			}
 
-			switch rec[0] {
-			case "admins":
-				var admin data.User
-
-				team, err := teams.GetTeamIdByName(rec[1])
-
-				if err != nil {
-					logs.LogError(err, "Admin Creation Error - Team Not Found")
-					return err
-				}
-
-				admin.Team = team
-				admin.Email = rec[2]
-				admin.NameFirst = rec[3]
-				admin.NameLast = rec[4]
-				admin.Role = rec[5]
-
-				err = admins.CreateAdmin(admin)
-
-				if err != nil {
-					logs.LogError(err, "Admin Creation Error")
-					return err
-				}
-			case "teams":
-				err := teams.CreateTeam(rec[1], rec[6])
-
-				if err != nil {
-					logs.LogError(err, "Team Creation Error")
-					return err
-				}
-
-			default:
-				fmt.Printf("No case for table %s", rec[0])
+			err = seed.SeedDbRecord(rec)
+			if err != nil {
+				logs.LogError(err, "Error Seeding DB")
+				return err
 			}
 		}
 	}

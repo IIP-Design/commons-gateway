@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	initdb "github.com/IIP-Design/commons-gateway/utils/data/init"
+	initdb "github.com/IIP-Design/commons-gateway/utils/init"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
 	"github.com/aws/aws-lambda-go/lambda"

@@ -17,6 +17,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/queue"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 	"github.com/IIP-Design/commons-gateway/utils/turnstile"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 // verify2FA retrieves that the user provided 2FA
@@ -58,7 +59,7 @@ func scheduleAccountUnlock(email string) (string, error) {
 	var messageId string
 	var err error
 
-	event := data.GuestUnlockInitEvent{
+	event := types.GuestUnlockInitEvent{
 		Username: email,
 	}
 

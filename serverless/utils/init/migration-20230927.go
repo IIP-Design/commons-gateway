@@ -3,7 +3,6 @@ package init
 import (
 	"database/sql"
 
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -30,7 +29,7 @@ func create2FATable(pool *sql.DB) error {
 func applyMigration20230927(title string) error {
 	var err error
 
-	pool := data.ConnectToDB()
+	pool := connectToDB()
 	defer pool.Close()
 
 	err = create2FATable(pool)

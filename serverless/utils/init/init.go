@@ -1,7 +1,6 @@
 package init
 
 import (
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -9,7 +8,7 @@ import (
 // the queries needed to configure the database with the proper tables.
 func InitializeDatabase() error {
 	var err error
-	pool := data.ConnectToDB()
+	pool := connectToDB()
 	defer pool.Close()
 
 	_, err = pool.Exec(teamsQuery)
@@ -49,4 +48,18 @@ func InitializeDatabase() error {
 	}
 
 	return err
+}
+
+func InitForTest() error {
+	migExists := CheckForTable("migrations")
+
+	if !migExists {
+		err := InitializeDatabase()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return ApplyMigrations()
 }

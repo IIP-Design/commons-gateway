@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
@@ -28,8 +28,7 @@ func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyReque
 		return msgs.SendServerError(err)
 	}
 
-	user, _, err := data.CheckForExistingUser(id, "guests")
-
+	user, _, err := users.CheckForExistingUser(id, "guests")
 	if err != nil {
 		return msgs.SendServerError(err)
 	}

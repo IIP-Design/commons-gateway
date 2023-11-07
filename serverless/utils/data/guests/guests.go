@@ -8,6 +8,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 type InviteRecord struct {
@@ -86,8 +87,8 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 }
 
 // RetrieveGuests opens a database connection and retrieves the full list of guest users.
-func RetrieveGuests(team string, role string) ([]data.GuestUser, error) {
-	var guests []data.GuestUser
+func RetrieveGuests(team string, role string) ([]types.GuestUser, error) {
+	var guests []types.GuestUser
 	var err error
 	var query string
 	var rows *sql.Rows
@@ -113,7 +114,7 @@ func RetrieveGuests(team string, role string) ([]data.GuestUser, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var guest data.GuestUser
+		var guest types.GuestUser
 		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Role, &guest.Team, &guest.Pending, &guest.Expires); err != nil {
 			logs.LogError(err, "Get Guests Query Error")
 			return guests, err
@@ -165,7 +166,7 @@ func RetrievePendingInvites(team string) ([]map[string]string, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var guest data.GuestInvite
+		var guest types.GuestInvite
 		if err := rows.Scan(&guest.Email, &guest.NameFirst, &guest.NameLast, &guest.Role, &guest.Team, &guest.Expires, &guest.DateInvited, &guest.Proposer); err != nil {
 			logs.LogError(err, "Get Guests Query Error")
 			return invites, err
@@ -214,7 +215,7 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var guest data.UploaderUser
+		var guest types.UploaderUser
 		err := rows.Scan(
 			&guest.Email,
 			&guest.NameFirst,
@@ -261,7 +262,7 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 // guest user with the provided information.
 // TODO? - Allow for changes to user email? If so we may need
 // to add an id field and set that as the primary key on a guest.
-func UpdateGuest(guest data.GuestUser) error {
+func UpdateGuest(guest types.GuestUser) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
@@ -302,7 +303,7 @@ func shouldResetPassword(dateInvited string, nextExpiration time.Time, passwordW
 	return requireReset, err
 }
 
-func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, error) {
+func Reauthorize(guest types.GuestReauth, clientIsGuestAdmin bool) (string, int, error) {
 	var pass string
 
 	pool := data.ConnectToDB()
@@ -344,7 +345,7 @@ func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, 
 	return pass, 200, err
 }
 
-func AcceptGuest(guest data.AcceptInvite, hash string, salt string) error {
+func AcceptGuest(guest types.AcceptInvite, hash string, salt string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 

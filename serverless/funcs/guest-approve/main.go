@@ -9,6 +9,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
@@ -23,7 +24,7 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	invitee, userExists, err := data.CheckForExistingUser(guest.Invitee, "guests")
+	invitee, userExists, err := users.CheckForExistingUser(guest.Invitee, "guests")
 
 	if err != nil {
 		return msgs.SendServerError(err)

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 const (
@@ -58,7 +58,7 @@ func (pt ProvisionType) Verb() string {
 	}
 }
 
-func formatEmailBody(invitee data.User, tmpPassword string, url string, verb string) string {
+func formatEmailBody(invitee types.User, tmpPassword string, url string, verb string) string {
 	return fmt.Sprintf(
 		`<p>%s %s,</p>
 		<p>Your content upload account has been successfully %s. Please access the link below to finish provisioning your account.</p>
@@ -74,24 +74,24 @@ func formatEmailBody(invitee data.User, tmpPassword string, url string, verb str
 	)
 }
 
-func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail string, action ProvisionType) ses.SendEmailInput {
+func formatEmail(invitee types.User, tmpPassword string, url string, sourceEmail string, action ProvisionType) ses.SendEmailInput {
 
 	return ses.SendEmailInput{
-		Destination: &types.Destination{
+		Destination: &sesTypes.Destination{
 			CcAddresses: []string{},
 			ToAddresses: []string{
 				invitee.Email,
 			},
 		},
-		Content: &types.EmailContent{
-			Simple: &types.Message{
-				Body: &types.Body{
-					Html: &types.Content{
+		Content: &sesTypes.EmailContent{
+			Simple: &sesTypes.Message{
+				Body: &sesTypes.Body{
+					Html: &sesTypes.Content{
 						Charset: aws.String(CharSet),
 						Data:    aws.String(formatEmailBody(invitee, tmpPassword, url, action.Verb())),
 					},
 				},
-				Subject: &types.Content{
+				Subject: &sesTypes.Content{
 					Charset: aws.String(CharSet),
 					Data:    aws.String(action.Subject()),
 				},
@@ -108,7 +108,7 @@ func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail 
 //	1 - used when creating a new account
 //	2 - used when reauthorizing an existing expired account
 //	3 - used when resetting an existing account password
-func MailProvisionedCreds(invitee data.User, tmpPassword string, action ProvisionType) (string, error) {
+func MailProvisionedCreds(invitee types.User, tmpPassword string, action ProvisionType) (string, error) {
 	var err error
 	var mesageId string
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
+	"github.com/IIP-Design/commons-gateway/utils/types"
 
 	"github.com/rs/xid"
 )
@@ -159,7 +160,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var team data.Team
+		var team types.Team
 		if err := rows.Scan(&team.Id, &team.Name, &team.Active, &team.AprimoName); err != nil {
 			logs.LogError(err, "Get Teams Query Error")
 			return teams, err
