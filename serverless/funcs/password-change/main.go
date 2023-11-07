@@ -138,24 +138,28 @@ func updatePassword(email string, salt string, newPassword string, newSalt strin
 
 func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := extractBody(event.Body)
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
 	credentials, err := verifyUser(parsed)
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
 	passwordIsSecure := checkNewPasswordStrength(parsed.Email, credentials.Role, parsed.NewPassword)
+
 	if !passwordIsSecure {
 		return msgs.SendCustomError(errors.New("password is not strong enough"), 422)
 	}
 
-	passwordIsResused, err := checkPasswordReused(parsed.Email, parsed.NewPassword)
+	passwordIsReused, err := checkPasswordReused(parsed.Email, parsed.NewPassword)
+
 	if err != nil {
 		return msgs.SendServerError(err)
-	} else if passwordIsResused {
+	} else if passwordIsReused {
 		return msgs.SendCustomError(errors.New("password was reused"), 409)
 	}
 

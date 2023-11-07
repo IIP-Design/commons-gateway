@@ -10,13 +10,14 @@ import (
 )
 
 type CredentialsData struct {
-	Hash       string `json:"hash"`
-	Salt       string `json:"salt"`
-	Expired    bool   `json:"expired"`
-	Approved   bool   `json:"approved"`
-	Locked     bool   `json:"locked"`
-	FirstLogin bool   `json:"firstLogin"`
-	Role       string `json:"role"`
+	Hash       string   `json:"hash"`
+	Salt       string   `json:"salt"`
+	PrevSalts  []string `json:"prevSalts"`
+	Expired    bool     `json:"expired"`
+	Approved   bool     `json:"approved"`
+	Locked     bool     `json:"locked"`
+	FirstLogin bool     `json:"firstLogin"`
+	Role       string   `json:"role"`
 }
 
 // ClearUnsuccessfulLoginAttempts resets the given user's login counter to zero.
@@ -41,8 +42,9 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	var pass_hash string
+	var passHash string
 	var salt string
+	var prevSalts []string
 	var expired bool
 	var approved bool
 	var locked bool
@@ -53,15 +55,34 @@ func RetrieveCredentials(email string) (CredentialsData, error) {
 		`SELECT pass_hash, salt, expiration < NOW() AS expired, pending=FALSE AS approved, locked, first_login, role
 		 FROM guest_auth_data WHERE email = $1;`
 
-	err = pool.QueryRow(query, email).Scan(&pass_hash, &salt, &expired, &approved, &locked, &firstLogin, &role)
+	err = pool.QueryRow(query, email).Scan(&passHash, &salt, &expired, &approved, &locked, &firstLogin, &role)
 
 	if err != nil {
 		logs.LogError(err, "Retrieve Credentials Query Error")
 	}
 
+	rows, err := pool.Query(`SELECT salt FROM password_history WHERE user_id = $1;`, email)
+
+	if err != nil {
+		logs.LogError(err, "Get Previous Salts Query Error")
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var salt string
+
+		if err := rows.Scan(&salt); err != nil {
+			logs.LogError(err, "Get Salt Query Error")
+		}
+
+		prevSalts = append(prevSalts, salt)
+	}
+
 	creds := CredentialsData{
-		Hash:       pass_hash,
+		Hash:       passHash,
 		Salt:       salt,
+		PrevSalts:  prevSalts,
 		Expired:    expired,
 		Approved:   approved,
 		Locked:     locked,
