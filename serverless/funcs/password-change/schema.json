@@ -14,6 +14,13 @@
       "type": "string",
       "minLength": 12
     },
+    "hashesWithPriorSalts": {
+      "description": "The newly created password hashed using previous salt values",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "email": {
       "description": "The user's email address",
       "type": "string",
@@ -22,6 +29,6 @@
       "maxLength": 127
     }
   },
-  "required": ["currentPasswordHash", "newPassword", "email"],
+  "required": ["currentPasswordHash", "newPassword", "hashesWithPriorSalts", "email"],
   "additionalProperties": false
 }

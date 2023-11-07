@@ -79,6 +79,7 @@ const desc = 'Because this is your first login with this invite, you must update
     }
 
     const passResult = zxcvbn(newPassword, [email, role].filter(Boolean));
+
     if (passResult.score < 3) {
       const { warning, suggestions } = passResult.feedback;
       const warnText = `${warning}${warning ? '.' : ''}`;
@@ -108,6 +109,7 @@ const desc = 'Because this is your first login with this invite, you must update
   const submit = async () => {
     const subData = collectSubmissionData();
     const verified = verifySubmissionData(subData);
+
     if (!verified) {
       return;
     }
@@ -117,16 +119,24 @@ const desc = 'Because this is your first login with this invite, you must update
     const isFirstLogin = loginStatus.get() === 'firstLogin';
 
     try {
-      const [salt] = await getUserPasswordSalt(email);
+      const [{ salt, prevSalts }] = await getUserPasswordSalt(email);
       const currentPasswordHash = await derivePasswordHash(currPassword, salt);
+
+      // Derive the hash of the new password with previously used salts.
+      // Allows us to ensure that the user is not reusing a previous password.
+      const hashesWithPriorSalts = await Promise.all(
+        prevSalts.map(async (prev: string) => await derivePasswordHash(newPassword, prev))
+      );
 
       const body = {
         currentPasswordHash,
         newPassword,
+        hashesWithPriorSalts,
         email,
       };
 
       const { ok, status } = await buildQuery('guest/password', body, 'POST');
+
       if (ok) {
         loginStatus.set('loggedIn');
         showSuccess('Password successfully updated').then(() => {
