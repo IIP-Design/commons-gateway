@@ -29,13 +29,11 @@ func TestMain(m *testing.M) {
 
 func TestGetAdmin(t *testing.T) {
 	event := events.APIGatewayProxyRequest{
-		QueryStringParameters: map[string]string{
-			"username": "admin@example.com",
-		},
+		Body: fmt.Sprintf(`{"team":"%s"}`, testHelpers.ExampleTeam["id"]),
 	}
 
-	resp, err := getAdminHandler(context.TODO(), event)
+	resp, err := getUploaderHandler(context.TODO(), event)
 	if resp.StatusCode != 200 || err != nil {
-		t.Fatalf("getAdminHandler result %d/%v, want 200/nil", resp.StatusCode, err)
+		t.Fatalf("getUploaderHandler result %d/%v, want 200/nil", resp.StatusCode, err)
 	}
 }

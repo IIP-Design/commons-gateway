@@ -12,8 +12,8 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetUploaderHandler handles the request to retrieve a list of uploader guests on the guest admin's team.
-func GetUploaderHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getUploaderHandler handles the request to retrieve a list of uploader guests on the guest admin's team.
+func getUploaderHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	team := parsed.TeamId
@@ -41,5 +41,5 @@ func GetUploaderHandler(ctx context.Context, event events.APIGatewayProxyRequest
 }
 
 func main() {
-	lambda.Start(GetUploaderHandler)
+	lambda.Start(getUploaderHandler)
 }
