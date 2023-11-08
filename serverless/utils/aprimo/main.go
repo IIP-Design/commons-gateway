@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -40,6 +41,10 @@ type FileSegment struct {
 	Segment  int
 	FileType string
 	Data     *bytes.Buffer
+}
+
+type RecordCreationResponse struct {
+	Id string `json:"id"`
 }
 
 // GetEndpointURL constructs an URL for a given Aprimo API endpoint. Authorization
@@ -293,4 +298,99 @@ func UploadFile(filename string, fileType string, data *bytes.Buffer, token stri
 	uploadToken = commitResp.Token
 
 	return uploadToken, nil
+}
+
+func SubmitRecord(description string, event FileRecordInitEvent, team string, accessToken string) (string, error) {
+	var id string
+	var err error
+
+	reqBody := fmt.Sprintf(`{
+		"status":"draft",
+		"fields": {
+			"addOrUpdate": [
+				{
+					"Name": "Description",
+					"localizedValues": [
+						{ "value": "%s" }
+					]
+				},
+				{
+					"Name": "DisplayTitle",
+					"localizedValues": [
+						{ "value": "%s" }
+					]
+				},
+				{
+					"Name": "Team",
+					"localizedValues": [
+						{ "values": ["%s"] }
+					]
+			}
+			]
+		},
+		"files": {
+			"master": "%s",
+			"addOrUpdate": [
+				{
+					"versions": {
+						"addOrUpdate": [
+							{
+								"id": "%s",
+								"filename": "%s"
+							}
+						]
+					}
+				}
+			]
+		}
+	}`, description, event.Key, team, event.FileToken, event.FileToken, event.Key)
+
+	respBody, statusCode, err := PostJsonData("records", accessToken, reqBody, true)
+	if err != nil {
+		return id, err
+	} else if statusCode >= 400 {
+		log.Printf("Return status: %d\n", statusCode)
+	}
+
+	var res RecordCreationResponse
+	err = json.Unmarshal(respBody, &res)
+	if err != nil {
+		return id, err
+	}
+
+	return res.Id, nil
+}
+
+func DeleteRecord(recordId string, token string) error {
+	var err error
+
+	url := GetEndpointURL(fmt.Sprintf("record/%s", recordId), true)
+
+	client := &http.Client{}
+	request, err := http.NewRequest(
+		http.MethodDelete,
+		url,
+		nil,
+	)
+
+	if err != nil {
+		logs.LogError(err, "Error Preparing Aprimo Record Delete")
+		return err
+	}
+
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("API-VERSION", "1")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	resp, err := client.Do(request)
+
+	if err != nil {
+		logs.LogError(err, "Error Deleting Aprimo Record")
+		return err
+	} else if resp.StatusCode != 204 {
+		logs.LogError(err, fmt.Sprintf("Error response from Aprimo: %d", resp.StatusCode))
+		return err
+	}
+
+	return nil
 }
