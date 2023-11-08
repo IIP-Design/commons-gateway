@@ -24,7 +24,7 @@ func addInvitePasswordResetColumn(pool *sql.DB) error {
 func applyMigration20231024(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = addInvitePasswordResetColumn(pool)

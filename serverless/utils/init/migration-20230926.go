@@ -54,7 +54,7 @@ func addAprimoNameColumn(pool *sql.DB) error {
 func applyMigration20230926(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = addAprimoNameColumn(pool)

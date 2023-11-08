@@ -12,15 +12,15 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetAdminHandler handles the request to retrieve a single admin user based on email address.
-func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getAdminHandler handles the request to retrieve a single admin user based on email address.
+func getAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {
 		return msgs.SendServerError(errors.New("user name not provided"))
 	}
 
-	// Ensure the user exists doesn't already have access.
+	// Ensure the user exists and already has access.
 	_, exists, err := users.CheckForExistingUser(username, "admins")
 
 	if err != nil || !exists {
@@ -43,5 +43,5 @@ func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(GetAdminHandler)
+	lambda.Start(getAdminHandler)
 }

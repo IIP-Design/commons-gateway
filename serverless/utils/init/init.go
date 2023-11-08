@@ -8,7 +8,7 @@ import (
 // the queries needed to configure the database with the proper tables.
 func InitializeDatabase() error {
 	var err error
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	_, err = pool.Exec(teamsQuery)

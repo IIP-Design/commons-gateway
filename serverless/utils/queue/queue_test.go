@@ -4,7 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/IIP-Design/commons-gateway/test"
+	testConfig "github.com/IIP-Design/commons-gateway/test/config"
+	testHelpers "github.com/IIP-Design/commons-gateway/test/helpers"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
@@ -15,7 +16,7 @@ const (
 )
 
 func TestSendToQueue(t *testing.T) {
-	test.ConfigureAws()
+	testConfig.ConfigureAws()
 
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
@@ -24,12 +25,12 @@ func TestSendToQueue(t *testing.T) {
 
 	client := sqs.NewFromConfig(cfg)
 
-	_, err = test.CreateQueue(QUEUE_NAME, client)
+	_, err = testHelpers.CreateQueue(QUEUE_NAME, client)
 	if err != nil {
 		t.Fatalf("CreateQueue error: %v", err)
 	}
 
-	queueUrl, err := test.GetQueueUrl(QUEUE_NAME, client)
+	queueUrl, err := testHelpers.GetQueueUrl(QUEUE_NAME, client)
 	if err != nil {
 		t.Fatalf("GetQueueUrl error: %v", err)
 	}
@@ -39,7 +40,7 @@ func TestSendToQueue(t *testing.T) {
 		t.Fatalf("SendToQueue error: %v", err)
 	}
 
-	msg, err := test.GetMessages(QUEUE_NAME, client)
+	msg, err := testHelpers.GetMessages(QUEUE_NAME, client)
 	if err != nil {
 		t.Fatalf("GetMessages error: %v", err)
 	}
@@ -54,7 +55,7 @@ func TestSendToQueue(t *testing.T) {
 		t.Fatalf("Message ID error: %s, want %s", *msgId, sendId)
 	}
 
-	err = test.DeleteQueue(QUEUE_NAME, client)
+	err = testHelpers.DeleteQueue(QUEUE_NAME, client)
 	if err != nil {
 		t.Fatalf("DeleteQueue error: %v", err)
 	}

@@ -14,7 +14,7 @@ import (
 )
 
 // Copied from data module to prevent circular import(s) during testing
-func connectToDB() *sql.DB {
+func ConnectToDBInit() *sql.DB {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
 	if err != nil {
@@ -78,7 +78,7 @@ func connectToDB() *sql.DB {
 func CheckForTable(tablename string) bool {
 	var exists bool
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	query :=
@@ -116,7 +116,7 @@ func stringArrayContains(arr []string, value string) bool {
 
 // recordMigration saves the title of an schema migration and the date on which it was applied.
 func recordMigration(title string) error {
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	guid := xid.New()

@@ -1,4 +1,4 @@
-package test
+package testConfig
 
 import (
 	"os"
@@ -18,4 +18,20 @@ func AddToEnv(env map[string]string) {
 			_ = os.Setenv(key, value)
 		}
 	}
+}
+
+func ConfigureAprimo() {
+	AddToEnv(AprimoEnv)
+}
+
+func ConfigureAws() {
+	AddToEnv(AwsEnv)
+}
+
+func ConfigureDb() {
+	AddToEnv(DbEnv)
+}
+
+func ConfigureEmail() {
+	AddToEnv(EmailEnv)
 }

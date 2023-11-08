@@ -26,7 +26,7 @@ func addAprimoRecordId(pool *sql.DB) error {
 func applyMigration20230929(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = addAprimoRecordId(pool)

@@ -1,14 +1,10 @@
-package test
+package testHelpers
 
 import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
-
-func ConfigureAws() {
-	AddToEnv(AwsEnv)
-}
 
 func GetQueueUrl(queueName string, client *sqs.Client) (string, error) {
 	result, err := client.GetQueueUrl(context.TODO(), &sqs.GetQueueUrlInput{

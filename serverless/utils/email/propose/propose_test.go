@@ -4,12 +4,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/IIP-Design/commons-gateway/test"
+	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 func TestFormatEmail(t *testing.T) {
-	test.ConfigureEmail()
+	testConfig.ConfigureEmail()
 
 	proposer := types.User{
 		Email:     "test@test.com",

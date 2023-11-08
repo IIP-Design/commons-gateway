@@ -24,7 +24,7 @@ func createPasswordHistoryTable(pool *sql.DB) error {
 func applyMigration20231030(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = createPasswordHistoryTable(pool)

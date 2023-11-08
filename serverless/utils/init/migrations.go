@@ -27,7 +27,7 @@ func getAppliedMigrations() ([]string, error) {
 	var applied []string
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	rows, err := pool.Query(`SELECT title FROM migrations`)

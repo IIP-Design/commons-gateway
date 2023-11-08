@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/IIP-Design/commons-gateway/test"
+	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 )
 
 const (
@@ -16,7 +16,7 @@ const (
 )
 
 func TestAprimoSmallFileLifecycle(t *testing.T) {
-	test.ConfigureAprimo()
+	testConfig.ConfigureAprimo()
 
 	token, err := GetAuthToken()
 	if err != nil {
@@ -51,7 +51,7 @@ func TestAprimoSmallFileLifecycle(t *testing.T) {
 }
 
 func TestAprimoLargeFileLifecycle(t *testing.T) {
-	test.ConfigureAprimo()
+	testConfig.ConfigureAprimo()
 
 	token, err := GetAuthToken()
 	if err != nil {

@@ -56,7 +56,7 @@ func updateUploadTable(pool *sql.DB) error {
 func applyMigration20231002(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = updateUploadTable(pool)

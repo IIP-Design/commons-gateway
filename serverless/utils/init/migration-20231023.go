@@ -273,7 +273,7 @@ func createAuthView(pool *sql.DB) error {
 func applyMigration20231023(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = movePassHashColumn(pool)

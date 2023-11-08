@@ -29,7 +29,7 @@ func create2FATable(pool *sql.DB) error {
 func applyMigration20230927(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = create2FATable(pool)

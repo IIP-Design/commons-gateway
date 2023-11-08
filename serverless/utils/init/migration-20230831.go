@@ -441,7 +441,7 @@ func updateConstraints(pool *sql.DB) error {
 func applyMigration20230831(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = createAllUsersTable(pool)

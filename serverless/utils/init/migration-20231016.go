@@ -25,7 +25,7 @@ func updateS3KeyColumn(pool *sql.DB) error {
 func applyMigration20231016(title string) error {
 	var err error
 
-	pool := connectToDB()
+	pool := ConnectToDBInit()
 	defer pool.Close()
 
 	err = updateS3KeyColumn(pool)

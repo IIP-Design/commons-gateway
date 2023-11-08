@@ -3,11 +3,11 @@ package data
 import (
 	"testing"
 
-	"github.com/IIP-Design/commons-gateway/test"
+	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 )
 
 func TestConnect(t *testing.T) {
-	test.ConfigureDb()
+	testConfig.ConfigureDb()
 
 	pool := ConnectToDB()
 	defer pool.Close()
