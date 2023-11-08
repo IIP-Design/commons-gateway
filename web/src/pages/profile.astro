@@ -159,8 +159,6 @@ const desc = 'Because this is your first login with this invite, you must update
             window.location.replace('/partner-login');
           }
         });
-      } else if (status === 422) {
-        showWarning('Password is not strong enough');
       } else if (status === 409) {
         showWarning('You cannot reuse any of your last 24 passwords');
       } else {
