@@ -119,15 +119,19 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 	}
 
 	if credentials.Hash != clientHash {
+		logs.LogError(errors.New("incorrect password"), "Login Error")
 		recordUnsuccessfulLoginAttempt(username)
 		return msgs.SendCustomError(errors.New("forbidden"), 403)
 	} else if credentials.Expired {
 		recordUnsuccessfulLoginAttempt(username)
+		logs.LogError(errors.New("expired account"), "Login Error")
 		return msgs.SendCustomError(errors.New("credentials expired"), 403)
 	} else if !credentials.Approved {
 		recordUnsuccessfulLoginAttempt(username)
+		logs.LogError(errors.New("guest not approved"), "Login Error")
 		return msgs.SendCustomError(errors.New("user is not yet approved"), 403)
 	} else if credentials.Locked {
+		logs.LogError(errors.New("account locked"), "Login Error")
 		return msgs.SendCustomError(errors.New("account locked"), 429)
 	}
 
@@ -168,6 +172,7 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 
 	if !verified {
 		recordUnsuccessfulLoginAttempt(username)
+		logs.LogError(errors.New("submitted 2fa codes does not match"), "Login Error")
 		return msgs.SendCustomError(errors.New("forbidden"), 403)
 	}
 
