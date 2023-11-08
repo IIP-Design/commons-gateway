@@ -133,9 +133,11 @@ const desc = 'Because this is your first login with this invite, you must update
 
       // Derive the hash of the new password with previously used salts.
       // Allows us to ensure that the user is not reusing a previous password.
-      const hashesWithPriorSalts = await Promise.all(
-        prevSalts.map(async (prev: string) => await derivePasswordHash(newPassword, prev))
-      );
+      const hashesWithPriorSalts = prevSalts
+        ? await Promise.all(
+            prevSalts.map(async (prev: string) => await derivePasswordHash(newPassword, prev))
+          )
+        : [];
 
       // Generate random salt and use it to hash the user's new password.
       const newSalt = randomString(10);
