@@ -1,0 +1,9 @@
+# Common HTML events set off the spell checker
+dragenter
+dragover
+
+# CSS/SCSS
+keyframes
+
+# White Space
+nbsp

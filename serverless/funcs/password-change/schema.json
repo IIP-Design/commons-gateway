@@ -9,10 +9,22 @@
       "type": "string",
       "minLength": 1
     },
-    "newPassword": {
-      "description": "The password to which a user wants to update",
+    "newPasswordHash": {
+      "description": "A hash of the password to which a user wants to update",
       "type": "string",
       "minLength": 12
+    },
+    "newSalt": {
+      "description": "The salt value used when generating the new user password hash.",
+      "type": "string",
+      "minLength": 10
+    },
+    "hashesWithPriorSalts": {
+      "description": "The newly created password hashed using previous salt values",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "email": {
       "description": "The user's email address",
@@ -22,6 +34,12 @@
       "maxLength": 127
     }
   },
-  "required": ["currentPasswordHash", "newPassword", "email"],
+  "required": [
+    "currentPasswordHash",
+    "newPasswordHash",
+    "newSalt",
+    "hashesWithPriorSalts",
+    "email"
+  ],
   "additionalProperties": false
 }

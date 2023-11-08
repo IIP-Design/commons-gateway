@@ -87,7 +87,7 @@ const UploaderTable: FC = () => {
       {
         ...defaultColumnDef( 'active', 'Status' ),
         cell: info => {
-          const isPending = info.row.original['pending'] as boolean;
+          const isPending = info.row.original.pending as boolean;
           const isActive = info.getValue() as boolean;
 
 

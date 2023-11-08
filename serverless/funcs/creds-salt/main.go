@@ -55,7 +55,12 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 		return msgs.SendCustomError(errors.New("account locked"), 429)
 	}
 
-	body, err := msgs.MarshalBody(credentials.Salt)
+	salts := map[string]any{
+		"salt":      credentials.Salt,
+		"prevSalts": credentials.PrevSalts,
+	}
+
+	body, err := msgs.MarshalBody(salts)
 
 	if err != nil {
 		return msgs.SendServerError(err)

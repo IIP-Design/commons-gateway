@@ -37,8 +37,8 @@ const title = 'Submit Files';
     <File id="add-files-button" promptText="or search your computer: " />
 
     <p class="section-header"><strong>Description <span>*</span></strong></p>
-    <p>Include a point of contact email in case questions arise.</p>
-    <textarea id="description-text" aria-label="Enter uploaded media metadata" />
+    <p class="desc-label">Include a point of contact email in case questions arise.</p>
+    <textarea id="description-text" aria-label="Enter uploaded media metadata"></textarea>
     <span id="loader" class="loader" style="display: none;"></span>
     <Button id="upload-files-btn" type="submit">Submit</Button>
   </PageContainer>
@@ -71,6 +71,9 @@ const title = 'Submit Files';
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
   }
+  .desc-label {
+    margin: 0.5rem 0;
+  }
   .section-header {
     margin-top: 2rem;
   }
@@ -83,7 +86,7 @@ const title = 'Submit Files';
     height: 12px;
     border-radius: 50%;
     display: block;
-    margin:15px auto;
+    margin: 15px auto;
     position: relative;
     margin-left: 3em;
     color: var(--blue);
@@ -93,10 +96,10 @@ const title = 'Submit Files';
 
   @keyframes animloader {
     0% {
-      box-shadow: -38px -6px, -14px 6px,  14px -6px;
+      box-shadow: -38px -6px, -14px 6px, 14px -6px;
     }
     33% {
-      box-shadow: -38px 6px, -14px -6px,  14px 6px;
+      box-shadow: -38px 6px, -14px -6px, 14px 6px;
     }
     66% {
       box-shadow: -38px -6px, -14px 6px, 14px -6px;
@@ -105,5 +108,4 @@ const title = 'Submit Files';
       box-shadow: -38px 6px, -14px -6px, 14px 6px;
     }
   }
-
 </style>

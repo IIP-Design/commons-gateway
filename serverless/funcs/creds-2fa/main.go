@@ -121,9 +121,6 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendServerError(err)
 	}
 
-	// DBG
-	fmt.Printf("New code for username %s: %s\n", username, code)
-
 	// Email the user their code.
 	err = initiateEmailQueue(username, code)
 

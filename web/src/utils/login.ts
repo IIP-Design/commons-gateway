@@ -143,7 +143,7 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
   let authenticated = false;
 
   try {
-    const [salt, saltError] = await getUserPasswordSalt( username );
+    const [{ salt }, saltError] = await getUserPasswordSalt( username );
 
     if ( !salt ) {
       return [authenticated, saltError];

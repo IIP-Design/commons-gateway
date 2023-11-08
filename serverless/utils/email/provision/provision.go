@@ -23,7 +23,7 @@ func formatEmailBody(invitee data.User, tmpPassword string, url string) string {
 
 	<p>Your content upload account has been successfully created.  Please access the link below to finish provisioning your account.</p>
 	<a href="%s">%s</a>
-	<p>Please use this email address as your username.  Your temporary password is: %s.</p>
+	<p>Please use this email address as your username.  Your temporary password is: %s</p>
 	<p>This email was generated automatically. Please do not reply to this email.</p>`,
 		invitee.NameFirst, invitee.NameLast,
 		url, url,

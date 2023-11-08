@@ -6,17 +6,18 @@ import PageContainer from '../layouts/PageContainer.astro';
 import '../styles/form.scss';
 
 const title = 'Update Password';
-const desc = "Because this is your first login with this invite, you must update your password"
+const desc = 'Because this is your first login with this invite, you must update your password';
 ---
 
 <script>
-  import zxcvbn from "zxcvbn";
+  import zxcvbn from 'zxcvbn';
 
-  import { showError, showSuccess, showWarning } from "../utils/alert";
-  import { getUserPasswordSalt } from "../utils/login";
-  import currentUser, { loginStatus } from "../stores/current-user";
-  import { derivePasswordHash } from "../utils/hashing";
-  import { buildQuery } from "../utils/api";
+  import { showError, showSuccess, showWarning } from '../utils/alert';
+  import { getUserPasswordSalt } from '../utils/login';
+  import currentUser, { loginStatus } from '../stores/current-user';
+  import { derivePasswordHash } from '../utils/hashing';
+  import { buildQuery } from '../utils/api';
+  import { randomString } from '../utils/string';
 
   interface ISubData {
     email: string;
@@ -25,13 +26,44 @@ const desc = "Because this is your first login with this invite, you must update
     newPassword: string;
   }
 
+  /**
+   * Switch the input fields from passwords to text when in focus.
+   * @param el The input element in question.
+   */
+  const toggleInputType = (el: FocusEvent) => {
+    const { type, target } = el;
+    const { id } = target as HTMLInputElement;
+
+    const inputType = type === 'focus' ? 'text' : 'password';
+
+    if (id) {
+      const input = document.getElementById(id) as HTMLInputElement;
+      input.type = inputType;
+    }
+  };
+
+  // Toggle the visibility of the password input fields when they are selected/deselected.
+  const inputs = document.querySelectorAll('input');
+
+  inputs.forEach((input) => input?.addEventListener('focus', toggleInputType));
+  inputs.forEach((input) => input?.addEventListener('blur', toggleInputType));
+
+  // Handle the submission of new passwords
+  const currPassElem = document.getElementById('current-password-input') as HTMLInputElement;
+  const newPassElem = document.getElementById('new-password-input') as HTMLInputElement;
+
+  /**
+   * Reset the current and new password fields to be empty.
+   */
+  const clearInputs = () => {
+    currPassElem.value = '';
+    newPassElem.value = '';
+  };
+
   const collectSubmissionData = (): ISubData => {
     const user = currentUser.get();
     const email = user.email || '';
     const role = user.role || '';
-
-    const currPassElem = document.getElementById('current-password-input') as HTMLInputElement;
-    const newPassElem = document.getElementById('new-password-input') as HTMLInputElement;
 
     const currPassword = currPassElem.value;
     const newPassword = newPassElem.value;
@@ -39,118 +71,126 @@ const desc = "Because this is your first login with this invite, you must update
     return { email, role, currPassword, newPassword };
   };
 
-  const checkPassword = (  { email, role, currPassword, newPassword }: ISubData ) => {
-    if( currPassword === newPassword ) {
+  const checkPassword = ({ email, role, currPassword, newPassword }: ISubData) => {
+    if (currPassword === newPassword) {
       showWarning('Your new password must not be the same as your current password');
       return false;
-    } else if( newPassword.length < 12 ) {
+    } else if (newPassword.length < 12) {
       showWarning('Your new password must be at least 12 characters long');
       return false;
-    } else if( !( newPassword.match( /[A-Z]/ ) && newPassword.match( /[a-z]/ ) && newPassword.match( /[0-9]/ ) ) ) {
-      showWarning('Your new password must contain at least one of each: lowercase letter, uppercase letter, number');
+    } else if (
+      !(newPassword.match(/[A-Z]/) && newPassword.match(/[a-z]/) && newPassword.match(/[0-9]/))
+    ) {
+      showWarning(
+        'Your new password must contain at least one of each: lowercase letter, uppercase letter, number'
+      );
       return false;
     }
 
     const passResult = zxcvbn(newPassword, [email, role].filter(Boolean));
-    if( passResult.score < 3 ) {
+
+    if (passResult.score < 3) {
       const { warning, suggestions } = passResult.feedback;
-      const warnText = `${warning}${warning ? "." : ""}`;
-      const suggestText = suggestions.map( ( s, idx ) => `(${idx+1}) ${s}` ).join(' ');
-      const text = `${warnText}${suggestText ? " Suggestions: " : ""}${suggestText}`
-      showWarning(text, "Password too weak");
+      const warnText = `${warning}${warning ? '.' : ''}`;
+      const suggestText = suggestions.map((s, idx) => `(${idx + 1}) ${s}`).join(' ');
+      const text = `${warnText}${suggestText ? ' Suggestions: ' : ''}${suggestText}`;
+      showWarning(text, 'Password too weak');
       return false;
     }
 
     return true;
-  }
+  };
 
-  const verifySubmissionData = ( subData: ISubData ) => {
+  const verifySubmissionData = (subData: ISubData) => {
     const { currPassword, newPassword } = subData;
 
-    if( !currPassword ) {
+    if (!currPassword) {
       showWarning('Please input your current password');
       return false;
-    } else if( !newPassword ) {
+    } else if (!newPassword) {
       showWarning('Please input a new password');
       return false;
     }
 
-    return checkPassword( subData );
-  }
+    return checkPassword(subData);
+  };
 
   const submit = async () => {
     const subData = collectSubmissionData();
-    const verified = verifySubmissionData( subData );
-    if( !verified ) {
+    const verified = verifySubmissionData(subData);
+
+    if (!verified) {
       return;
     }
 
     const { email, currPassword, newPassword } = subData;
 
-    const isFirstLogin = ( loginStatus.get() === 'firstLogin' );
+    const isFirstLogin = loginStatus.get() === 'firstLogin';
 
     try {
-      const [salt] = await getUserPasswordSalt( email );
-      const currentPasswordHash = await derivePasswordHash( currPassword, salt );
+      const [{ salt, prevSalts }] = await getUserPasswordSalt(email);
+      const currentPasswordHash = await derivePasswordHash(currPassword, salt);
+
+      // Derive the hash of the new password with previously used salts.
+      // Allows us to ensure that the user is not reusing a previous password.
+      const hashesWithPriorSalts = await Promise.all(
+        prevSalts.map(async (prev: string) => await derivePasswordHash(newPassword, prev))
+      );
+
+      // Generate random salt and use it to hash the user's new password.
+      const newSalt = randomString(10);
+      const newPasswordHash = await derivePasswordHash(newPassword, newSalt);
 
       const body = {
         currentPasswordHash,
-        newPassword,
+        newPasswordHash,
+        newSalt,
+        hashesWithPriorSalts,
         email,
       };
 
-      const { ok, status } = await buildQuery( "guest/password", body, 'POST' );
-      if( ok ) {
-        loginStatus.set( 'loggedIn' );
-        showSuccess('Password successfully updated')
-          .then( () => {
-            if( isFirstLogin ) {
-              window.location.replace( "/partner-login" );
-            }
-          } );
-      } else if( status === 422 ) {
-        showWarning('Password is not strong enough');
-      } else if( status === 409 ) {
+      const { ok, status } = await buildQuery('guest/password', body, 'POST');
+
+      if (ok) {
+        loginStatus.set('loggedIn');
+        showSuccess('Password successfully updated').then(() => {
+          clearInputs();
+          if (isFirstLogin) {
+            window.location.replace('/partner-login');
+          }
+        });
+      } else if (status === 409) {
         showWarning('You cannot reuse any of your last 24 passwords');
       } else {
         showError('Unable to update password');
       }
-    } catch( err ) {
-      console.error( err );
+    } catch (err) {
+      console.error(err);
     }
-
   };
 
-  document.getElementById('submit-btn')?.addEventListener( 'click', submit );
+  document.getElementById('submit-btn')?.addEventListener('click', submit);
 
-  const descElem = document.getElementById( 'desc-elem' ) as HTMLElement;
+  const descElem = document.getElementById('desc-elem') as HTMLElement;
   const isFirstLogin = loginStatus.get() === 'firstLogin';
-  if( !isFirstLogin ) {
+  if (!isFirstLogin) {
     descElem.style.display = 'none';
   }
 </script>
 
 <PartnerPageLayout title={title}>
   <PageContainer narrow title={title}>
-      <p id="desc-elem" class="description">{desc}</p>
-      <div class="field-group" style="margin-top: 1em;">
-        <label>
-          <span>Current Password</span>
-          <input
-            id="current-password-input"
-            type="text"
-            required
-          />
-        </label>
-        <label>
-          <span>New Password</span>
-          <input
-            id="new-password-input"
-            type="text"
-            required
-          />
-        </label>
-      </div>
-      <Button id="submit-btn" type="submit">Submit</Button>
+    <p id="desc-elem" class="description">{desc}</p>
+    <div class="field-group" style="margin-top: 1em;">
+      <label>
+        <span>Current Password</span>
+        <input id="current-password-input" type="password" required />
+      </label>
+      <label>
+        <span>New Password</span>
+        <input id="new-password-input" type="password" required />
+      </label>
+    </div>
+    <Button id="submit-btn" type="submit">Submit</Button>
   </PageContainer>
 </PartnerPageLayout>
