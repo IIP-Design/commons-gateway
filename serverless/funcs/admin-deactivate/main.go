@@ -31,9 +31,9 @@ func deactivateAdmin(email string) error {
 	return err
 }
 
-// DeactivateAdminHandler handles the request to deactivate an existing admin.
+// deactivateAdminHandler handles the request to deactivate an existing admin.
 // It ensures that the required data is present before continuing on to update the admin data.
-func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func deactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {
@@ -57,5 +57,5 @@ func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyReq
 }
 
 func main() {
-	lambda.Start(DeactivateAdminHandler)
+	lambda.Start(deactivateAdminHandler)
 }
