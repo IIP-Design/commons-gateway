@@ -115,7 +115,7 @@ const desc = 'Because this is your first login with this invite, you must update
     try {
       const [saltData] = await getUserPasswordSalt(email);
 
-      const { salt, prevSalts } = saltData;
+      const { salt, prevSalts } = saltData || {};
 
       const currentPasswordHash = await derivePasswordHash(currPassword, salt);
 
