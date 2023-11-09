@@ -51,7 +51,7 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	}
 
 	if credentials.Locked {
-		logs.LogError(nil, "User's account is locked.")
+		logs.LogError(errors.New("account locked"), "User's account is locked.")
 		return msgs.SendCustomError(errors.New("account locked"), 429)
 	}
 
