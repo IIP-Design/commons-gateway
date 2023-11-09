@@ -12,6 +12,24 @@ import { showError, showSuccess, showWarning } from './alert';
 import currentUser from '../stores/current-user';
 
 // ////////////////////////////////////////////////////////////////////////////
+// Types and Interfaces
+// ////////////////////////////////////////////////////////////////////////////
+const MEDIA_TYPES = [
+  'application',
+  'audio',
+  'font',
+  'image',
+  'text',
+  'video',
+] as const;
+
+type TMediaType = typeof MEDIA_TYPES[number];
+
+type TAllowedExtensions = string[];
+type TFileSubtypeMap = Record<string, TAllowedExtensions>;
+type TFileTypeMap = Record<TMediaType, TFileSubtypeMap>;
+
+// ////////////////////////////////////////////////////////////////////////////
 // Constants
 // ////////////////////////////////////////////////////////////////////////////
 const MAX_FILE_SIZE = 1000 * 1000 * 1000; // 1GB
@@ -21,16 +39,128 @@ const MAX_FILE_SIZE = 1000 * 1000 * 1000; // 1GB
 // ////////////////////////////////////////////////////////////////////////////
 let fileToUpload: Nullable<File> = null;
 
+// NB: Some files may be represented by multiple MIME types and/or extensions
+const FILE_VALIDATION_MAP: TFileTypeMap = {
+  application: {
+    'epub+zip': ['epub'],
+    msword: ['doc'],
+    pdf: ['pdf'],
+    postscript: [
+      'ai', 'eps', 'ps',
+    ],
+    psd: ['psd'],
+    rtf: ['rtf'],
+    'vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
+    'vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx'],
+    'vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
+    'vnd.ms-excel': ['xls'],
+    'vnd.ms-powerpoint': ['ppt'],
+    'vnd.rar': ['rar'],
+    'x-indesign': ['indd'],
+    'x-subrip': ['srt'],
+    zip: ['zip'],
+  },
+  audio: {
+    aiff: ['aif', 'aiff'],
+    mp4: ['m4a'],
+    mpeg: ['mp3'],
+    wav: ['wav'],
+    'x-aiff': ['aif', 'aiff'],
+    'x-m4a': ['m4a'],
+    'x-ms-wma': ['wma'],
+  },
+  font: {
+    otf: ['otf'],
+    ttf: ['ttf'],
+  },
+  image: {
+    bmp: ['bmp'],
+    gif: ['gif'],
+    jpeg: ['jpeg', 'jpg'],
+    png: ['png'],
+    psd: ['psd'],
+    'svg+xml': ['svg'],
+    tiff: ['tif', 'tiff'],
+    'vnd.adobe.photoshop': ['psd'],
+    webp: ['webp'],
+    'x-icon': ['ico'],
+    'x-tga': ['tga'],
+    'x-wmf': ['wmf'],
+    'x-wpg': ['wpg'],
+  },
+  text: {
+    csv: ['csv'],
+    html: [
+      'htm', 'html', 'shtml', 'xhtml',
+    ], // Is anything other than ".html" allowed by Aprimo?
+    plain: ['txt'],
+  },
+  video: {
+    dv: ['dv'],
+    mp4: ['m4v', 'mp4'],
+    mpeg: ['mpg', 'mpeg'],
+    mxf: ['mxf'],
+    quicktime: ['mov', 'qt'], // Is anything other than ".mov" allowed by Aprimo?
+    webm: ['webm'],
+    'x-flv': ['flv'],
+    'x-m4v': ['m4v'],
+    'x-ms-wmv': ['wmv'],
+    'x-msvideo': ['avi'],
+    'x-shockwave-flash': ['swf'],
+  },
+};
+
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-const validateFile = ( { type, size }: File ) => {
-  if ( !type.match( /^(image|video)\/.+/ ) ) {
-    showError( 'Only pictures and/or videos may be uploaded' );
+const fileExtension = ( fileName: string ) => {
+  const segments = fileName.split( '.' );
+
+  return segments[segments.length - 1];
+};
+
+const typeInfo = ( fileType: string ) => {
+  const segments = fileType.split( '/' );
+
+  return { mediaType: segments[0], subtype: segments[1] };
+};
+
+const validateFile = ( { type, size, name }: File ) => {
+  const ext = fileExtension( name );
+  const { mediaType, subtype } = typeInfo( type );
+
+  if ( !ext || ext.length < 2 || ext.length > 4 ) {
+    showError( 'Uploaded files must have a valid file extension' );
 
     return false;
-  } if ( size > MAX_FILE_SIZE ) {
-    showError( `Max file size is ${prettyBytes( MAX_FILE_SIZE )}` );
+  }
+
+  const lookupType = FILE_VALIDATION_MAP[mediaType as TMediaType];
+
+  if ( !lookupType ) {
+    showError( 'Invalid media type. Most audio, video, picture, text, and Office documents are supported.' );
+
+    return false;
+  }
+
+  const allowedExtensions = lookupType[subtype];
+
+  if ( !allowedExtensions ) {
+    showError( 'Invalid file type. Try converting to a more common file format.' );
+
+    return false;
+  }
+
+  const extensionMatched = allowedExtensions.includes( ext );
+
+  if ( !extensionMatched ) {
+    showError( 'Invalid file extension. Make sure your file extension matched the file type, such as ".docx" for a Word file.' );
+
+    return false;
+  }
+
+  if ( size > MAX_FILE_SIZE ) {
+    showError( `Max file size is ${prettyBytes( MAX_FILE_SIZE )}, but the uploaded file is ${prettyBytes( size )}` );
 
     return false;
   }
