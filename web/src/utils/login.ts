@@ -87,7 +87,7 @@ export const getUserPasswordSalt = async ( username: string ) => {
   const response = await buildQuery( 'creds/salt', { username } );
   const { data, error } = await response.json();
 
-  return [data, error];
+  return [data?.salt, error];
 };
 
 /**
@@ -143,7 +143,7 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
   let authenticated = false;
 
   try {
-    const [{ salt }, saltError] = await getUserPasswordSalt( username );
+    const [salt , saltError] = await getUserPasswordSalt( username );
 
     if ( !salt ) {
       return [authenticated, saltError];
