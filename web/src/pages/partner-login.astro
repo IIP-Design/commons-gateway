@@ -52,6 +52,10 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
     'cf-turnstile-response'
   ) as NodeListOf<HTMLInputElement>;
 
+  // Toggle the visibility of the password input fields when they are selected/deselected.
+  passInput?.addEventListener('focus', toggleInputType);
+  passInput?.addEventListener('blur', toggleInputType);
+
   // Initialize a variable store the MFA request id.
   let mfaRequestId = '';
 
