@@ -14,6 +14,7 @@ import (
 func TestMain(m *testing.M) {
 	testConfig.ConfigureDb()
 
+	testHelpers.TearDownTestDb()
 	err := testHelpers.SetUpTestDb()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -35,5 +36,14 @@ func TestGetAdmin(t *testing.T) {
 	resp, err := getUploaderHandler(context.TODO(), event)
 	if resp.StatusCode != 200 || err != nil {
 		t.Fatalf("getUploaderHandler result %d/%v, want 200/nil", resp.StatusCode, err)
+	}
+
+	result, err := testHelpers.DeserializeBodyArray(resp.Body)
+	if err != nil {
+		t.Fatalf("DeserializeBodyArray result %v, want nil", err)
+	}
+
+	if len(result) == 0 || result[0].(map[string]any)["email"] != testHelpers.ExampleGuest["email"] {
+		t.Fatal("Body has no results or is ill-formed")
 	}
 }
