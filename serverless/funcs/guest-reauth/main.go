@@ -62,6 +62,7 @@ func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		}
 
 		err = propose.MailProposedCreds(user, proposer)
+
 		if err != nil {
 			return msgs.SendServerError(err)
 		}

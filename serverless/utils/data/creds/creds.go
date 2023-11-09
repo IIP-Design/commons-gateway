@@ -125,7 +125,7 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 		email = invite.Inviter
 	}
 
-	err = invites.SaveInvite(email, invite.Invitee.Email, invite.Expires, hash, salt, setPending, true)
+	err = invites.SaveInvite(email, invite.Invitee.Email, invite.Expires, hash, salt, setPending, true, true)
 
 	if err != nil {
 		return pass, errors.New("something went wrong - saving invite failed")
@@ -141,7 +141,9 @@ func ResetPassword(email string) (string, error) {
 	pass, salt := hashing.GenerateCredentials()
 	hash := hashing.GenerateHash(pass, salt)
 
-	query := `UPDATE invites SET salt = $1, pass_hash = $2 WHERE invitee = $3 AND date_invited = ( SELECT MAX(date_invited) FROM invites WHERE invitee = $3 AND pending = FALSE );`
+	query :=
+		`UPDATE invites SET salt = $1, pass_hash = $2 WHERE invitee = $3 AND date_invited = ( SELECT MAX(date_invited)
+		 FROM invites WHERE invitee = $3 AND pending = FALSE );`
 	_, err := pool.Exec(query, salt, hash, email)
 
 	if err != nil {
