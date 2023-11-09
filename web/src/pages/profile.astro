@@ -65,8 +65,8 @@ const desc = 'Because this is your first login with this invite, you must update
     const email = user.email || '';
     const role = user.role || '';
 
-    const currPassword = currPassElem.value;
-    const newPassword = newPassElem.value;
+    const currPassword = currPassElem.value.trim();
+    const newPassword = newPassElem.value.trim();
 
     return { email, role, currPassword, newPassword };
   };

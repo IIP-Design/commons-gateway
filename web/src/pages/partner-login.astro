@@ -83,9 +83,9 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
   submitBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
 
-    const name = nameInput.value;
-    const pass = passInput.value;
-    const mfa = mfaInput.value;
+    const name = nameInput.value.trim();
+    const pass = passInput.value.trim();
+    const mfa = mfaInput.value.trim();
 
     // Empty string if not using token in deployment, null if using and missing
     const token = tokenInput.length ? tokenInput[0].value || null : '';
