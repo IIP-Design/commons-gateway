@@ -10,7 +10,7 @@ import oktaIcon from '/icon_okta.svg';
   import { handleAdminLogin, handleFederatedLogin } from '../utils/login';
 
   // Bypass authentication screen for authenticated users.
-  const authenticated = isLoggedInAsAdmin() || await handleAdminLogin();
+  const authenticated = isLoggedInAsAdmin() || (await handleAdminLogin());
 
   if (authenticated) {
     window.location.assign('/');
@@ -28,7 +28,7 @@ import oktaIcon from '/icon_okta.svg';
       {'Log In With Okta'}
     </Button>
   </div>
-  <a href="/partner-login" style="margin-top: 1em;">Or go to External Partner login</a>
+  <a href="/partner-login" style="margin-top: 1em;">Go to External Partner Login</a>
 </LoggedOutLayout>
 
 <style>

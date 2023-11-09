@@ -13,6 +13,8 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
   import { showError, showInfo } from '../utils/alert';
   import { handlePartnerLogin, handleMfaRequest } from '../utils/login';
   import { MONITORING_CONSENT_MESSAGE } from '../utils/constants';
+  import { toggleInputType } from '../utils/inputs';
+
   import btnStyles from '../styles/button.module.scss';
 
   // Bypass authentication screen for authenticated users.
@@ -169,7 +171,7 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       <Button id="login-btn" type="submit">Sign In</Button>
     </div>
   </form>
-  <a href="/admin-login" style="margin-top: 1em;">Or go to Admin login</a>
+  <a href="/admin-login" style="margin-top: 1em;">Go to Admin Login</a>
 </LoggedOutLayout>
 
 <style>
