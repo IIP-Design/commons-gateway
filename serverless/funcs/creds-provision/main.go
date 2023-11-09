@@ -26,11 +26,12 @@ func handleInvitation(invite data.Invite) error {
 	}
 
 	pass, err := creds.SaveInitialInvite(invite, false)
+
 	if err != nil {
 		return err
 	}
 
-	err = provision.MailProvisionedCreds(invite.Invitee, pass)
+	err = provision.MailProvisionedCreds(invite.Invitee, pass, 1)
 
 	return err
 }

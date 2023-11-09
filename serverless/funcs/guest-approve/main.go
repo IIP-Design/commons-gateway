@@ -41,7 +41,8 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendServerError(err)
 	}
 
-	err = provision.MailProvisionedCreds(invitee, pass)
+	err = provision.MailProvisionedCreds(invitee, pass, 1)
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}

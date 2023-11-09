@@ -29,6 +29,7 @@
     "curr",
     "funcs",
     "querystrings",
+    "reauth",
     "signout",
     "sitekey",
     "somepage"
