@@ -1,7 +1,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 // React Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type{ FC } from 'react';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,13 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
   // Modal Controls
   const openModal = () => setModalIsOpen( true );
-  const closeModal = () => setModalIsOpen( false );
+  const closeModal = () => {
+    // Clear the new team modal when closed.
+    if ( !team ) {
+      setLocalTeam( { ...localTeam, name: '', aprimoName: '' } );
+    }
+    setModalIsOpen( false );
+  };
 
   // Update Controls
   const handleUpdate = ( key: string, value: any ) => {
