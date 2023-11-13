@@ -313,6 +313,7 @@ func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, 
 	var salt string
 	var passHash string
 	var passwordWasReset bool
+	firstLogin := false
 
 	query := `SELECT date_invited, pending, expiration >= NOW() AS active, salt, pass_hash, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1;`
 	err := pool.QueryRow(query, guest.Email).Scan(&dateInvited, &pending, &active, &salt, &passHash, &passwordWasReset)
@@ -324,6 +325,7 @@ func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, 
 	}
 
 	resetPassword, err := shouldResetPassword(dateInvited, guest.Expires, passwordWasReset)
+
 	if err != nil {
 		return pass, 500, err
 	}
@@ -331,9 +333,10 @@ func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, 
 	if resetPassword {
 		pass, salt = hashing.GenerateCredentials()
 		passHash = hashing.GenerateHash(pass, salt)
+		firstLogin = true
 	}
 
-	err = invites.SaveInvite(guest.Admin, guest.Email, guest.Expires, passHash, salt, clientIsGuestAdmin, resetPassword)
+	err = invites.SaveInvite(guest.Admin, guest.Email, guest.Expires, passHash, salt, clientIsGuestAdmin, resetPassword, firstLogin)
 
 	return pass, 200, err
 }

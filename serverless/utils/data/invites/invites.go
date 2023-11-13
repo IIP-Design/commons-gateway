@@ -11,7 +11,16 @@ import (
 // saveInvite opens a database connection and records the association between an admin
 // user inviter and a guest user invitee along with the date of the invitation.
 // TODO: Document
-func SaveInvite(adminEmail string, guestEmail string, expires time.Time, hash string, salt string, setPending bool, setPasswordReset bool) error {
+func SaveInvite(
+	adminEmail string,
+	guestEmail string,
+	expires time.Time,
+	hash string,
+	salt string,
+	setPending bool,
+	setPasswordReset bool,
+	firstLogin bool,
+) error {
 	var err error
 
 	pool := data.ConnectToDB()
@@ -20,11 +29,15 @@ func SaveInvite(adminEmail string, guestEmail string, expires time.Time, hash st
 	currentTime := time.Now()
 
 	if setPending {
-		insertInvite := `INSERT INTO invites( invitee, proposer, pending, date_invited, pass_hash, salt, expiration, password_reset ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
-		_, err = pool.Exec(insertInvite, guestEmail, adminEmail, setPending, currentTime, hash, salt, expires, setPasswordReset)
+		insertInvite :=
+			`INSERT INTO invites( invitee, proposer, pending, date_invited, pass_hash, salt, expiration, password_reset, first_login )
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
+		_, err = pool.Exec(insertInvite, guestEmail, adminEmail, setPending, currentTime, hash, salt, expires, setPasswordReset, firstLogin)
 	} else {
-		insertInvite := `INSERT INTO invites( invitee, inviter, pending, date_invited, pass_hash, salt, expiration, password_reset ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
-		_, err = pool.Exec(insertInvite, guestEmail, adminEmail, setPending, currentTime, hash, salt, expires, setPasswordReset)
+		insertInvite :=
+			`INSERT INTO invites( invitee, inviter, pending, date_invited, pass_hash, salt, expiration, password_reset, first_login )
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
+		_, err = pool.Exec(insertInvite, guestEmail, adminEmail, setPending, currentTime, hash, salt, expires, setPasswordReset, firstLogin)
 	}
 
 	if err != nil {

@@ -13,6 +13,8 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
   import { showError, showInfo } from '../utils/alert';
   import { handlePartnerLogin, handleMfaRequest } from '../utils/login';
   import { MONITORING_CONSENT_MESSAGE } from '../utils/constants';
+  import { toggleInputType } from '../utils/inputs';
+
   import btnStyles from '../styles/button.module.scss';
 
   // Bypass authentication screen for authenticated users.
@@ -50,6 +52,10 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
     'cf-turnstile-response'
   ) as NodeListOf<HTMLInputElement>;
 
+  // Toggle the visibility of the password input fields when they are selected/deselected.
+  passInput?.addEventListener('focus', toggleInputType);
+  passInput?.addEventListener('blur', toggleInputType);
+
   // Initialize a variable store the MFA request id.
   let mfaRequestId = '';
 
@@ -83,9 +89,9 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
   submitBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
 
-    const name = nameInput.value;
-    const pass = passInput.value;
-    const mfa = mfaInput.value;
+    const name = nameInput.value.trim();
+    const pass = passInput.value.trim();
+    const mfa = mfaInput.value.trim();
 
     // Empty string if not using token in deployment, null if using and missing
     const token = tokenInput.length ? tokenInput[0].value || null : '';
@@ -169,7 +175,7 @@ const { PUBLIC_TURNSTILE_SITE_KEY } = import.meta.env;
       <Button id="login-btn" type="submit">Sign In</Button>
     </div>
   </form>
-  <a href="/admin-login" style="margin-top: 1em;">Or go to Admin login</a>
+  <a href="/admin-login" style="margin-top: 1em;">Go to Admin Login</a>
 </LoggedOutLayout>
 
 <style>

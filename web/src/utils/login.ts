@@ -143,13 +143,13 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
   let authenticated = false;
 
   try {
-    const [{ salt }, saltError] = await getUserPasswordSalt( username );
+    const [saltData, saltError] = await getUserPasswordSalt( username );
 
-    if ( !salt ) {
+    if ( !saltData?.salt ) {
       return [authenticated, saltError];
     }
 
-    const localHash = await derivePasswordHash( password, salt );
+    const localHash = await derivePasswordHash( password, saltData.salt );
     const jwt = await submitUserPasswordHash( localHash, username, mfa, token );
 
     if ( !jwt ) {

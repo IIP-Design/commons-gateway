@@ -18,6 +18,7 @@ const desc = 'Because this is your first login with this invite, you must update
   import { derivePasswordHash } from '../utils/hashing';
   import { buildQuery } from '../utils/api';
   import { randomString } from '../utils/string';
+  import { toggleInputType } from '../utils/inputs';
 
   interface ISubData {
     email: string;
@@ -25,22 +26,6 @@ const desc = 'Because this is your first login with this invite, you must update
     currPassword: string;
     newPassword: string;
   }
-
-  /**
-   * Switch the input fields from passwords to text when in focus.
-   * @param el The input element in question.
-   */
-  const toggleInputType = (el: FocusEvent) => {
-    const { type, target } = el;
-    const { id } = target as HTMLInputElement;
-
-    const inputType = type === 'focus' ? 'text' : 'password';
-
-    if (id) {
-      const input = document.getElementById(id) as HTMLInputElement;
-      input.type = inputType;
-    }
-  };
 
   // Toggle the visibility of the password input fields when they are selected/deselected.
   const inputs = document.querySelectorAll('input');
@@ -65,8 +50,8 @@ const desc = 'Because this is your first login with this invite, you must update
     const email = user.email || '';
     const role = user.role || '';
 
-    const currPassword = currPassElem.value;
-    const newPassword = newPassElem.value;
+    const currPassword = currPassElem.value.trim();
+    const newPassword = newPassElem.value.trim();
 
     return { email, role, currPassword, newPassword };
   };
@@ -128,7 +113,10 @@ const desc = 'Because this is your first login with this invite, you must update
     const isFirstLogin = loginStatus.get() === 'firstLogin';
 
     try {
-      const [{ salt, prevSalts }] = await getUserPasswordSalt(email);
+      const [saltData] = await getUserPasswordSalt(email);
+
+      const { salt, prevSalts } = saltData || {};
+
       const currentPasswordHash = await derivePasswordHash(currPassword, salt);
 
       // Derive the hash of the new password with previously used salts.

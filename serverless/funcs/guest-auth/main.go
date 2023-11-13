@@ -107,7 +107,7 @@ func recordUnsuccessfulLoginAttempt(guest string) {
 
 // handleGrantAccess ensures that a user hash provided a password has matching their
 // username and if so, generates a JWT to grant them guest access.
-func handleGrantAccess(username string, clientHash string) (msgs.Response, error) {
+func handleGrantAccess(username string, clientHash string, mfaId string) (msgs.Response, error) {
 	if clientHash == "" || username == "" {
 		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
 	}
@@ -147,6 +147,9 @@ func handleGrantAccess(username string, clientHash string) (msgs.Response, error
 		return msgs.SendServerError(err)
 	}
 
+	// Delete the existing 2FA entry
+	clear2FA(mfaId)
+
 	creds.ClearUnsuccessfulLoginAttempts(username)
 
 	return msgs.PrepareResponse(body)
@@ -176,9 +179,6 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 		return msgs.SendCustomError(errors.New("forbidden"), 403)
 	}
 
-	// Delete the existing 2FA entry
-	clear2FA(mfaId)
-
 	// Verify the turnstile captcha token
 	tokenVerSecretKey := os.Getenv("TOKEN_VERIFICATION_SECRET_KEY")
 
@@ -194,7 +194,7 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 		}
 	}
 
-	return handleGrantAccess(username, clientHash)
+	return handleGrantAccess(username, clientHash, mfaId)
 }
 
 func main() {

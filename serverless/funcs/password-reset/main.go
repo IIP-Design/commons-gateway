@@ -23,16 +23,19 @@ func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyReque
 
 	// Ensure the user exists doesn't already have access.
 	pass, err := creds.ResetPassword(id)
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
 	user, _, err := data.CheckForExistingUser(id, "guests")
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
-	err = provision.MailProvisionedCreds(user, pass)
+	err = provision.MailProvisionedCreds(user, pass, 3)
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
