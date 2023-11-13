@@ -4,12 +4,17 @@
   "description": "Data required to create a new team",
   "type": "object",
   "properties": {
-    "team": {
-      "description": "The id of the team on which to search",
+    "teamName": {
+      "description": "The the proper name of the team.",
+      "type": "string",
+      "minLength": 1
+    },
+    "teamAprimo": {
+      "description": "The name used by Aprimo to refer to this team",
       "type": "string",
       "minLength": 1
     }
   },
-  "required": ["team"],
+  "required": ["teamAprimo", "teamName"],
   "additionalProperties": false
 }
