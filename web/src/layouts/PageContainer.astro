@@ -1,13 +1,23 @@
 ---
 interface Props {
+  droppable?: boolean;
   narrow?: boolean;
   title: string;
 }
 
-const { narrow, title } = Astro.props;
+const { droppable, narrow, title } = Astro.props;
+
+const determineDroppable = ( droppable?: boolean ) => {
+  // Default to droppable unless caller explicitly requests otherwise
+  const d = droppable ?? true;
+  return d ? '' : 'return false;'
+};
 ---
 
-<div class={narrow ? 'container narrow' : 'container'}>
+<div
+  class={narrow ? 'container narrow' : 'container'}
+  ondrop={determineDroppable(droppable)}
+>
   <div class="content">
     <h1>{title}</h1>
     <slot />
