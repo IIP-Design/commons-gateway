@@ -28,6 +28,7 @@ func TestFormatEmail(t *testing.T) {
 		tmpPassword,
 		redirectUrl,
 		sourceEmail,
+		1,
 	)
 
 	if len(e.Destination.ToAddresses) != 1 {
