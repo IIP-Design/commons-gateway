@@ -39,3 +39,16 @@ func TestGetAdmin(t *testing.T) {
 		t.Fatalf("getAdminHandler result %d/%v, want 200/nil", resp.StatusCode, err)
 	}
 }
+
+func TestMissAdmin(t *testing.T) {
+	event := events.APIGatewayProxyRequest{
+		QueryStringParameters: map[string]string{
+			"username": "wrong@test.fail",
+		},
+	}
+
+	resp, err := getAdminHandler(context.TODO(), event)
+	if resp.StatusCode != 404 || err != nil {
+		t.Fatalf("getAdminHandler result %d/%v, want 404/nil", resp.StatusCode, err)
+	}
+}

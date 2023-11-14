@@ -4,12 +4,13 @@ import (
 	"context"
 	"testing"
 
+	testHelpers "github.com/IIP-Design/commons-gateway/test/helpers"
+	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
 	"github.com/aws/aws-lambda-go/events"
 )
 
 const (
-	TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE2OTk0NjAyMzUsImZpcnN0TG9naW4iOmZhbHNlLCJzY29wZSI6Imd1ZXN0IiwidXNlciI6InRlc3RAZXhhbXBsZS5jb20ifQ.zbvLuFR-HuJblu3nuwjKDKD5db_gfmb9xCFIgeZZHuU"
-	TEST_ARN   = "arn:aws:execute-api:us-east-1:123456789012:abcdef123/test/POST/upload"
+	TEST_ARN = "arn:aws:execute-api:us-east-1:123456789012:abcdef123/test/POST/upload"
 )
 
 func TestParseArn(t *testing.T) {
@@ -49,8 +50,10 @@ func TestRejectRequestIncorrectValue(t *testing.T) {
 }
 
 func TestHandleRequest(t *testing.T) {
+	token, _ := jwt.GenerateJWT(testHelpers.ExampleGuest["email"], "guest", false)
+
 	event := events.APIGatewayCustomAuthorizerRequest{
-		AuthorizationToken: TEST_TOKEN,
+		AuthorizationToken: token,
 		MethodArn:          TEST_ARN,
 	}
 

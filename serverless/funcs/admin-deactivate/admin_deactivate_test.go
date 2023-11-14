@@ -47,6 +47,19 @@ func TestAdminDeactivate(t *testing.T) {
 	}
 }
 
+func TestDeactivateMiss(t *testing.T) {
+	event := events.APIGatewayProxyRequest{
+		QueryStringParameters: map[string]string{
+			"username": "wrong@test.fail",
+		},
+	}
+
+	resp, err := deactivateAdminHandler(context.TODO(), event)
+	if resp.StatusCode != 404 || err != nil {
+		t.Fatalf("deactivateAdminHandler result %d/%v, want 404/nil", resp.StatusCode, err)
+	}
+}
+
 func checkAdminDeactivated(email string) (bool, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()

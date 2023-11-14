@@ -37,13 +37,13 @@ func ExampleDbRecords() [][]string {
 func SetUpTestDb() error {
 	var err error
 
-	teamQuery := "INSERT INTO teams( id, team_name, aprimo_name, active, date_created, date_modified ) VALUES ($1, $2, $3, TRUE, NOW(), NOW());"
+	teamQuery := "INSERT INTO teams( id, team_name, aprimo_name, active, date_created, date_modified ) VALUES ($1, $2, $3, TRUE, NOW(), NOW()) ON CONFLICT ON CONSTRAINT teams_pkey DO NOTHING;"
 
-	adminTableQuery := "INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, TRUE, NOW(), NOW() );"
-	adminAllQuestsQuery := "INSERT INTO all_users( user_id, admin_id ) VALUES ( $1, $2 );"
+	adminTableQuery := "INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, TRUE, NOW(), NOW() ) ON CONFLICT ON CONSTRAINT admins_pkey DO NOTHING;"
+	adminAllQuestsQuery := "INSERT INTO all_users( user_id, admin_id ) VALUES ( $1, $2 ) ON CONFLICT ON CONSTRAINT all_users_pkey DO NOTHING;"
 
-	guestTableQuery := "INSERT INTO guests( email, first_name, last_name, role, team, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, NOW(), NOW() );"
-	guestAllQuestsQuery := "INSERT INTO all_users( user_id, guest_id ) VALUES ( $1, $2 );"
+	guestTableQuery := "INSERT INTO guests( email, first_name, last_name, role, team, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, NOW(), NOW() ) ON CONFLICT ON CONSTRAINT guests_pkey DO NOTHING;"
+	guestAllQuestsQuery := "INSERT INTO all_users( user_id, guest_id ) VALUES ( $1, $2 ) ON CONFLICT ON CONSTRAINT all_users_pkey DO NOTHING;"
 
 	inviteQuery := "INSERT INTO invites( invitee, inviter, pending, date_invited, pass_hash, salt, expiration, password_reset ) VALUES ( $1, $2, FALSE, NOW(), 'abcdef', 'abcd', NOW() + INTERVAL '1 YEAR', FALSE );"
 

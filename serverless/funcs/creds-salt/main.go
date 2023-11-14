@@ -41,8 +41,9 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if user == "" {
-		logs.LogError(nil, "Username not provided in request.")
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
+		err = errors.New("data missing from request")
+		logs.LogError(err, "Username not provided in request.")
+		return msgs.SendCustomError(err, 400)
 	}
 
 	credentials, err := handleCredentialRequest(user)
@@ -52,8 +53,9 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	}
 
 	if credentials.Locked {
-		logs.LogError(errors.New("account locked"), "User's account is locked.")
-		return msgs.SendCustomError(errors.New("account locked"), 429)
+		err = errors.New("account locked")
+		logs.LogError(err, "User's account is locked.")
+		return msgs.SendCustomError(err, 429)
 	}
 
 	salts := map[string]any{

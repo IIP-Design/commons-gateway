@@ -95,7 +95,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 
 	if username == "" {
 		logs.LogError(nil, "Missing Parameter Error - username")
-		return msgs.SendServerError(errors.New("user email not provided"))
+		return msgs.SendCustomError(errors.New("user email not provided"), 400)
 	}
 
 	// Ensure that the user requesting a 2FA code exists.
