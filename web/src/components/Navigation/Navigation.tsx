@@ -6,7 +6,7 @@ import './Navigation.scss';
 
 const capitalized = ( word: string ) => word.charAt( 0 ).toUpperCase() + word.slice( 1 );
 
-export const NavBar = () => {
+export const Navigation = () => {
   const userRole = currentUser.get().role;
   const { pathname } = new URL( window.location.href );
   const currentPath = pathname.replaceAll( '/', '' );
@@ -15,11 +15,11 @@ export const NavBar = () => {
 
   return (
     <nav className="nav-links">
-      <ul>
+      <ul id="nav-list">
         {
-          filteredRoutes.map( ( { href, name } ) => (
-            <li key={ href }>
-              <a className={ currentPath === href ? 'active' : '' } href={ `/${href}` }>
+          filteredRoutes.map( ( { href, name, rolesAccessible } ) => (
+            <li key={ href } className="nav-li" data-roles={ rolesAccessible?.join( '-' ) || '' }>
+              <a className={ `${currentPath === href ? 'active' : ''} filterable-link` } href={ `/${href}` }>
                 { name || capitalized( href ) }
               </a>
             </li>
@@ -33,4 +33,4 @@ export const NavBar = () => {
   );
 };
 
-export default NavBar;
+export default Navigation;
