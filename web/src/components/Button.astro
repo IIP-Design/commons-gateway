@@ -8,11 +8,11 @@ interface Props {
   disabled?: boolean;
 }
 
-const { class: classes, id, type, disabled } = Astro.props;
+const { class: className, id, type, disabled } = Astro.props;
 ---
 
 <button
-  class:list={[classes, styles.btn]}
+  class:list={[className, styles.btn]}
   id={id || ''}
   type={type || 'button'}
   disabled={disabled ?? false}

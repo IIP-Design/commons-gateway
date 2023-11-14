@@ -1,6 +1,6 @@
 {
   "cors": {
-    "origins": ["http://localhost:3000", "https://*.gpalab.digital"],
+    "origins": ["http://localhost:3000", "http://localhost:4321", "https://*.gpalab.digital"],
     "headers": [
       "Content-Type",
       "X-Amz-Date",

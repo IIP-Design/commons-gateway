@@ -7,7 +7,7 @@
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
-      "@typescript-eslint"
+    "@typescript-eslint"
   ],
   "rules": {
     "react/jsx-filename-extension": [
@@ -41,7 +41,23 @@
       }
     ],
     "jsx-a11y/label-has-associated-control": "off",
-    "jsx-a11y/no-onchange": "off"
+    "jsx-a11y/no-onchange": "off",
+    "node/no-unpublished-import": [
+      "error",
+      {
+        "allowModules": [
+          "@astrojs/react"
+        ]
+      }
+    ],
+    "import/no-unresolved": [
+      "error",
+      {
+        "ignore": [
+          "@astrojs/react"
+        ]
+      }
+    ]
   },
   "overrides": [
     {

@@ -1,8 +1,6 @@
 ---
 import Button from '../components/Button.astro';
 import LoggedOutLayout from '../layouts/LoggedOutLayout.astro';
-
-import oktaIcon from '/icon_okta.svg';
 ---
 
 <script>
@@ -24,7 +22,7 @@ import oktaIcon from '/icon_okta.svg';
 <LoggedOutLayout title="Admin Login">
   <div>
     <Button id="okta-btn" class="okta-btn" type="button">
-      <img src={oktaIcon} alt="Okta Single Sign-On" width="24" />
+      <img src="/icon_okta.svg" alt="Okta Single Sign-On" width="24" />
       {'Log In With Okta'}
     </Button>
   </div>
