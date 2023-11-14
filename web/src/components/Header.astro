@@ -1,7 +1,7 @@
 ---
 import Button from './Button.astro';
 import Hamburger from '../components/Hamburger.astro';
-import Navigation from '../components/Navigation.astro';
+import Navigation from '../components/Navigation/Navigation';
 
 interface Props {
   centered?: boolean;
@@ -38,7 +38,7 @@ const { centered } = Astro.props;
   {
     !centered && (
       <div class="below">
-        <Navigation />
+        <Navigation client:only />
         <Button id="sign-out">Sign Out</Button>
       </div>
     )
