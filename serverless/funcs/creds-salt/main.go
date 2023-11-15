@@ -32,8 +32,8 @@ func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	return credentials, err
 }
 
-// GetSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
-func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
+func getSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	user := parsed.Username
@@ -73,5 +73,5 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 }
 
 func main() {
-	lambda.Start(GetSaltHandler)
+	lambda.Start(getSaltHandler)
 }

@@ -11,10 +11,10 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// GetPendingInvitesHandler handles the request to retrieve a list of pending guest users.
+// getPendingInvitesHandler handles the request to retrieve a list of pending guest users.
 // If a 'team' argument is provided in the body of the request it will filter
 // the response to show only the guests assigned to that team.
-func GetPendingInvitesHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func getPendingInvitesHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	team := parsed.TeamId
@@ -39,5 +39,5 @@ func GetPendingInvitesHandler(ctx context.Context, event events.APIGatewayProxyR
 }
 
 func main() {
-	lambda.Start(GetPendingInvitesHandler)
+	lambda.Start(getPendingInvitesHandler)
 }

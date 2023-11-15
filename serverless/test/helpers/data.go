@@ -4,6 +4,14 @@ import (
 	initDb "github.com/IIP-Design/commons-gateway/utils/init"
 )
 
+const (
+	GUEST_TABLE_QUERY    = "INSERT INTO guests( email, first_name, last_name, role, team, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, NOW(), NOW() ) ON CONFLICT ON CONSTRAINT guests_pkey DO NOTHING;"
+	GUEST_ALL_USER_QUERY = "INSERT INTO all_users( user_id, guest_id ) VALUES ( $1, $2 ) ON CONFLICT ON CONSTRAINT all_users_pkey DO NOTHING;"
+
+	INVITE_QUERY         = "INSERT INTO invites( invitee, inviter, pending, date_invited, pass_hash, salt, expiration, password_reset ) VALUES ( $1, $2, FALSE, NOW(), $3, $4, NOW() + INTERVAL '1 YEAR', FALSE );"
+	INVITE_PENDING_QUERY = "INSERT INTO invites( invitee, proposer, pending, date_invited, pass_hash, salt, expiration, password_reset ) VALUES ( $1, $2, TRUE, NOW(), $3, $4, NOW() + INTERVAL '1 YEAR', FALSE );"
+)
+
 var ExampleTeam = map[string]string{
 	"id":          "9m4e2mr0ui3e8a21team",
 	"team_name":   "Fox",
@@ -26,6 +34,19 @@ var ExampleGuest = map[string]string{
 	"role":       "guest",
 }
 
+var ExampleGuest2 = map[string]string{
+	"user_id":    "9m4e2mr0ui3e8aguest2",
+	"email":      "guest2@example.com",
+	"first_name": "Imogen",
+	"last_name":  "Scott",
+	"role":       "guest",
+}
+
+var ExampleCreds = map[string]string{
+	"salt":      "abcd",
+	"pass_hash": "abcdef",
+}
+
 func ExampleDbRecords() [][]string {
 	return [][]string{
 		{"teams", "Fox", "", "", "", "", "GPAVideo"},
@@ -41,11 +62,6 @@ func SetUpTestDb() error {
 
 	adminTableQuery := "INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, TRUE, NOW(), NOW() ) ON CONFLICT ON CONSTRAINT admins_pkey DO NOTHING;"
 	adminAllQuestsQuery := "INSERT INTO all_users( user_id, admin_id ) VALUES ( $1, $2 ) ON CONFLICT ON CONSTRAINT all_users_pkey DO NOTHING;"
-
-	guestTableQuery := "INSERT INTO guests( email, first_name, last_name, role, team, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, NOW(), NOW() ) ON CONFLICT ON CONSTRAINT guests_pkey DO NOTHING;"
-	guestAllQuestsQuery := "INSERT INTO all_users( user_id, guest_id ) VALUES ( $1, $2 ) ON CONFLICT ON CONSTRAINT all_users_pkey DO NOTHING;"
-
-	inviteQuery := "INSERT INTO invites( invitee, inviter, pending, date_invited, pass_hash, salt, expiration, password_reset ) VALUES ( $1, $2, FALSE, NOW(), 'abcdef', 'abcd', NOW() + INTERVAL '1 YEAR', FALSE );"
 
 	pool := initDb.ConnectToDBInit()
 	defer pool.Close()
@@ -65,17 +81,17 @@ func SetUpTestDb() error {
 		return err
 	}
 
-	_, err = pool.Exec(guestTableQuery, ExampleGuest["email"], ExampleGuest["first_name"], ExampleGuest["last_name"], ExampleGuest["role"], ExampleTeam["id"])
+	_, err = pool.Exec(GUEST_TABLE_QUERY, ExampleGuest["email"], ExampleGuest["first_name"], ExampleGuest["last_name"], ExampleGuest["role"], ExampleTeam["id"])
 	if err != nil {
 		return err
 	}
 
-	_, err = pool.Exec(guestAllQuestsQuery, ExampleGuest["user_id"], ExampleGuest["email"])
+	_, err = pool.Exec(GUEST_ALL_USER_QUERY, ExampleGuest["user_id"], ExampleGuest["email"])
 	if err != nil {
 		return err
 	}
 
-	_, err = pool.Exec(inviteQuery, ExampleGuest["email"], ExampleAdmin["email"])
+	_, err = pool.Exec(INVITE_QUERY, ExampleGuest["email"], ExampleAdmin["email"], ExampleCreds["pass_hash"], ExampleCreds["salt"])
 	if err != nil {
 		return err
 	}
@@ -125,6 +141,42 @@ func TearDownTestDb() error {
 	}
 
 	_, err = pool.Exec(teamQuery, ExampleTeam["id"])
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LockAccount(email string) error {
+	var err error
+
+	pool := initDb.ConnectToDBInit()
+	defer pool.Close()
+
+	query := "UPDATE guests SET locked = true WHERE email = $1"
+	_, err = pool.Exec(query, email)
+
+	return err
+}
+
+func AddPendingGuest() error {
+	var err error
+
+	pool := initDb.ConnectToDBInit()
+	defer pool.Close()
+
+	_, err = pool.Exec(GUEST_TABLE_QUERY, ExampleGuest2["email"], ExampleGuest2["first_name"], ExampleGuest2["last_name"], ExampleGuest2["role"], ExampleTeam["id"])
+	if err != nil {
+		return err
+	}
+
+	_, err = pool.Exec(GUEST_ALL_USER_QUERY, ExampleGuest2["user_id"], ExampleGuest2["email"])
+	if err != nil {
+		return err
+	}
+
+	_, err = pool.Exec(INVITE_PENDING_QUERY, ExampleGuest2["email"], ExampleGuest["email"], ExampleCreds["pass_hash"], ExampleCreds["salt"])
 	if err != nil {
 		return err
 	}
