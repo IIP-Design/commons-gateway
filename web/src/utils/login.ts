@@ -17,6 +17,7 @@ import { AMPLIFY_CONFIG } from './constants';
 import { derivePasswordHash } from './hashing';
 import { extractTokenFields } from './jwt';
 import { isLoggedInAsAdmin } from './auth';
+import { escapeQueryStrings } from './string';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Admin/DoS
@@ -55,7 +56,8 @@ export const handleAdminLogin = async () => {
       const { email, exp } = payload;
 
       // Retrieve additional data from the application.
-      const response = await buildQuery( `admin?username=${email}`, null, 'GET' );
+      const escaped = escapeQueryStrings( email );
+      const response = await buildQuery( `admin?username=${escaped}`, null, 'GET' );
       const { data } = await response.json();
       const { active, role, team, token } = data;
 
@@ -126,7 +128,8 @@ const submitUserPasswordHash = async (
  * @param username The email address of the user requesting a 2FA code
  */
 export const handleMfaRequest = async ( username: string ) => {
-  const response = await buildQuery( `creds/2fa?username=${username}`, null, 'GET' );
+  const escaped = escapeQueryStrings( username );
+  const response = await buildQuery( `creds/2fa?username=${escaped}`, null, 'GET' );
   const { data } = await response.json();
 
   return data?.requestId;
@@ -161,7 +164,8 @@ export const handlePartnerLogin = async ( username: string, password: string, mf
     const { exp, firstLogin } = extractTokenFields( jwt );
 
     // Retrieve additional data from the application.
-    const response = await buildQuery( `guest?id=${username}`, null, 'GET' );
+    const escaped = escapeQueryStrings( username );
+    const response = await buildQuery( `guest?id=${escaped}`, null, 'GET' );
     const { data } = await response.json();
     const { role, team } = data;
 

@@ -4,6 +4,7 @@
 import currentUser from '../stores/current-user';
 import { showError, showTernary } from './alert';
 import { buildQuery } from './api';
+import { escapeQueryStrings } from './string';
 import type { TUserRole } from './types';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -47,7 +48,8 @@ export const makeApproveUserHandler = ( inviteeEmail: string ) => {
         wasUpdated = true;
       }
     } else if ( isDenied ) {
-      const { ok } = await buildQuery( `guest?id=${inviteeEmail}`, null, 'DELETE' );
+      const escaped = escapeQueryStrings( inviteeEmail );
+      const { ok } = await buildQuery( `guest?id=${escaped}`, null, 'DELETE' );
 
       if ( !ok ) {
         showError( 'Unable to reject invite' );

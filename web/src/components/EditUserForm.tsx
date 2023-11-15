@@ -20,6 +20,7 @@ import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
 import { MAX_ACCESS_GRANT_DAYS } from '../utils/constants';
 import { addDaysToNow, dateSelectionIsValid, getYearMonthDay, userWillNeedNewPassword } from '../utils/dates';
+import { escapeQueryStrings } from '../utils/string';
 
 import type { IInvite } from '../utils/types';
 import { makeDummyUserForm, type IUserFormData, makeApproveUserHandler } from '../utils/users';
@@ -121,7 +122,8 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
 
   const handlePasswordReset = async () => {
     const { email } = userData;
-    const { ok } = await buildQuery(`passwordReset?id=${email}`, null, 'POST');
+    const escaped = escapeQueryStrings( email );
+    const { ok } = await buildQuery( `passwordReset?id=${escaped}`, null, 'POST' );
 
     if (!ok) {
       showError('Unable to reset password');
@@ -138,7 +140,8 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
       return;
     }
 
-    const { ok } = await buildQuery(`guest?id=${email}`, null, 'DELETE');
+    const escaped = escapeQueryStrings( email );
+    const { ok } = await buildQuery( `guest?id=${escaped}`, null, 'DELETE' );
 
     if (!ok) {
       showError('Unable to deactivate user');
@@ -286,9 +289,10 @@ const UserForm: FC = () => {
   }, [isAdmin]);
 
   // Initialize the form.
-  useEffect(() => {
-    const getUser = async (id: string) => {
-      const response = await buildQuery(`guest?id=${id}`, null, 'GET');
+  useEffect( () => {
+    const getUser = async ( guestId: string ) => {
+      const escaped = escapeQueryStrings( guestId );
+      const response = await buildQuery( `guest?id=${escaped}`, null, 'GET' );
       const { data } = await response.json();
 
       if (data) {

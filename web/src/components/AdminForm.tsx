@@ -13,6 +13,7 @@ import type { TUserRole } from '../utils/types';
 import { showConfirm, showError } from '../utils/alert';
 import { buildQuery } from '../utils/api';
 import { userIsAdmin } from '../utils/auth';
+import { escapeQueryStrings } from '../utils/string';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -77,7 +78,8 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
   // Initialize the form.
   useEffect( () => {
     const getAdmin = async ( username: string ) => {
-      const response = await buildQuery( `admin?username=${username}`, null, 'GET' );
+      const escaped = escapeQueryStrings( username );
+      const response = await buildQuery( `admin?username=${escaped}`, null, 'GET' );
       const { data } = await response.json();
 
       if ( data ) {
@@ -144,7 +146,9 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
     };
 
     if ( admin ) {
-      await buildQuery( `admin?username=${adminData.email}`, { ...newAdmin }, 'PUT' )
+      const escaped = escapeQueryStrings( adminData.email );
+
+      await buildQuery( `admin?username=${escaped}`, { ...newAdmin }, 'PUT' )
         .then( () => window.location.assign( '/admins' ) )
         .catch( err => console.error( err ) );
     } else {
@@ -162,7 +166,8 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
       return;
     }
 
-    const { ok } = await buildQuery( `admin?username=${email}`, null, 'DELETE' );
+    const escaped = escapeQueryStrings( email );
+    const { ok } = await buildQuery( `admin?username=${escaped}`, null, 'DELETE' );
 
     if ( !ok ) {
       showError( 'Unable to deactivate user' );
@@ -179,7 +184,9 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
       return;
     }
 
-    await buildQuery( `admin?username=${email}`, { ...adminData, active: true }, 'PUT' )
+    const escaped = escapeQueryStrings( email );
+
+    await buildQuery( `admin?username=${escaped}`, { ...adminData, active: true }, 'PUT' )
       .then( () => window.location.assign( '/admins' ) )
       .catch( err => {
         showError( 'Unable to reactivate user' );

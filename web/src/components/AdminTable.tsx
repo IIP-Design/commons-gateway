@@ -15,6 +15,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import type { TUserRole, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { getTeamName } from '../utils/team';
+import { escapeQueryStrings } from '../utils/string';
 import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -76,7 +77,7 @@ const AdminTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={ `/edit-admin?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
+        cell: info => <a href={ `/edit-admin?id=${escapeQueryStrings( info.row.getValue( 'email' ) )}` }>{ info.getValue() as string }</a>,
       },
       {
         ...defaultColumnDef( 'role' ),

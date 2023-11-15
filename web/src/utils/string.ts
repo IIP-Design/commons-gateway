@@ -51,3 +51,12 @@ export const randomString = ( length: number ) => {
 
   return str;
 };
+
+/**
+ * Query parameters interpret the `+` character as a space.
+ * In some cases we would like to convey an actual plus sign,
+ * to the server so we convert it to the unicode equivalent.
+ * @param str The string to be escaped.
+ * @returns The escaped string.
+ */
+export const escapeQueryStrings = ( str: string ) => str.replace( '+', '%2B' );

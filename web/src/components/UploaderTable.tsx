@@ -17,6 +17,7 @@ import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { isGuestActive } from '../utils/guest';
 import { Table, defaultColumnDef } from './Table';
+import { escapeQueryStrings } from '../utils/string';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -65,7 +66,7 @@ const UploaderTable: FC = () => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={ `/edit-user?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
+        cell: info => <a href={ `/edit-user?id=${escapeQueryStrings( info.row.getValue( 'email' ) )}` }>{ info.getValue() as string }</a>,
       },
       defaultColumnDef( 'email' ),
       {

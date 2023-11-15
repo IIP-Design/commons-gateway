@@ -18,6 +18,7 @@ import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
 import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
+import { escapeQueryStrings } from '../utils/string';
 import { Table, defaultColumnDef } from './Table';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -81,7 +82,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
     () => [
       {
         ...defaultColumnDef( 'name' ),
-        cell: info => <a href={ `/edit-user?id=${info.row.getValue( 'email' )}` }>{ info.getValue() as string }</a>,
+        cell: info => <a href={ `/edit-user?id=${escapeQueryStrings( info.row.getValue( 'email' ) )}` }>{ info.getValue() as string }</a>,
       },
       defaultColumnDef( 'email' ),
       {

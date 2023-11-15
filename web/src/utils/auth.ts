@@ -4,6 +4,7 @@
 import currentUser, { loginStatus } from '../stores/current-user';
 import type { TUserRole } from './types';
 import { buildQuery } from './api';
+import { escapeQueryStrings } from './string';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -31,7 +32,8 @@ const makeAdminVerificationFn = ( roles: TUserRole[] ): TPermissionVerificationF
   let authenticated = false;
 
   try {
-    const response = await buildQuery( `admin?username=${email}`, null, 'GET' );
+    const escaped = escapeQueryStrings( email );
+    const response = await buildQuery( `admin?username=${escaped}`, null, 'GET' );
     const { data } = await response.json();
     const { role } = data;
 
@@ -50,7 +52,8 @@ const partnerVerificationFn: TPermissionVerificationFn = async ( redirect: strin
   let authenticated = false;
 
   try {
-    const response = await buildQuery( `guest?id=${email}`, null, 'GET' );
+    const escaped = escapeQueryStrings( email );
+    const response = await buildQuery( `guest?id=${escaped}`, null, 'GET' );
     const { data } = await response.json();
     const { role } = data;
 
@@ -70,7 +73,8 @@ const jointVerificationFn: TPermissionVerificationFn = async ( redirect: string 
   let authenticated = false;
 
   try {
-    const response = await buildQuery( `${userRole === 'guest admin' ? 'guest?id' : 'admin?username'}=${email}`, null, 'GET' );
+    const escaped = escapeQueryStrings( email );
+    const response = await buildQuery( `${userRole === 'guest admin' ? 'guest?id' : 'admin?username'}=${escaped}`, null, 'GET' );
     const { data } = await response.json();
     const { role } = data;
 
