@@ -27,28 +27,28 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func TestGetAdmin(t *testing.T) {
+func TestGetGuest(t *testing.T) {
 	event := events.APIGatewayProxyRequest{
 		QueryStringParameters: map[string]string{
-			"username": testHelpers.ExampleAdmin["email"],
+			"id": testHelpers.ExampleGuest["email"],
 		},
 	}
 
-	resp, err := getAdminHandler(context.TODO(), event)
+	resp, err := getGuestHandler(context.TODO(), event)
 	if resp.StatusCode != 200 || err != nil {
-		t.Fatalf("getAdminHandler result %d/%v, want 200/nil", resp.StatusCode, err)
+		t.Fatalf("getGuestHandler result %d/%v, want 200/nil", resp.StatusCode, err)
 	}
 }
 
-func TestMissAdmin(t *testing.T) {
+func TestMissGuest(t *testing.T) {
 	event := events.APIGatewayProxyRequest{
 		QueryStringParameters: map[string]string{
-			"username": "wrong@test.fail",
+			"id": "wrong@test.fail",
 		},
 	}
 
-	resp, err := getAdminHandler(context.TODO(), event)
+	resp, err := getGuestHandler(context.TODO(), event)
 	if resp.StatusCode != 404 || err != nil {
-		t.Fatalf("getAdminHandler result %d/%v, want 404/nil", resp.StatusCode, err)
+		t.Fatalf("getGuestHandler result %d/%v, want 404/nil", resp.StatusCode, err)
 	}
 }

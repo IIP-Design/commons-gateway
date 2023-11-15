@@ -12,19 +12,21 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetGuestHandler handles the request to retrieve a single admin user based on email address.
-func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getGuestHandler handles the request to retrieve a single admin user based on email address.
+func getGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	id := event.QueryStringParameters["id"]
 
 	if id == "" {
-		return msgs.SendServerError(errors.New("user id not provided"))
+		return msgs.SendCustomError(errors.New("user id not provided"), 400)
 	}
 
 	// Ensure the user exists doesn't already have access.
 	_, exists, err := users.CheckForExistingUser(id, "guests")
 
-	if err != nil || !exists {
-		return msgs.SendServerError(errors.New("user does not exist"))
+	if !exists {
+		return msgs.SendCustomError(errors.New("user does not exist"), 404)
+	} else if err != nil {
+		return msgs.SendServerError(err)
 	}
 
 	guest, err := guests.RetrieveGuest(id)
@@ -43,5 +45,5 @@ func GetGuestHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(GetGuestHandler)
+	lambda.Start(getGuestHandler)
 }
