@@ -92,6 +92,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {
+		logs.LogError(nil, "Missing Parameter Error - username")
 		return msgs.SendServerError(errors.New("user email not provided"))
 	}
 
@@ -99,8 +100,10 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	_, exists, err := data.CheckForExistingUser(username, "guests")
 
 	if err != nil {
+		logs.LogError(err, "Check For User Error")
 		return msgs.SendCustomError(errors.New("load guest error"), 500)
 	} else if !exists {
+		logs.LogError(fmt.Errorf("user %s not found", username), "User Not Found Error")
 		return msgs.SendCustomError(errors.New("no such user"), 404)
 	}
 
@@ -137,6 +140,7 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	body, err := msgs.MarshalBody(resp)
 
 	if err != nil {
+		logs.LogError(err, "Failed to Marshal Response Body")
 		return msgs.SendServerError(err)
 	}
 
