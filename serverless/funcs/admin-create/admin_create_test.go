@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 
 	exitVal := m.Run()
 
-	cleanupadmins()
+	cleanupAdmins()
 	testHelpers.TearDownTestDb()
 
 	os.Exit(exitVal)
@@ -76,7 +76,7 @@ func TestCreateExistingAdmin(t *testing.T) {
 	}
 }
 
-func cleanupadmins() {
+func cleanupAdmins() {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 

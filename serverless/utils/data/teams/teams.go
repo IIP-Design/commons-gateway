@@ -143,8 +143,8 @@ func UpdateTeamStatus(teamId string, active bool) error {
 }
 
 // RetrieveTeams opens a database connection and retrieves the full list of teams.
-func RetrieveTeams() ([]map[string]any, error) {
-	var teams []map[string]any
+func RetrieveTeams() ([]types.Team, error) {
+	var teams []types.Team
 	var err error
 
 	pool := data.ConnectToDB()
@@ -166,14 +166,7 @@ func RetrieveTeams() ([]map[string]any, error) {
 			return teams, err
 		}
 
-		teamData := map[string]any{
-			"id":         team.Id,
-			"name":       team.Name,
-			"aprimoName": team.AprimoName,
-			"active":     team.Active,
-		}
-
-		teams = append(teams, teamData)
+		teams = append(teams, team)
 	}
 
 	if err = rows.Err(); err != nil {

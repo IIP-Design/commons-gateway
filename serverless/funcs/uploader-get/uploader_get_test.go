@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func TestGetAdmin(t *testing.T) {
+func TestGetUploader(t *testing.T) {
 	event := events.APIGatewayProxyRequest{
 		Body: fmt.Sprintf(`{"team":"%s"}`, testHelpers.ExampleTeam["id"]),
 	}

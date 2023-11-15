@@ -6,7 +6,7 @@ import (
 
 var ExampleTeam = map[string]string{
 	"id":          "9m4e2mr0ui3e8a21team",
-	"test_name":   "Fox",
+	"team_name":   "Fox",
 	"aprimo_name": "GPAVideo",
 }
 
