@@ -32,6 +32,7 @@
     "reauth",
     "signout",
     "sitekey",
-    "somepage"
+    "somepage",
+    "uploaders"
   ]
 }

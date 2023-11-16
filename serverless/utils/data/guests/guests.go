@@ -193,6 +193,7 @@ func RetrievePendingInvites(team string) ([]map[string]string, error) {
 	return invites, err
 }
 
+// RetrieveUploaders returns a list of all guest users in a given team.
 func RetrieveUploaders(team string) ([]map[string]any, error) {
 	var uploaders []map[string]any
 
@@ -200,9 +201,9 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 	defer pool.Close()
 
 	query :=
-		`SELECT email, first_name, last_name, role, team, expiration, date_invited, proposer, inviter, pending
-			FROM guest_auth_data
-			WHERE team = $1 ORDER BY first_name;`
+		`SELECT email, first_name, last_name, role, team, expiration, date_invited,
+		 proposer, inviter, pending FROM guest_auth_data
+		 WHERE team = $1 AND role = 'guest' ORDER BY first_name;`
 	rows, err := pool.Query(query, team)
 
 	if err != nil {

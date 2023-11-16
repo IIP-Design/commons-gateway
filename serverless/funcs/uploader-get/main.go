@@ -8,6 +8,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
@@ -18,18 +19,21 @@ func GetUploaderHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	team := parsed.TeamId
 
 	if err != nil {
+		logs.LogError(err, "Parsing Body Error")
 		return msgs.SendServerError(err)
 	}
 
 	guests, err := guests.RetrieveUploaders(team)
 
 	if err != nil {
+		logs.LogError(err, "Uploaders Retrieve Error")
 		return msgs.SendServerError(err)
 	}
 
 	body, err := msgs.MarshalBody(guests)
 
 	if err != nil {
+		logs.LogError(err, "Failed to Unmarshal Body")
 		return msgs.SendServerError(err)
 	}
 
