@@ -20,6 +20,7 @@ const mig20231016 = "20231016_s3_id_column_size"
 const mig20231023 = "20231023_auth_with_invites"
 const mig20231024 = "20231024_invite_password_reset"
 const mig20231030 = "20231030_password_history"
+const mig20231116 = "20231116_file_description_type"
 
 // getAppliedMigrations queries the `migrations` table in that database
 // for a list of schema updates that have already been executed.
@@ -168,6 +169,17 @@ func ApplyMigrations() error {
 		fmt.Printf("Applying migration - %s\n", mig20231030)
 
 		err = applyMigration20231030(mig20231030)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// Apply the migration from November 16, 2023
+	if !stringArrayContains(applied, mig20231116) {
+		fmt.Printf("Applying migration - %s\n", mig20231116)
+
+		err = applyMigration20231116(mig20231116)
 
 		if err != nil {
 			return err
