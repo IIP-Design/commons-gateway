@@ -362,6 +362,22 @@ const UserForm: FC = () => {
   };
 
   /**
+   * Displays an error/success message when a user updates a user.
+   * @param res The API response from the update guest request.
+   */
+  const handleSubmitResponse = ( res: Response ) => {
+    const { ok } = res;
+
+    if ( !ok ) {
+      showError( 'Could update user' );
+    } else {
+      showSuccess( 'User successfully updated' );
+    }
+
+    setUpdated( false );
+  };
+
+  /**
    * Validates the form inputs and sends the provided data to the API.
    * @param e The submission event - simply used to prevent the default page refresh.
    */
@@ -380,16 +396,9 @@ const UserForm: FC = () => {
       role: userData.role,
     };
 
-    const response = await buildQuery( 'guest', invitee, 'PUT' )
-      .then( () => setUpdated( false ) )
+    await buildQuery( 'guest', invitee, 'PUT' )
+      .then( res => handleSubmitResponse( res ) )
       .catch( err => console.error( err ) );
-
-    // if ( !ok ) {
-    //   showError( 'Could not upload file' );
-    // } else {
-    //   showSuccess( 'File has been uploaded' );
-    // }
-    console.log( response );
   };
 
   return (
