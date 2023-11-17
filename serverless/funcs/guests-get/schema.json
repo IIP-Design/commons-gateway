@@ -5,8 +5,14 @@
   "type": "object",
   "properties": {
     "role": {
+      "description": "The type of guest that should be retrieved",
       "type": "string",
       "enum": ["guest admin", "guest"]
+    },
+    "team": {
+      "description": "The id of the current user's team",
+      "type": "string",
+      "minLength": 1
     }
   },
   "required": ["role"],
