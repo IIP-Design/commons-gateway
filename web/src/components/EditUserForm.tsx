@@ -7,7 +7,7 @@ import type { FC, FormEvent } from 'react';
 // ////////////////////////////////////////////////////////////////////////////
 // 3PP Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { addDays, parse } from 'date-fns';
+import { parse } from 'date-fns';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -37,7 +37,7 @@ import tblStyles from '../styles/table.module.scss';
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
 interface IStatusTokenProps {
-  active: boolean;
+  readonly active: boolean;
 }
 
 interface IInviteWidgetParams {
@@ -49,21 +49,19 @@ interface IInviteWidgetParams {
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
-const StatusToken: FC<IStatusTokenProps> = ( { active }: IStatusTokenProps ) => {
-  return (
-    <span className={ tblStyles.status } style={{display: "inline"}}>
-      <span className={ active ? tblStyles.active : tblStyles.inactive } />
-    </span>
-  );
-}
+const StatusToken: FC<IStatusTokenProps> = ( { active }: IStatusTokenProps ) => (
+  <span className={ tblStyles.status } style={ { marginLeft: '0.3rem' } }>
+    <span className={ active ? tblStyles.active : tblStyles.inactive } />
+  </span>
+);
 
 const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: IInviteWidgetParams ) => {
   const [currentInvite, setCurrentInvite] = useState<IInvite>( invite );
   const [updated, setUpdated] = useState( false );
 
-  const handleAccessUpdate = (value: string) => {
-    setCurrentInvite({ ...currentInvite, accessEndDate: value });
-    setUpdated(true);
+  const handleAccessUpdate = ( value: string ) => {
+    setCurrentInvite( { ...currentInvite, accessEndDate: value } );
+    setUpdated( true );
   };
 
   const validateAccessSub = () => {
@@ -77,7 +75,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
   };
 
   const handleReauth = async () => {
-    if (!validateAccessSub()) {
+    if ( !validateAccessSub() ) {
       return;
     }
 
@@ -85,37 +83,40 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
     const { dateInvited, accessEndDate, expired, passwordReset } = currentInvite;
 
     const shouldPrompt = userWillNeedNewPassword( dateInvited, accessEndDate, expired, passwordReset );
-    if( shouldPrompt ) {
-      let prompText = '';
-      if( expired ) {
-        prompText = 'Because the user\'s access has expired, they will need to reset their password.';
-      } else if( !passwordReset ) {
-        prompText = 'Because the user did not reset their password following the last invite, they must reset it after this one.';
+
+    if ( shouldPrompt ) {
+      let promptText = '';
+
+      if ( expired ) {
+        promptText = 'Because the user\'s access has expired, they will need to reset their password.';
+      } else if ( !passwordReset ) {
+        promptText = 'Because the user did not reset their password following the last invite, they must reset it after this one.';
       } else {
-        prompText = `Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`;
+        promptText = `Updating this user's access end date to ${accessEndDate} will trigger a password reset.  Continue?`;
       }
 
-      const { isConfirmed } = await showConfirm(prompText);
-      if (!isConfirmed) {
+      const { isConfirmed } = await showConfirm( promptText );
+
+      if ( !isConfirmed ) {
         return;
       }
     }
 
     // Conversion to iso required by Lambda
     const expiration = new Date( accessEndDate ).toISOString();
-    
+
     const body = {
       email,
       admin: currentUser.get().email,
       expiration,
     };
 
-    const { ok } = await buildQuery('guest/reauth', body, 'POST');
+    const { ok } = await buildQuery( 'guest/reauth', body, 'POST' );
 
-    if (!ok) {
-      showError('Unable to re-authorize user');
+    if ( !ok ) {
+      showError( 'Unable to re-authorize user' );
     } else {
-      showSuccess(`User reauthorized until ${accessEndDate}`)
+      showSuccess( `User reauthorized until ${accessEndDate}` );
       window.location.reload();
     }
   };
@@ -125,127 +126,137 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
     const escaped = escapeQueryStrings( email );
     const { ok } = await buildQuery( `passwordReset?id=${escaped}`, null, 'POST' );
 
-    if (!ok) {
-      showError('Unable to reset password');
+    if ( !ok ) {
+      showError( 'Unable to reset password' );
     } else {
-      showSuccess('User password reset')
+      showSuccess( 'User password reset' );
     }
   };
 
   const handleRevoke = async () => {
     const { email, givenName, familyName } = userData;
-    const { isConfirmed } = await showConfirm(`Are you sure you want to deactivate ${givenName} ${familyName}?`);
+    const { isConfirmed } = await showConfirm( `Are you sure you want to deactivate ${givenName} ${familyName}?` );
 
-    if (!isConfirmed) {
+    if ( !isConfirmed ) {
       return;
     }
 
     const escaped = escapeQueryStrings( email );
     const { ok } = await buildQuery( `guest?id=${escaped}`, null, 'DELETE' );
 
-    if (!ok) {
-      showError('Unable to deactivate user');
+    if ( !ok ) {
+      showError( 'Unable to deactivate user' );
     } else {
-      window.location.assign((isAdmin ? '/' : '/uploader-users'));
+      window.location.assign( ( isAdmin ? '/' : '/uploader-users' ) );
     }
   };
-  
+
   return (
     <div id="invite-data-form">
-        <h3>{currentInvite.expired ? 'Most Recent' : 'Current'} Access <StatusToken active={!currentInvite.expired} /></h3>
-        <div className="field-group">
-          <label>
-            <span>Access End Date</span>
-            <input
-              id="date-input"
-              type="date"
-              disabled={!isAdmin && !currentInvite.expired}
-              min={getYearMonthDay(new Date())}
-              max={getYearMonthDay(addDaysToNow(60))}
-              value={currentInvite.accessEndDate}
-              onChange={e => handleAccessUpdate(e.target.value)}
-            />
-          </label>
-          <label>
-            <span>Date Invited</span>
-            <input
-              id="date-invited-input"
-              type="date"
-              disabled={true}
-              value={currentInvite.dateInvited}
-            />
-          </label>
-        </div>
-        <button
-          className={`${btnStyles.btn} ${updated ? "" : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}`}
-          id="update-btn"
-          type="button"
-          onClick={handleReauth}
-          disabled={!updated}
-        >
-          { isAdmin ? "Reauthorize" : "Re-Propose" }
-        </button>
-        <button
-          className={`${btnStyles['btn-light']} ${!currentInvite.expired ? "" : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}`}
-          id="reset-password-btn"
-          type="button"
-          onClick={handlePasswordReset}
-          disabled={currentInvite.expired}
-        >
-          Reset Password
-        </button>
-        <button
-          className={`${btnStyles.btn} ${btnStyles['back-btn']} ${btnStyles['spaced-btn']}`}
-          id="deactivate-btn"
-          type="button"
-          onClick={handleRevoke}
-        >
-          Revoke Access
-        </button>
+      <h3 style={ { display: 'flex' } }>
+        { currentInvite.expired ? 'Most Recent' : 'Current' }
+        { ' Access ' }
+        <StatusToken active={ !currentInvite.expired } />
+      </h3>
+      <div className="field-group">
+        <label>
+          <span>Access End Date</span>
+          <input
+            id="date-input"
+            type="date"
+            disabled={ !isAdmin && !currentInvite.expired }
+            min={ getYearMonthDay( new Date() ) }
+            max={ getYearMonthDay( addDaysToNow( 60 ) ) }
+            value={ currentInvite.accessEndDate }
+            onChange={ e => handleAccessUpdate( e.target.value ) }
+          />
+        </label>
+        <label>
+          <span>Date Invited</span>
+          <input
+            id="date-invited-input"
+            type="date"
+            disabled
+            value={ currentInvite.dateInvited }
+          />
+        </label>
       </div>
+      <button
+        className={ `${btnStyles.btn} ${updated ? '' : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}` }
+        id="update-btn"
+        type="button"
+        onClick={ handleReauth }
+        disabled={ !updated }
+      >
+        { isAdmin ? 'Reauthorize' : 'Re-Propose' }
+      </button>
+      <button
+        className={ `${btnStyles['btn-light']} ${!currentInvite.expired ? '' : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}` }
+        id="reset-password-btn"
+        type="button"
+        onClick={ handlePasswordReset }
+        disabled={ currentInvite.expired }
+      >
+        Reset Password
+      </button>
+      <button
+        className={ `${btnStyles.btn} ${btnStyles['back-btn']} ${btnStyles['spaced-btn']}` }
+        id="deactivate-btn"
+        type="button"
+        onClick={ handleRevoke }
+      >
+        Revoke Access
+      </button>
+    </div>
   );
 };
 
 const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite, isAdmin }: IInviteWidgetParams ) => {
   const [pendingInvite] = useState<IInvite>( invite );
-  
+
   return (
     <div id="invite-data-form">
-        <h3>Proposed Access</h3>
-        <div className="field-group">
-          <label>
-            <span>Access End Date</span>
-            <input
-              id="date-input"
-              type="date"
-              disabled={true}
-              value={pendingInvite.accessEndDate}
-            />
-          </label>
-          <label>
-            <span>Date Invited</span>
-            <input
-              id="date-invited-input"
-              type="date"
-              disabled={true}
-              value={pendingInvite.dateInvited}
-            />
-          </label>
-        </div>
-        {
-          isAdmin ?
+      <h3>Proposed Access</h3>
+      <div className="field-group">
+        <label>
+          <span>Access End Date</span>
+          <input
+            id="date-input"
+            type="date"
+            disabled
+            value={ pendingInvite.accessEndDate }
+          />
+        </label>
+        <label>
+          <span>Date Invited</span>
+          <input
+            id="date-invited-input"
+            type="date"
+            disabled
+            value={ pendingInvite.dateInvited }
+          />
+        </label>
+      </div>
+      {
+        isAdmin
+          ? (
             <button
-              className={`${btnStyles['btn-light']}`}
+              className={ `${btnStyles['btn-light']}` }
               id="finalize-btn"
               type="button"
-              onClick={makeApproveUserHandler(email)}
+              onClick={ makeApproveUserHandler( email ) }
             >
               Finalize
             </button>
-          : <p>Proposed by { pendingInvite.proposer || "N/A" }</p>
-        }
-        
-      </div>
+          )
+          : (
+            <p>
+              { `Proposed by ${pendingInvite.proposer || 'N/A'}` }
+            </p>
+          )
+      }
+
+    </div>
   );
 };
 
@@ -253,40 +264,40 @@ const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite, 
 // Interface and Implementation
 // ////////////////////////////////////////////////////////////////////////////
 const UserForm: FC = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [updated, setUpdated] = useState(false);
-  const [teamList, setTeamList] = useState([]);
+  const [isAdmin, setIsAdmin] = useState( false );
+  const [updated, setUpdated] = useState( false );
+  const [teamList, setTeamList] = useState( [] );
 
-  const [userData, setUserData] = useState<IUserFormData>(makeDummyUserForm());
-  const [pendingInvite, setPendingInvite] = useState<IInvite|null>(null);
-  const [currentInvite, setCurrentInvite] = useState<IInvite|null>(null);
-  const [invites, setInvites] = useState<IInvite[]>([]);
+  const [userData, setUserData] = useState<IUserFormData>( makeDummyUserForm() );
+  const [pendingInvite, setPendingInvite] = useState<IInvite|null>( null );
+  const [currentInvite, setCurrentInvite] = useState<IInvite|null>( null );
+  const [invites, setInvites] = useState<IInvite[]>( [] );
 
   const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
 
   // Check whether the user is an admin and set that value in state.
   // Doing so outside of a useEffect hook causes a mismatch in values
   // between the statically rendered portion and the client.
-  useEffect(() => {
-    setIsAdmin(userIsAdmin());
-  }, []);
+  useEffect( () => {
+    setIsAdmin( userIsAdmin() );
+  }, [] );
 
   // Generate the teams list.
-  useEffect(() => {
+  useEffect( () => {
     const getTeams = async () => {
-      const response = await buildQuery('teams', null, 'GET');
+      const response = await buildQuery( 'teams', null, 'GET' );
       const { data } = await response.json();
 
-      if (data) {
+      if ( data ) {
         // If the user is not an admin user, only allow them to invite users to their own team.
-        const filtered = isAdmin ? data : data.filter((t: ITeam) => t.id === currentUser.get().team);
+        const filtered = isAdmin ? data : data.filter( ( t: ITeam ) => t.id === currentUser.get().team );
 
-        setTeamList(filtered);
+        setTeamList( filtered );
       }
     };
 
     getTeams();
-  }, [isAdmin]);
+  }, [isAdmin] );
 
   // Initialize the form.
   useEffect( () => {
@@ -295,38 +306,38 @@ const UserForm: FC = () => {
       const response = await buildQuery( `guest?id=${escaped}`, null, 'GET' );
       const { data } = await response.json();
 
-      if (data) {
-        setUserData({
+      if ( data ) {
+        setUserData( {
           ...data,
-          accessEndDate: getYearMonthDay(parse(data.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
-        });
+          accessEndDate: getYearMonthDay( parse( data.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
+        } );
 
-        const fmtInvites: IInvite[] = data.invites.map((invite: any) => ({
+        const fmtInvites: IInvite[] = data.invites.map( ( invite: any ) => ( {
           proposer: invite.proposer?.String || null,
           pending: invite.pending,
           expired: invite.expired,
-          dateInvited: getYearMonthDay(parse(invite.dateInvited, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
-          accessEndDate: getYearMonthDay(parse(invite.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date())),
-        }));
+          dateInvited: getYearMonthDay( parse( invite.dateInvited, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
+          accessEndDate: getYearMonthDay( parse( invite.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
+        } ) );
 
-        setPendingInvite(fmtInvites[0].pending ? fmtInvites[0] : null);
-        setCurrentInvite(fmtInvites.find( val => !val.pending ) || null);
-        setInvites(fmtInvites);
+        setPendingInvite( fmtInvites[0].pending ? fmtInvites[0] : null );
+        setCurrentInvite( fmtInvites.find( val => !val.pending ) || null );
+        setInvites( fmtInvites );
       }
     };
 
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const { id } = Object.fromEntries(urlSearchParams.entries());
+    const urlSearchParams = new URLSearchParams( window.location.search );
+    const { id } = Object.fromEntries( urlSearchParams.entries() );
 
-    getUser(id);
-  }, []);
+    getUser( id );
+  }, [] );
 
   /**
    * Updates the user state on changed to the form inputs.
    * @param key The user property being updated.
    */
-  const handleUserUpdate = (key: keyof IUserFormData, value?: string | Date) => {
-    setUserData({ ...userData, [key]: value });
+  const handleUserUpdate = ( key: keyof IUserFormData, value?: string | Date ) => {
+    setUserData( { ...userData, [key]: value } );
     setUpdated( true );
   };
 
@@ -334,15 +345,15 @@ const UserForm: FC = () => {
    * Ensure that the form submissions are valid before sending data to the API.
    */
   const validateUserSub = () => {
-    if (!userData.email?.match(/^.+@.+$/)) {
-      showError('Email address is not valid');
+    if ( !userData.email?.match( /^.+@.+$/ ) ) {
+      showError( 'Email address is not valid' );
 
       return false;
-    } 
-    
-    if (isAdmin && !userData.team) {
+    }
+
+    if ( isAdmin && !userData.team ) {
       // Admin users have the option to set a team, so a team should be set
-      showError('Please assign this user to a valid team');
+      showError( 'Please assign this user to a valid team' );
 
       return false;
     }
@@ -351,13 +362,29 @@ const UserForm: FC = () => {
   };
 
   /**
+   * Displays an error/success message when a user updates a user.
+   * @param res The API response from the update guest request.
+   */
+  const handleSubmitResponse = ( res: Response ) => {
+    const { ok } = res;
+
+    if ( !ok ) {
+      showError( 'Could update user' );
+    } else {
+      showSuccess( 'User successfully updated' );
+    }
+
+    setUpdated( false );
+  };
+
+  /**
    * Validates the form inputs and sends the provided data to the API.
    * @param e The submission event - simply used to prevent the default page refresh.
    */
-  const handleUserSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleUserSubmit = async ( e: FormEvent<HTMLFormElement> ) => {
     e.preventDefault();
 
-    if (!validateUserSub()) {
+    if ( !validateUserSub() ) {
       return;
     }
 
@@ -369,16 +396,16 @@ const UserForm: FC = () => {
       role: userData.role,
     };
 
-    buildQuery('guest', invitee, 'PUT')
-      .then( () => setUpdated( false ) )
-      .catch(err => console.error(err));
+    await buildQuery( 'guest', invitee, 'PUT' )
+      .then( res => handleSubmitResponse( res ) )
+      .catch( err => console.error( err ) );
   };
 
   return (
     <div>
       <div id="guest-data-form">
         <h3>Guest Information</h3>
-        <form onSubmit={handleUserSubmit}>
+        <form onSubmit={ handleUserSubmit }>
           <div className="field-group">
             <label>
               <span>Given (First) Name</span>
@@ -386,8 +413,8 @@ const UserForm: FC = () => {
                 id="given-name-input"
                 type="text"
                 required
-                value={userData.givenName}
-                onChange={e => handleUserUpdate('givenName', e.target.value)}
+                value={ userData.givenName }
+                onChange={ e => handleUserUpdate( 'givenName', e.target.value ) }
               />
             </label>
             <label>
@@ -396,8 +423,8 @@ const UserForm: FC = () => {
                 id="family-name-input"
                 type="text"
                 required
-                value={userData.familyName}
-                onChange={e => handleUserUpdate('familyName', e.target.value)}
+                value={ userData.familyName }
+                onChange={ e => handleUserUpdate( 'familyName', e.target.value ) }
               />
             </label>
           </div>
@@ -408,41 +435,41 @@ const UserForm: FC = () => {
                 id="email-input"
                 type="text"
                 required
-                disabled={true} // Email is the primary key for users so we prevent changes for existing users.
-                value={userData.email}
+                disabled // Email is the primary key for users so we prevent changes for existing users.
+                value={ userData.email }
               />
             </label>
             <label>
               <span>Team</span>
               <select
                 id="team-input"
-                disabled={!isAdmin}
+                disabled={ !isAdmin }
                 required
-                value={userData.team}
-                onChange={e => handleUserUpdate('team', e.target.value)}
+                value={ userData.team }
+                onChange={ e => handleUserUpdate( 'team', e.target.value ) }
               >
                 <option value="">- Select a team -</option>
-                {teamList.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
+                { teamList.map( ( { id, name } ) => <option key={ id } value={ id }>{ name }</option> ) }
               </select>
             </label>
           </div>
           <div className="field-group">
-            {isAdmin && (
+            { isAdmin && (
               <label>
                 <span>User Role</span>
                 <select
                   id="role-input"
                   required
-                  value={userData.role}
-                  onChange={e => handleUserUpdate('role', e.target.value)}
+                  value={ userData.role }
+                  onChange={ e => handleUserUpdate( 'role', e.target.value ) }
                 >
-                  {partnerRoles.map(({ name, value }) => <option key={value} value={value}>{name}</option>)}
+                  { partnerRoles.map( ( { name, value } ) => <option key={ value } value={ value }>{ name }</option> ) }
                 </select>
               </label>
-            )}
+            ) }
           </div>
           <button
-            className={`${btnStyles.btn} ${btnStyles['spaced-btn']}`}
+            className={ `${btnStyles.btn} ${btnStyles['spaced-btn']}` }
             id="update-btn"
             type="submit"
           >
@@ -450,12 +477,16 @@ const UserForm: FC = () => {
           </button>
         </form>
       </div>
-      { pendingInvite && <PendingInvite userData={userData} invite={pendingInvite} isAdmin={isAdmin} /> }
-      { currentInvite && <CurrentInvite userData={userData} invite={currentInvite} isAdmin={isAdmin} /> }
+      { pendingInvite && (
+        <PendingInvite userData={ userData } invite={ pendingInvite } isAdmin={ isAdmin } />
+      ) }
+      { currentInvite && (
+        <CurrentInvite userData={ userData } invite={ currentInvite } isAdmin={ isAdmin } />
+      ) }
       <div id="additional-options">
         <h3>Additional Options</h3>
-        <InviteModal invites={invites} anchor={"Invite History"} />
-        <BackButton text="Cancel" showConfirmDialog={updated} />
+        <InviteModal invites={ invites } anchor="Invite History" />
+        <BackButton text="Cancel" showConfirmDialog={ updated } />
       </div>
     </div>
   );

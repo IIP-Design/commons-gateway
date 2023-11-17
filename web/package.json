@@ -67,8 +67,8 @@
     "build": "astro build",
     "build:sbom": "npx @cyclonedx/cyclonedx-npm --output-reproducible --output-file sbom.json",
     "dev": "astro dev",
-    "lint": "eslint --ext .js,ts ./",
-    "lint:fix": "eslint --ext .js,ts --fix ./",
+    "lint": "eslint --ext .js,.ts,.tsx ./",
+    "lint:fix": "eslint --ext .js,.ts,.tsx --fix ./",
     "lint:package": "npx fixpack",
     "preview": "astro preview",
     "start": "astro dev"

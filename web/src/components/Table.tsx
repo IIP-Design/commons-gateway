@@ -98,12 +98,13 @@ export const Filter = ( {
     case 'string': {
       ret = (
         <input
+          aria-label={ `Search ${titleCase( column.id )}` }
+          id={ `search-${column.id}` }
+          placeholder="Search..."
+          style={ { width: '100%' } }
           type="text"
           value={ ( columnFilterValue ?? '' ) as string }
           onChange={ e => column.setFilterValue( e.target.value ) }
-          placeholder="Search..."
-          style={ { width: '100%' } }
-          aria-label={ `Search ${titleCase( column.id )}` }
         />
       );
       break;
@@ -158,33 +159,36 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
     <span className={ style['go-to-page-container'] }>
       { 'Go to page: ' }
       <input
-        type="number"
+        aria-label="Go to page"
+        className={ style['page-num-select'] }
+        id="goto-page-number-input"
         defaultValue={ table.getState().pagination.pageIndex + 1 }
+        max={ table.getPageCount() }
+        min={ 1 }
+        type="number"
         onChange={ e => {
           const page = e.target.value ? Number( e.target.value ) - 1 : 0;
 
           table.setPageIndex( page );
         } }
-        className={ style['page-num-select'] }
-        max={ table.getPageCount() }
-        min={ 1 }
-        aria-label="Go to page"
       />
     </span>
     <span className={ style['go-to-page-container'] }>
-      { 'Show' }
+      { 'Show ' }
       <select
+        aria-label="Select number of results per page"
+        className={ style['page-show-select'] }
+        id="show-page-number-select"
+        style={ { width: 'auto', marginLeft: '0.375em', marginRight: '0.375em' } }
         value={ table.getState().pagination.pageSize }
         onChange={ e => {
           table.setPageSize( Number( e.target.value ) );
         } }
-        className={ style['page-show-select'] }
-        style={ { width: 'auto', marginLeft: '0.375em', marginRight: '0.375em' } }
-        aria-label="Select number of results per page"
       >
         {
-          [ 10, 20, 30, 40, 50 ]
-            .filter( ( val, idx ) => val < table.getFilteredRowModel().rows.length || idx === 0 )
+          [
+            10, 20, 30, 40, 50,
+          ].filter( ( val, idx ) => val < table.getFilteredRowModel().rows.length || idx === 0 )
             .map( pageSize => (
               <option key={ pageSize } value={ pageSize }>
                 { pageSize }
@@ -192,7 +196,7 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
             ) )
         }
       </select>
-      { 'per page' }
+      { ' per page' }
     </span>
   </div>
 );

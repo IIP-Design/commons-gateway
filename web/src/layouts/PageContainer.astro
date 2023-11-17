@@ -7,17 +7,17 @@ interface Props {
 
 const { droppable, narrow, title } = Astro.props;
 
-const determineDroppable = ( droppable?: boolean ) => {
+const determineDroppable = (droppable?: boolean) => {
   // Default to droppable unless caller explicitly requests otherwise
-  const d = droppable ?? true;
-  return d ? '' : 'return false;'
+  if (droppable ?? true) {
+    return '';
+  }
+
+  return 'return false;';
 };
 ---
 
-<div
-  class={narrow ? 'container narrow' : 'container'}
-  ondrop={determineDroppable(droppable)}
->
+<div class={narrow ? 'container narrow' : 'container'} ondrop={determineDroppable(droppable)}>
   <div class="content">
     <h1>{title}</h1>
     <slot />
@@ -51,9 +51,11 @@ const determineDroppable = ( droppable?: boolean ) => {
     max-width: 1021px;
   }
   .support {
+    margin-top: 1rem;
     font-size: var(--fontSizeSmall);
     text-align: center;
     color: var(--mine-shaft-1); // Official DoS grey colors here do not meet contrast requirements
+    z-index: 1;
 
     > a {
       color: var(--blue);

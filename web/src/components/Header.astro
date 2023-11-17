@@ -38,7 +38,9 @@ const { centered } = Astro.props;
   {
     !centered && (
       <div class="below">
-        <Navigation client:only />
+        <div class="nav-container">
+          <Navigation client:only />
+        </div>
         <Button id="sign-out">Sign Out</Button>
       </div>
     )
@@ -87,6 +89,16 @@ const { centered } = Astro.props;
       @include breakpoint('tablet') {
         display: block;
       }
+    }
+  }
+
+  .nav-container {
+    @include breakpoint('mobileonly') {
+      width: 100%;
+    }
+
+    @include breakpoint('tablet') {
+      min-height: 58.5px;
     }
   }
 

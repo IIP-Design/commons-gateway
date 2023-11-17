@@ -193,6 +193,7 @@ func RetrievePendingInvites(team string) ([]map[string]string, error) {
 	return invites, err
 }
 
+// RetrieveUploaders returns a list of all guest users in a given team.
 func RetrieveUploaders(team string) ([]map[string]any, error) {
 	var uploaders []map[string]any
 
@@ -200,9 +201,9 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 	defer pool.Close()
 
 	query :=
-		`SELECT email, first_name, last_name, role, team, expiration, date_invited, proposer, inviter, pending
-			FROM guest_auth_data
-			WHERE team = $1 ORDER BY first_name;`
+		`SELECT email, first_name, last_name, role, team, expiration, date_invited,
+		 proposer, inviter, pending FROM guest_auth_data
+		 WHERE team = $1 AND role = 'guest' ORDER BY first_name;`
 	rows, err := pool.Query(query, team)
 
 	if err != nil {
@@ -267,9 +268,9 @@ func UpdateGuest(guest data.GuestUser) error {
 	currentTime := time.Now()
 
 	query :=
-		`UPDATE guests SET first_name = $1, last_name = $2, team = $3,
-		 date_modified = $4 WHERE email = $5`
-	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Team, currentTime, guest.Email)
+		`UPDATE guests SET first_name = $1, last_name = $2, role = $3,
+		 team = $4, date_modified = $5 WHERE email = $6`
+	_, err := pool.Exec(query, guest.NameFirst, guest.NameLast, guest.Role, guest.Team, currentTime, guest.Email)
 
 	if err != nil {
 		logs.LogError(err, "Update Guest Query Error")
@@ -315,7 +316,9 @@ func Reauthorize(guest data.GuestReauth, clientIsGuestAdmin bool) (string, int, 
 	var passwordWasReset bool
 	firstLogin := false
 
-	query := `SELECT date_invited, pending, expiration >= NOW() AS active, salt, pass_hash, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1;`
+	query :=
+		`SELECT date_invited, pending, expiration >= NOW() AS active, salt, pass_hash, password_reset
+		 FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1;`
 	err := pool.QueryRow(query, guest.Email).Scan(&dateInvited, &pending, &active, &salt, &passHash, &passwordWasReset)
 
 	if err != nil {
@@ -345,8 +348,7 @@ func AcceptGuest(guest data.AcceptInvite, hash string, salt string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	query :=
-		`UPDATE invites SET inviter = $1, pass_hash = $2, salt = $3, pending = FALSE WHERE invitee = $4`
+	query := `UPDATE invites SET inviter = $1, pass_hash = $2, salt = $3, pending = FALSE WHERE invitee = $4`
 	_, err := pool.Exec(query, guest.Inviter, hash, salt, guest.Invitee)
 
 	if err != nil {
