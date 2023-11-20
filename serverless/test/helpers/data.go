@@ -31,7 +31,7 @@ var ExampleGuest = map[string]string{
 	"email":      "guest@example.com",
 	"first_name": "Maryanne",
 	"last_name":  "Spier",
-	"role":       "guest",
+	"role":       "guest admin",
 }
 
 var ExampleGuest2 = map[string]string{

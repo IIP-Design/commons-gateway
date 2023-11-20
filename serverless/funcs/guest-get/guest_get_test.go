@@ -52,3 +52,14 @@ func TestMissGuest(t *testing.T) {
 		t.Fatalf("getGuestHandler result %d/%v, want 404/nil", resp.StatusCode, err)
 	}
 }
+
+func TestBadData(t *testing.T) {
+	event := events.APIGatewayProxyRequest{
+		QueryStringParameters: map[string]string{},
+	}
+
+	resp, err := getGuestHandler(context.TODO(), event)
+	if resp.StatusCode != 400 || err != nil {
+		t.Fatalf("getGuestHandler result %d/%v, want 400/nil", resp.StatusCode, err)
+	}
+}

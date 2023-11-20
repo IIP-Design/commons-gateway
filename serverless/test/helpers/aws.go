@@ -2,7 +2,9 @@ package testHelpers
 
 import (
 	"context"
+	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
@@ -50,4 +52,33 @@ func GetMessages(queueName string, client *sqs.Client) (*sqs.ReceiveMessageOutpu
 		QueueUrl:            &queueUrl,
 		MaxNumberOfMessages: 1,
 	})
+}
+
+func CreateTestQueue(queueName string, envName string) (string, *sqs.Client, error) {
+	var queueUrl string
+	var client *sqs.Client
+	var err error
+
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return queueUrl, client, err
+	}
+
+	client = sqs.NewFromConfig(cfg)
+
+	_, err = CreateQueue(queueName, client)
+	if err != nil {
+		return queueUrl, client, err
+	}
+
+	queueUrl, err = GetQueueUrl(queueName, client)
+	if err != nil {
+		return queueUrl, client, err
+	}
+
+	if envName != "" {
+		_ = os.Setenv(envName, queueUrl)
+	}
+
+	return queueUrl, client, err
 }
