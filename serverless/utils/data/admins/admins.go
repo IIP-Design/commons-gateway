@@ -6,15 +6,14 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/IIP-Design/commons-gateway/utils/security/jwt"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 	"github.com/rs/xid"
 )
 
 // CheckForActiveAdmin opens a database connection and checks whether the provided
 // user email exists in the `admins` table and has the `active` value set to `true`.
-func CheckForActiveAdmin(adminEmail string) (types.User, bool, error) {
+func CheckForActiveAdmin(adminEmail string) (data.User, bool, error) {
 	var active bool
-	var inviter types.User
+	var inviter data.User
 	var err error
 
 	pool := data.ConnectToDB()
@@ -32,9 +31,9 @@ func CheckForActiveAdmin(adminEmail string) (types.User, bool, error) {
 	return inviter, active, err
 }
 
-func CheckForGuestAdmin(email string) (types.User, bool, error) {
+func CheckForGuestAdmin(email string) (data.User, bool, error) {
 	var active bool
-	var proposer types.User
+	var proposer data.User
 	var err error
 
 	pool := data.ConnectToDB()
@@ -53,7 +52,7 @@ func CheckForGuestAdmin(email string) (types.User, bool, error) {
 }
 
 // CreateAdmin opens a database connection and saves a new administrative user record.
-func CreateAdmin(adminData types.User) error {
+func CreateAdmin(adminData data.User) error {
 	var err error
 
 	pool := data.ConnectToDB()
@@ -127,8 +126,8 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 }
 
 // RetrieveAdmins opens a database connection and retrieves the full list of admin users.
-func RetrieveAdmins() ([]types.AdminUser, error) {
-	var admins []types.AdminUser
+func RetrieveAdmins() ([]data.AdminUser, error) {
+	var admins []data.AdminUser
 	var err error
 
 	pool := data.ConnectToDB()
@@ -144,7 +143,7 @@ func RetrieveAdmins() ([]types.AdminUser, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var admin types.AdminUser
+		var admin data.AdminUser
 		if err := rows.Scan(&admin.Email, &admin.NameFirst, &admin.NameLast, &admin.Role, &admin.Team, &admin.Active); err != nil {
 			logs.LogError(err, "Get Admins Query Error")
 			return admins, err
@@ -165,7 +164,7 @@ func RetrieveAdmins() ([]types.AdminUser, error) {
 // admin user with the provided information.
 // TODO? - Allow for changes to user email? If so we may need
 // to add an id field and set that as the primary key on an admin.
-func UpdateAdmin(admin types.AdminUser) error {
+func UpdateAdmin(admin data.AdminUser) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 

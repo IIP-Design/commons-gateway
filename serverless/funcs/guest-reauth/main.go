@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	// Need client role to determine reauthorization logic
 	scope, err := jwt.ExtractClientRole(event.Headers["Authorization"])
 	if err != nil {
@@ -42,7 +42,7 @@ func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendServerError(err)
 	} else if !userExists {
 		logs.LogError(err, "User Not Found Error")
-		return msgs.SendServerError(errors.New("this user has not been registered"))
+		return msgs.SendCustomError(errors.New("this user has not been registered"), 404)
 	}
 
 	// Try to reauthorize
@@ -51,6 +51,9 @@ func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	// May indicate a conflict (they have a pending request) or server error
 	if err != nil {
 		logs.LogError(err, "User Reauthorization Error")
+		return msgs.SendCustomError(err, status)
+	} else if status >= 400 {
+		err := errors.New("user reauthorization conflict")
 		return msgs.SendCustomError(err, status)
 	}
 
@@ -78,5 +81,5 @@ func GuestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 }
 
 func main() {
-	lambda.Start(GuestReauthHandler)
+	lambda.Start(guestReauthHandler)
 }

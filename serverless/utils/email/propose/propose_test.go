@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	testConfig "github.com/IIP-Design/commons-gateway/test/config"
-	"github.com/IIP-Design/commons-gateway/utils/types"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 )
 
 func TestFormatEmail(t *testing.T) {
 	testConfig.ConfigureEmail()
 
-	proposer := types.User{
+	proposer := data.User{
 		Email:     "test@test.com",
 		NameFirst: "John",
 		NameLast:  "Public",
@@ -19,7 +19,7 @@ func TestFormatEmail(t *testing.T) {
 		Team:      "Fox",
 	}
 
-	invitee := types.User{
+	invitee := data.User{
 		Email:     "test@test.com",
 		NameFirst: "John",
 		NameLast:  "Public",
@@ -27,7 +27,7 @@ func TestFormatEmail(t *testing.T) {
 		Team:      "Fox",
 	}
 
-	admin := types.User{
+	admin := data.User{
 		Email:     "test@test.com",
 		NameFirst: "John",
 		NameLast:  "Public",

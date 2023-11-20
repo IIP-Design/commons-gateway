@@ -11,11 +11,10 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 // handleAdminCreation coordinates all the actions associated with creating a new user.
-func handleAdminCreation(adminData types.User) (bool, error) {
+func handleAdminCreation(adminData data.User) (bool, error) {
 	var err error
 
 	_, isAdmin, err := users.CheckForExistingUser(adminData.Email, "admins")

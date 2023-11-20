@@ -9,7 +9,7 @@ import (
 
 	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 	testHelpers "github.com/IIP-Design/commons-gateway/test/helpers"
-	"github.com/IIP-Design/commons-gateway/utils/types"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/aws/aws-lambda-go/events"
 )
 
@@ -83,8 +83,8 @@ func TestSendEmailBadData(t *testing.T) {
 	}
 }
 
-func makeUser() types.User {
-	return types.User{
+func makeUser() data.User {
+	return data.User{
 		Email:     testHelpers.ExampleGuest["email"],
 		NameFirst: testHelpers.ExampleGuest["first_name"],
 		NameLast:  testHelpers.ExampleGuest["last_name"],

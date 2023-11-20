@@ -6,7 +6,6 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 
 	"github.com/rs/xid"
 )
@@ -143,8 +142,8 @@ func UpdateTeamStatus(teamId string, active bool) error {
 }
 
 // RetrieveTeams opens a database connection and retrieves the full list of teams.
-func RetrieveTeams() ([]types.Team, error) {
-	var teams []types.Team
+func RetrieveTeams() ([]data.Team, error) {
+	var teams []data.Team
 	var err error
 
 	pool := data.ConnectToDB()
@@ -160,7 +159,7 @@ func RetrieveTeams() ([]types.Team, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var team types.Team
+		var team data.Team
 		if err := rows.Scan(&team.Id, &team.Name, &team.Active, &team.AprimoName); err != nil {
 			logs.LogError(err, "Get Teams Query Error")
 			return teams, err

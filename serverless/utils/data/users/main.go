@@ -5,20 +5,19 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 // CheckForExistingUser opens a database connection and checks whether the provided
 // email (which is a unique value constraint in the admins and guests tables) is
 // present in the provided table. An affirmative check indicates that the given user
 // has the access implied by their presence in the table.
-func CheckForExistingUser(email string, table string) (types.User, bool, error) {
+func CheckForExistingUser(email string, table string) (data.User, bool, error) {
 	var err error
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	var user types.User
+	var user data.User
 
 	var query string
 

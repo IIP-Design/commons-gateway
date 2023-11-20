@@ -9,12 +9,12 @@ import (
 
 	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 	testHelpers "github.com/IIP-Design/commons-gateway/test/helpers"
-	"github.com/IIP-Design/commons-gateway/utils/types"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/aws/aws-lambda-go/events"
 )
 
 type DataBody struct {
-	Data []types.GuestUser `json:"data"`
+	Data []data.GuestUser `json:"data"`
 }
 
 func TestMain(m *testing.M) {
@@ -91,7 +91,7 @@ func TestGetGuestsFakeTeam(t *testing.T) {
 	}
 }
 
-func deserializeBody(body string) ([]types.GuestUser, error) {
+func deserializeBody(body string) ([]data.GuestUser, error) {
 	var parsed DataBody
 
 	b := []byte(body)

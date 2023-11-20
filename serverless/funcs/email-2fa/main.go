@@ -14,8 +14,8 @@ import (
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
 	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 const (
@@ -24,12 +24,12 @@ const (
 )
 
 type TwoFactorAuthData struct {
-	Code string     `json:"code"`
-	User types.User `json:"user"`
+	Code string    `json:"code"`
+	User data.User `json:"user"`
 }
 
 // formatEmailBody constructs the body of the 2FA email.
-func formatEmailBody(user types.User, code string) string {
+func formatEmailBody(user data.User, code string) string {
 	return fmt.Sprintf(
 		`<p>%s %s,</p>
 		<p>Please use this verification code to complete your sign in:</p>
@@ -40,7 +40,7 @@ func formatEmailBody(user types.User, code string) string {
 }
 
 // formatEmail prepares the email to be sent providing a user with 2FA.
-func formatEmail(user types.User, code string, sourceEmail string) ses.SendEmailInput {
+func formatEmail(user data.User, code string, sourceEmail string) ses.SendEmailInput {
 	return ses.SendEmailInput{
 		Destination: &sesTypes.Destination{
 			CcAddresses: []string{},

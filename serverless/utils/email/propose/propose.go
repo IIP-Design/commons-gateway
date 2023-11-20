@@ -8,7 +8,6 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
@@ -21,13 +20,13 @@ const (
 )
 
 type RequestSupportStaffData struct {
-	Proposer types.User `json:"externalTeamLead"`
-	Invitee  types.User `json:"supportStaffuser"`
-	Url      string     `json:"url"`
+	Proposer data.User `json:"externalTeamLead"`
+	Invitee  data.User `json:"supportStaffuser"`
+	Url      string    `json:"url"`
 }
 
-func getAdmins(team string) ([]types.User, error) {
-	var admins []types.User
+func getAdmins(team string) ([]data.User, error) {
+	var admins []data.User
 
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -43,7 +42,7 @@ func getAdmins(team string) ([]types.User, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var admin types.User
+		var admin data.User
 		err := rows.Scan(
 			&admin.Email,
 			&admin.NameFirst,
@@ -69,9 +68,9 @@ func getAdmins(team string) ([]types.User, error) {
 }
 
 func formatEmailBody(
-	proposer types.User,
-	invitee types.User,
-	admin types.User,
+	proposer data.User,
+	invitee data.User,
+	admin data.User,
 	url string,
 ) string {
 	return fmt.Sprintf(`<p>%s %s,</p> 
@@ -86,9 +85,9 @@ func formatEmailBody(
 }
 
 func formatEmail(
-	proposer types.User,
-	invitee types.User,
-	admin types.User,
+	proposer data.User,
+	invitee data.User,
+	admin data.User,
 	url string,
 	sourceEmail string,
 ) ses.SendEmailInput {
@@ -117,7 +116,7 @@ func formatEmail(
 	}
 }
 
-func MailProposedCreds(proposer types.User, invitee types.User) error {
+func MailProposedCreds(proposer data.User, invitee data.User) error {
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
 

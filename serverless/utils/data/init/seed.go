@@ -4,15 +4,15 @@ import (
 	"fmt"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 func SeedDbRecord(rec []string) error {
 	switch rec[0] {
 	case "admins":
-		var admin types.User
+		var admin data.User
 
 		team, err := teams.GetTeamIdByName(rec[1])
 

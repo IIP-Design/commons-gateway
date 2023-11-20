@@ -9,7 +9,6 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -36,7 +35,7 @@ func unlockGuestHandler(ctx context.Context, event events.SQSEvent) (msgs.Respon
 		eventMessageId := message.MessageId
 		body := message.Body
 
-		var eventData types.GuestUnlockInitEvent
+		var eventData data.GuestUnlockInitEvent
 
 		err := json.Unmarshal([]byte(body), &eventData)
 

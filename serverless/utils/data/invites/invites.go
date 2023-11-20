@@ -5,7 +5,6 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 	"github.com/rs/xid"
 )
 
@@ -53,7 +52,7 @@ func SaveInvite(
 // their password, and the salt with which the password was hashed, as well as the date
 // on which the password was generated.
 // TODO: Document
-func SaveCredentials(guest types.User) error {
+func SaveCredentials(guest data.User) error {
 	var err error
 
 	pool := data.ConnectToDB()

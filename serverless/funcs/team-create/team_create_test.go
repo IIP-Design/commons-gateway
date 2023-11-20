@@ -11,7 +11,6 @@ import (
 	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 	testHelpers "github.com/IIP-Design/commons-gateway/test/helpers"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 	"github.com/aws/aws-lambda-go/events"
 )
 
@@ -21,7 +20,7 @@ const (
 )
 
 type DataBody struct {
-	Data []types.Team `json:"data"`
+	Data []data.Team `json:"data"`
 }
 
 func TestMain(m *testing.M) {
@@ -55,7 +54,7 @@ func TestCreateTeam(t *testing.T) {
 
 	body := resp.Body
 	teams, err := deserializeBody(body)
-	idx := slices.IndexFunc(teams, func(t types.Team) bool { return t.Name == TEAM_NAME })
+	idx := slices.IndexFunc(teams, func(t data.Team) bool { return t.Name == TEAM_NAME })
 
 	if err != nil || idx == -1 {
 		t.Fatalf("Data is ill-formed: %v/%d", err, idx)
@@ -86,7 +85,7 @@ func TestCreateTeamBadData(t *testing.T) {
 	}
 }
 
-func deserializeBody(body string) ([]types.Team, error) {
+func deserializeBody(body string) ([]data.Team, error) {
 	var parsed DataBody
 
 	b := []byte(body)

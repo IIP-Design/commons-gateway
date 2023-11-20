@@ -18,7 +18,6 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/queue"
 	"github.com/IIP-Design/commons-gateway/utils/randstr"
-	"github.com/IIP-Design/commons-gateway/utils/types"
 )
 
 // registerMfaRequest saves the generated 2FA and request id to the database.
@@ -50,7 +49,7 @@ func initiateEmailQueue(username string, code string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
-	var user types.User
+	var user data.User
 
 	query := `SELECT email, first_name, last_name FROM guests WHERE email = $1;`
 	err = pool.QueryRow(query, username).Scan(&user.Email, &user.NameFirst, &user.NameLast)
