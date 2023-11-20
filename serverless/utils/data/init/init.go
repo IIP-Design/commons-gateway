@@ -1,6 +1,7 @@
 package init
 
 import (
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -8,7 +9,7 @@ import (
 // the queries needed to configure the database with the proper tables.
 func InitializeDatabase() error {
 	var err error
-	pool := ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	_, err = pool.Exec(teamsQuery)

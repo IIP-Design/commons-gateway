@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	seed "github.com/IIP-Design/commons-gateway/utils/init"
+	seed "github.com/IIP-Design/commons-gateway/utils/data/init"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 

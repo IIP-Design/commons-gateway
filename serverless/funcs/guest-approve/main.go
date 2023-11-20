@@ -15,8 +15,8 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 )
 
-// GuestAcceptHandler accepts a request to invite an external partner.
-func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// guestAcceptHandler accepts a request to invite an external partner.
+func guestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	guest, err := data.ExtractAcceptInvite(event.Body)
 
 	if err != nil {
@@ -29,7 +29,7 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if !userExists {
-		return msgs.SendServerError(errors.New("this user has not been invited"))
+		return msgs.SendCustomError(errors.New("this user has not been invited"), 404)
 	}
 
 	// Regenerate credentials
@@ -51,5 +51,5 @@ func GuestAcceptHandler(ctx context.Context, event events.APIGatewayProxyRequest
 }
 
 func main() {
-	lambda.Start(GuestAcceptHandler)
+	lambda.Start(guestAcceptHandler)
 }

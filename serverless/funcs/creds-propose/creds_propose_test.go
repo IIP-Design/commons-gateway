@@ -8,7 +8,6 @@ import (
 
 	testConfig "github.com/IIP-Design/commons-gateway/test/config"
 	testHelpers "github.com/IIP-Design/commons-gateway/test/helpers"
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/aws/aws-lambda-go/events"
 )
 
@@ -25,7 +24,7 @@ func TestMain(m *testing.M) {
 	exitVal := m.Run()
 
 	testHelpers.TearDownTestDb()
-	cleanupInvites()
+	testHelpers.CleanupInvites(testHelpers.ExampleGuest2["email"])
 
 	os.Exit(exitVal)
 }
@@ -40,9 +39,9 @@ func TestGoodData(t *testing.T) {
 		t.Fatalf("proposalHandler result %d/%v, want 200/nil", resp.StatusCode, err)
 	}
 
-	pending, err := checkGuestPending(testHelpers.ExampleGuest2["email"])
+	pending, err := testHelpers.CheckGuestPending(testHelpers.ExampleGuest2["email"])
 	if !pending || err != nil {
-		t.Fatalf("checkGuestPending result %t/%v, want true/nil", pending, err)
+		t.Fatalf("CheckGuestPending result %t/%v, want true/nil", pending, err)
 	}
 }
 
@@ -96,23 +95,4 @@ func makeJsonBody(inviteeEmail string, proposerEmail string) string {
 		testHelpers.ExampleGuest2["last_name"],
 		testHelpers.ExampleTeam["id"],
 		proposerEmail)
-}
-
-func checkGuestPending(email string) (bool, error) {
-	pool := data.ConnectToDB()
-	defer pool.Close()
-
-	var pending bool
-	query := `SELECT pending FROM invites WHERE invitee = $1`
-	err := pool.QueryRow(query, email).Scan(&pending)
-
-	return pending, err
-}
-
-func cleanupInvites() {
-	pool := data.ConnectToDB()
-	defer pool.Close()
-
-	pool.Exec("DELETE FROM invites WHERE invitee = $1", testHelpers.ExampleGuest2["email"])
-	pool.Exec("DELETE FROM guests WHERE email = $1", testHelpers.ExampleGuest2["email"])
 }

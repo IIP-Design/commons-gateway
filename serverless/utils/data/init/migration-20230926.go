@@ -3,6 +3,7 @@ package init
 import (
 	"database/sql"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -54,7 +55,7 @@ func addAprimoNameColumn(pool *sql.DB) error {
 func applyMigration20230926(title string) error {
 	var err error
 
-	pool := ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	err = addAprimoNameColumn(pool)

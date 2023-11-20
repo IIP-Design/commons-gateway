@@ -3,6 +3,7 @@ package init
 import (
 	"fmt"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -27,7 +28,7 @@ func getAppliedMigrations() ([]string, error) {
 	var applied []string
 	var err error
 
-	pool := ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	rows, err := pool.Query(`SELECT title FROM migrations`)

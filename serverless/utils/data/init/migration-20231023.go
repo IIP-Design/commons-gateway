@@ -3,6 +3,7 @@ package init
 import (
 	"database/sql"
 
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 )
 
@@ -273,7 +274,7 @@ func createAuthView(pool *sql.DB) error {
 func applyMigration20231023(title string) error {
 	var err error
 
-	pool := ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	err = movePassHashColumn(pool)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -110,7 +111,7 @@ func recordUnsuccessfulLoginAttempt(guest string) {
 // username and if so, generates a JWT to grant them guest access.
 func handleGrantAccess(username string, clientHash string, mfaId string) (msgs.Response, error) {
 	if clientHash == "" || username == "" {
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
+		return msgs.SendCustomError(errors.New("data missing from request"), 400)
 	}
 
 	credentials, err := creds.RetrieveCredentials(username)
@@ -170,6 +171,9 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 	username := parsed.Username
 	mfaId := parsed.MFA.Id
 	mfaCode := parsed.MFA.Code
+
+	fmt.Println(mfaId)
+	fmt.Println(mfaCode)
 
 	// Verify that the provided 2FA code is valid.
 	verified := verify2FA(mfaId, mfaCode)

@@ -1,7 +1,9 @@
 package testHelpers
 
 import (
-	initDb "github.com/IIP-Design/commons-gateway/utils/init"
+	"time"
+
+	"github.com/IIP-Design/commons-gateway/utils/data/data"
 )
 
 const (
@@ -63,7 +65,7 @@ func SetUpTestDb() error {
 	adminTableQuery := "INSERT INTO admins( email, first_name, last_name, role, team, active, date_created, date_modified ) VALUES ( $1, $2, $3, $4, $5, TRUE, NOW(), NOW() ) ON CONFLICT ON CONSTRAINT admins_pkey DO NOTHING;"
 	adminAllQuestsQuery := "INSERT INTO all_users( user_id, admin_id ) VALUES ( $1, $2 ) ON CONFLICT ON CONSTRAINT all_users_pkey DO NOTHING;"
 
-	pool := initDb.ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	_, err = pool.Exec(teamQuery, ExampleTeam["id"], ExampleTeam["team_name"], ExampleTeam["aprimo_name"])
@@ -112,7 +114,7 @@ func TearDownTestDb() error {
 
 	inviteQuery := "DELETE FROM invites WHERE invitee = $1;"
 
-	pool := initDb.ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	_, err = pool.Exec(inviteQuery, ExampleGuest["email"])
@@ -151,7 +153,7 @@ func TearDownTestDb() error {
 func LockAccount(email string) error {
 	var err error
 
-	pool := initDb.ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	query := "UPDATE guests SET locked = true WHERE email = $1"
@@ -163,7 +165,7 @@ func LockAccount(email string) error {
 func AddPendingGuest() error {
 	var err error
 
-	pool := initDb.ConnectToDBInit()
+	pool := data.ConnectToDB()
 	defer pool.Close()
 
 	_, err = pool.Exec(GUEST_TABLE_QUERY, ExampleGuest2["email"], ExampleGuest2["first_name"], ExampleGuest2["last_name"], ExampleGuest2["role"], ExampleTeam["id"])
@@ -182,4 +184,36 @@ func AddPendingGuest() error {
 	}
 
 	return nil
+}
+
+func CheckGuestPending(email string) (bool, error) {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	var pending bool
+	query := `SELECT pending FROM invites WHERE invitee = $1`
+	err := pool.QueryRow(query, email).Scan(&pending)
+
+	return pending, err
+}
+
+func CleanupInvites(email string) {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	pool.Exec("DELETE FROM invites WHERE invitee = $1", email)
+	pool.Exec("DELETE FROM guests WHERE email = $1", email)
+}
+
+func DeactivateGuest(email string) error {
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	currentTime := time.Now()
+	deactivatedTime := currentTime.Add(time.Duration(-1) * time.Minute)
+
+	query := `UPDATE invites SET expiration = $1 WHERE invitee = $2`
+	_, err := pool.Exec(query, deactivatedTime, email)
+
+	return err
 }
