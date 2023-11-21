@@ -71,19 +71,11 @@ const UploaderTable: FC = () => {
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'proposer' ),
-        cell: info => {
-          const { String, Valid } = info.getValue() as any;
-
-          return Valid ? String : null;
-        },
+        cell: info => info.row.getValue( 'proposer' ),
       },
       {
         ...defaultColumnDef( 'inviter' ),
-        cell: info => {
-          const { String, Valid } = info.getValue() as any;
-
-          return Valid ? String : null;
-        },
+        cell: info => info.row.getValue( 'inviter' ),
       },
       {
         ...defaultColumnDef( 'active', 'Status' ),
