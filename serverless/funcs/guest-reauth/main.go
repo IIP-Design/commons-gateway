@@ -20,6 +20,7 @@ import (
 func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	// Need client role to determine reauthorization logic
 	scope, err := jwt.ExtractClientRole(event.Headers["Authorization"])
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
