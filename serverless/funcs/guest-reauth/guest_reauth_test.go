@@ -146,10 +146,10 @@ func TestUserAdmin(t *testing.T) {
 
 func makeJsonBody(email string, admin string) string {
 	return fmt.Sprintf(`{
-		"expiration": "2025-12-01T10:00:00Z",
+		"expiration": "%s",
 		"email": "%s",
 		"admin": "%s"
-	}`, email, admin)
+	}`, testHelpers.FarFutureDateStr(), email, admin)
 }
 
 func approveGuest(email string) error {

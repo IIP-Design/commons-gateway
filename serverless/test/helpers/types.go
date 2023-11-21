@@ -2,6 +2,7 @@ package testHelpers
 
 import (
 	"encoding/json"
+	"time"
 )
 
 func deserializeBodyData(body string) (map[string]any, error) {
@@ -22,11 +23,10 @@ func DeserializeBodyArray(body string) ([]interface{}, error) {
 	return parsed["data"].([]interface{}), err
 }
 
-func DeserializeBodyObject(body string) (map[string]any, error) {
-	parsed, err := deserializeBodyData(body)
-	if err != nil {
-		return nil, err
-	}
+func FarFutureDateStr() string {
+	return FarFutureDate().Format(time.RFC3339)
+}
 
-	return parsed["data"].(map[string]any), err
+func FarFutureDate() time.Time {
+	return time.Now().Add(time.Hour * 24 * 365)
 }

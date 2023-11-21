@@ -149,7 +149,7 @@ func updatePassword(email string, salt string, newPasswordHash string, newSalt s
 	return err
 }
 
-func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func passwordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := extractBody(event.Body)
 
 	if err != nil {
@@ -180,5 +180,5 @@ func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequ
 }
 
 func main() {
-	lambda.Start(PasswordChangeHandler)
+	lambda.Start(passwordChangeHandler)
 }

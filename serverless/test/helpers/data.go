@@ -49,14 +49,6 @@ var ExampleCreds = map[string]string{
 	"pass_hash": "abcdef",
 }
 
-func ExampleDbRecords() [][]string {
-	return [][]string{
-		{"teams", "Fox", "", "", "", "", "GPAVideo"},
-		{"admins", "Fox", "admin@example.com", "John", "Public", "admin", ""},
-		{"guests", "Fox", "guest@example.com", "Kristy", "Thomas", "guest", ""},
-	}
-}
-
 func SetUpTestDb() error {
 	var err error
 

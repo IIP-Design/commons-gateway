@@ -88,11 +88,12 @@ func makeJsonBody(inviteeEmail string, proposerEmail string) string {
 			"team": "%s"
 		},
 		"proposer": "%s",
-		"expiration": "2025-12-01T12:00:00Z"
+		"expiration": "%s"
 	}`,
 		inviteeEmail,
 		testHelpers.ExampleGuest2["first_name"],
 		testHelpers.ExampleGuest2["last_name"],
 		testHelpers.ExampleTeam["id"],
-		proposerEmail)
+		proposerEmail,
+		testHelpers.FarFutureDateStr())
 }

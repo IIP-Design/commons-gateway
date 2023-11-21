@@ -37,6 +37,14 @@ func TestVerifyToken(t *testing.T) {
 	}
 }
 
+func TestVerifyTokenBadScope(t *testing.T) {
+	token, _ := GenerateJWT(username, scope, firstLogin)
+	err := VerifyJWT(token, []string{"fail"})
+	if err == nil {
+		t.Fatal("VerifyJWT failed to generate an error")
+	}
+}
+
 func TestCheckToken(t *testing.T) {
 	token, _ := GenerateJWT(username, scope, firstLogin)
 	bearer := "Bearer " + token
