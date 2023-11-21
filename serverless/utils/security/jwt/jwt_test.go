@@ -29,6 +29,14 @@ func TestExtractBearerToken(t *testing.T) {
 	}
 }
 
+func TestExtractBearerTokenNoToken(t *testing.T) {
+	bearer := ""
+	token, err := extractBearerToken(bearer)
+	if token != "" || err == nil {
+		t.Fatalf(`extractBearerToken = %s, want error`, token)
+	}
+}
+
 func TestVerifyToken(t *testing.T) {
 	token, _ := GenerateJWT(username, scope, firstLogin)
 	err := VerifyJWT(token, []string{scope})

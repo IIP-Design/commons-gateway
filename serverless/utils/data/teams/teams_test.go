@@ -32,3 +32,10 @@ func TestGetByName(t *testing.T) {
 		t.Fatalf(`GetTeamIdByName returned %s/%v, want %s/nil`, teamId, err, testHelpers.ExampleTeam["id"])
 	}
 }
+
+func TestGetByNameBadName(t *testing.T) {
+	teamId, err := GetTeamIdByName("fail")
+	if teamId != "" || err == nil {
+		t.Fatalf(`GetTeamIdByName returned %s/%v, want ""/<error>`, teamId, err)
+	}
+}
