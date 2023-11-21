@@ -11,11 +11,6 @@
   border: none;
   background-color: var(--blue);
   color: #ffffff;
-
-  &:not(:disabled):not(:active):hover {
-    box-shadow: 2px 1px 3px 2px var(--greyLight);
-    transform: translate(-1px)
-  }
 }
 
 .btn-light {
@@ -23,6 +18,15 @@
   border: 1px solid var(--blue);
   background-color: #ffffff;
   color: var(--blue);
+}
+
+.btn,
+.btn:visited,
+.btn-light {
+  &:not(:disabled):not(:active):hover {
+    box-shadow: 2px 1px 3px 2px var(--greyLight);
+    transform: translate(-1px)
+  }
 }
 
 .btn-pair {
