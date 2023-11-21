@@ -50,3 +50,17 @@ func InitializeDatabase() error {
 
 	return err
 }
+
+func InitForTest() error {
+	migExists := CheckForTable("migrations")
+
+	if !migExists {
+		err := InitializeDatabase()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return ApplyMigrations()
+}

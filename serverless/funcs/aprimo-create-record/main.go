@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/IIP-Design/commons-gateway/utils/aprimo"
@@ -13,10 +12,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-type RecordCreationResponse struct {
-	Id string `json:"id"`
-}
 
 func ParseEventBody(body string) (aprimo.FileRecordInitEvent, error) {
 	var parsed aprimo.FileRecordInitEvent
@@ -27,69 +22,8 @@ func ParseEventBody(body string) (aprimo.FileRecordInitEvent, error) {
 	return parsed, err
 }
 
-func submitRecord(description string, event aprimo.FileRecordInitEvent, team string, token string) (string, error) {
-	var id string
-	var err error
-
-	reqBody := fmt.Sprintf(`{
-		"status":"draft",
-		"fields": {
-			"addOrUpdate": [
-				{
-					"Name": "Description",
-					"localizedValues": [
-						{ "value": "%s" }
-					]
-				},
-				{
-					"Name": "DisplayTitle",
-					"localizedValues": [
-						{ "value": "%s" }
-					]
-				},
-				{
-					"Name": "Team",
-					"localizedValues": [
-						{ "values": ["%s"] }
-					]
-			}
-			]
-		},
-		"files": {
-			"master": "%s",
-			"addOrUpdate": [
-				{
-					"versions": {
-						"addOrUpdate": [
-							{
-								"id": "%s",
-								"filename": "%s"
-							}
-						]
-					}
-				}
-			]
-		}
-	}`, description, event.Key, team, event.FileToken, event.FileToken, event.Key)
-
-	respBody, statusCode, err := aprimo.PostJsonData("records", token, reqBody, true)
-	if err != nil {
-		return id, err
-	} else if statusCode >= 400 {
-		log.Printf("Return status: %d\n", statusCode)
-	}
-
-	var res RecordCreationResponse
-	err = json.Unmarshal(respBody, &res)
-	if err != nil {
-		return id, err
-	}
-
-	return res.Id, nil
-}
-
-// CreateAprimoRecord initiates the creation of a new record in Aprimo.
-func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
+// handleCreateAprimoRecord initiates the creation of a new record in Aprimo.
+func handleCreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 	token, err := aprimo.GetAuthToken()
 
 	if err != nil {
@@ -123,7 +57,7 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 		}
 
 		if !aprimoRecordId.Valid { // No Aprimo record ID means this is likely a new record that we need to create
-			recordId, err := submitRecord(description, fileInfo, team, token)
+			recordId, err := aprimo.SubmitRecord(description, fileInfo, team, token)
 			if err != nil {
 				logs.LogError(err, "Aprimo Record Create Error")
 				return err
@@ -146,5 +80,5 @@ func CreateAprimoRecord(ctx context.Context, event events.SQSEvent) error {
 }
 
 func main() {
-	lambda.Start(CreateAprimoRecord)
+	lambda.Start(handleCreateAprimoRecord)
 }

@@ -31,17 +31,17 @@ func handleInvitation(invite data.Invite) error {
 		return err
 	}
 
-	err = provision.MailProvisionedCreds(invite.Invitee, pass, 1)
+	_, err = provision.MailProvisionedCreds(invite.Invitee, pass, 1)
 
 	return err
 }
 
-// ProvisionHandler handles the request to grant a guest user temporary credentials. It
+// provisionHandler handles the request to grant a guest user temporary credentials. It
 // ensures that the required data is present before continuing on to:
 //  1. Register the invitation
 //  2. Provision credentials for the guest user
 //  3. Initiate the admin and guest user notifications
-func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func provisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {
@@ -58,5 +58,5 @@ func ProvisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 }
 
 func main() {
-	lambda.Start(ProvisionHandler)
+	lambda.Start(provisionHandler)
 }

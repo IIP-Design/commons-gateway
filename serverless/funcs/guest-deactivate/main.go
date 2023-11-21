@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -32,10 +33,10 @@ func deactivateGuest(email string) error {
 	return err
 }
 
-// GuestDeactivateHandler handles the request to edit an existing guest user.
+// guestDeactivateHandler handles the request to edit an existing guest user.
 // It ensures that the required data is present before continuing on to
 // update the team data.
-func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func guestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	id := event.QueryStringParameters["id"]
 
 	if id == "" {
@@ -43,10 +44,12 @@ func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, exists, err := data.CheckForExistingUser(id, "guests")
+	_, exists, err := users.CheckForExistingUser(id, "guests")
 
-	if err != nil || !exists {
-		return msgs.SendServerError(errors.New("user does not exist"))
+	if !exists {
+		return msgs.SendCustomError(errors.New("user does not exist"), 404)
+	} else if err != nil {
+		return msgs.SendServerError(err)
 	}
 
 	err = deactivateGuest(id)
@@ -59,5 +62,5 @@ func GuestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyReq
 }
 
 func main() {
-	lambda.Start(GuestDeactivateHandler)
+	lambda.Start(guestDeactivateHandler)
 }

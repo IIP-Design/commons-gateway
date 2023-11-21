@@ -6,6 +6,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 
@@ -18,7 +19,7 @@ func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	var err error
 	var credentials creds.CredentialsData
 
-	_, exists, err := data.CheckForExistingUser(username, "guests")
+	_, exists, err := users.CheckForExistingUser(username, "guests")
 
 	if err != nil {
 		return credentials, err
@@ -31,8 +32,8 @@ func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	return credentials, err
 }
 
-// GetSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
-func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getSaltHandler handles the request to retrieve the salt associated with a user based on the user name.
+func getSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	user := parsed.Username
@@ -40,8 +41,9 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if user == "" {
-		logs.LogError(nil, "Username not provided in request.")
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
+		err = errors.New("data missing from request")
+		logs.LogError(err, "Username not provided in request.")
+		return msgs.SendCustomError(err, 400)
 	}
 
 	credentials, err := handleCredentialRequest(user)
@@ -51,8 +53,9 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	}
 
 	if credentials.Locked {
-		logs.LogError(errors.New("account locked"), "User's account is locked.")
-		return msgs.SendCustomError(errors.New("account locked"), 429)
+		err = errors.New("account locked")
+		logs.LogError(err, "User's account is locked.")
+		return msgs.SendCustomError(err, 429)
 	}
 
 	salts := map[string]any{
@@ -70,5 +73,5 @@ func GetSaltHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 }
 
 func main() {
-	lambda.Start(GetSaltHandler)
+	lambda.Start(getSaltHandler)
 }

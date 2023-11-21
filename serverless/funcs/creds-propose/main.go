@@ -42,7 +42,7 @@ func handleProposedInvitation(invite data.Invite) error {
 //  1. Register the proposed invitation
 //  2. Provision preliminary credentials for the guest user
 //  3. Initiate the admin and guest user notifications
-func ProposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func proposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {
@@ -59,5 +59,5 @@ func ProposalHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(ProposalHandler)
+	lambda.Start(proposalHandler)
 }

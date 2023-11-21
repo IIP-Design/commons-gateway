@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/rs/xid"
 )
@@ -113,7 +114,7 @@ func switchUploadsUserId(pool *sql.DB) error {
 		}
 
 		// Check if user exists in the admins table
-		_, isAdmin, err := data.CheckForExistingUser(oldId, "admins")
+		_, isAdmin, err := users.CheckForExistingUser(oldId, "admins")
 
 		if err == nil && isAdmin {
 			var userId string
@@ -142,7 +143,7 @@ func switchUploadsUserId(pool *sql.DB) error {
 			var userId string
 
 			// If not found in admin table, look in the guests table.
-			_, isGuest, err := data.CheckForExistingUser(oldId, "guests")
+			_, isGuest, err := users.CheckForExistingUser(oldId, "guests")
 
 			if err != nil {
 				logs.LogError(err, "Check for Guest Query Error")

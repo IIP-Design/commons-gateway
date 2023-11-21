@@ -10,13 +10,14 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// UpdateAdminHandler handles the request to edit an existing admin user.
+// updateAdminHandler handles the request to edit an existing admin user.
 // It ensures that the required data is present before continuing on to
 // update the team data.
-func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func updateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	admin, err := data.ExtractAdminUser(event.Body)
 
 	if err != nil {
@@ -24,12 +25,12 @@ func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, adminExists, err := data.CheckForExistingUser(admin.Email, "admins")
+	_, adminExists, err := users.CheckForExistingUser(admin.Email, "admins")
 
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if !adminExists {
-		return msgs.SendServerError(errors.New("this admin has not been registered"))
+		return msgs.SendCustomError(errors.New("this admin has not been registered"), 404)
 	}
 
 	// Ensure that the user's assigned team exists.
@@ -38,7 +39,7 @@ func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if !exists {
-		return msgs.SendServerError(errors.New("no team with the provided id exists"))
+		return msgs.SendCustomError(errors.New("no team with the provided id exists"), 404)
 	}
 
 	err = admins.UpdateAdmin(admin)
@@ -51,5 +52,5 @@ func UpdateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest
 }
 
 func main() {
-	lambda.Start(UpdateAdminHandler)
+	lambda.Start(updateAdminHandler)
 }

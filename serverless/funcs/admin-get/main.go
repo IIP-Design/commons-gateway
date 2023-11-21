@@ -8,23 +8,25 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetAdminHandler handles the request to retrieve a single admin user based on email address.
-func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getAdminHandler handles the request to retrieve a single admin user based on email address.
+func getAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {
 		return msgs.SendServerError(errors.New("user name not provided"))
 	}
 
-	// Ensure the user exists doesn't already have access.
-	_, exists, err := data.CheckForExistingUser(username, "admins")
+	// Ensure the user exists and already has access.
+	_, exists, err := users.CheckForExistingUser(username, "admins")
 
-	if err != nil || !exists {
-		return msgs.SendServerError(errors.New("user is not an admin"))
+	if !exists {
+		return msgs.SendCustomError(errors.New("user is not an admin"), 404)
+	} else if err != nil {
+		return msgs.SendServerError(err)
 	}
 
 	admin, err := admins.RetrieveAdmin(username)
@@ -43,5 +45,5 @@ func GetAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(GetAdminHandler)
+	lambda.Start(getAdminHandler)
 }

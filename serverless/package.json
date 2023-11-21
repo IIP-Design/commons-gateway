@@ -27,7 +27,10 @@
     "url": "https://github.com/IIP-Design/commons-gateway"
   },
   "scripts": {
+    "build:sbom": "npx @cyclonedx/cyclonedx-npm --output-reproducible --output-file sbom.json",
     "sls": "serverless",
-    "build:sbom": "npx @cyclonedx/cyclonedx-npm --output-reproducible --output-file sbom.json"
+    "test:cover": "go test `go list ./... | grep -Ev 'test|init|seed'` -p 1 -coverprofile cover.out -coverpkg=./...",
+    "test:report": "go tool cover -func ./cover.out",
+    "test:unit": "go test `go list ./... | grep -Ev 'test|init|seed'` -cover -p 1"
   }
 }

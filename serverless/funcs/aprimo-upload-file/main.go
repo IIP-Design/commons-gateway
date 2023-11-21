@@ -41,9 +41,9 @@ func min(a, b int64) int64 {
 	return b
 }
 
-// LookupFileType returns the file type info if file has not already been uploaded
+// lookupFileType returns the file type info if file has not already been uploaded
 // to Aprimo. Duplication is not an error, but is a reason to skip re-processing
-func LookupFileType(key string) (string, error) {
+func lookupFileType(key string) (string, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
@@ -62,7 +62,7 @@ func LookupFileType(key string) (string, error) {
 }
 
 // If the file has been transferred to Aprimo, record the token for (1) possible retry and (2) deduplication
-func MarkFileUpload(key string, uploadToken string) error {
+func markFileUpload(key string, uploadToken string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
 
@@ -72,7 +72,7 @@ func MarkFileUpload(key string, uploadToken string) error {
 	return err
 }
 
-func UploadSmallFile(key string, token string, downloader *manager.Downloader, bucket string, fileType string) (string, error) {
+func uploadSmallFile(key string, token string, downloader *manager.Downloader, bucket string, fileType string) (string, error) {
 	data := manager.NewWriteAtBuffer([]byte{})
 	_, err := downloader.Download(context.TODO(), data, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
@@ -88,7 +88,7 @@ func UploadSmallFile(key string, token string, downloader *manager.Downloader, b
 	return aprimo.UploadFile(key, fileType, bytes.NewBuffer(data.Bytes()), token)
 }
 
-func UploadFileSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string, fileSize int64) (string, error) {
+func uploadFileInSegments(key string, token string, downloader *manager.Downloader, bucket string, fileType string, fileSize int64) (string, error) {
 	var uploadToken string
 	var err error
 
@@ -216,7 +216,7 @@ func extractS3DataFromSqsEvent(record events.SQSMessage) []events.S3EventRecord 
 	return parsed.Records
 }
 
-func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
+func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error {
 	var err error
 
 	// Retrieve Aprimo auth token
@@ -254,7 +254,7 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 			key := record.S3.Object.Key
 			size := record.S3.Object.Size
 
-			fileType, err := LookupFileType(key)
+			fileType, err := lookupFileType(key)
 
 			if err != nil {
 				logs.LogError(err, "failed to lookup file type")
@@ -266,9 +266,9 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 
 				// Concerted upload for small files, segmented if necessary
 				if size <= PartSize {
-					uploadToken, err = UploadSmallFile(key, token, downloader, bucket, fileType)
+					uploadToken, err = uploadSmallFile(key, token, downloader, bucket, fileType)
 				} else {
-					uploadToken, err = UploadFileSegments(key, token, downloader, bucket, fileType, size)
+					uploadToken, err = uploadFileInSegments(key, token, downloader, bucket, fileType, size)
 				}
 
 				if err == nil {
@@ -279,7 +279,7 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 					}
 					log.Printf("Object %s sent onwards with message ID %s\n", key, messageId)
 
-					err = MarkFileUpload(key, uploadToken)
+					err = markFileUpload(key, uploadToken)
 					if err != nil {
 						logs.LogError(err, "mark file upload error")
 						return err
@@ -298,5 +298,5 @@ func uploadAprimoFile(ctx context.Context, event events.SQSEvent) error {
 }
 
 func main() {
-	lambda.Start(uploadAprimoFile)
+	lambda.Start(handleUploadFileToAprimo)
 }

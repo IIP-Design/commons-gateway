@@ -13,10 +13,10 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// TeamUpdateHandler handles the request to edit an existing team. It
+// teamUpdateHandler handles the request to edit an existing team. It
 // ensures that the required data is present before continuing on to
 // update the team data.
-func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func teamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	active := parsed.Active
@@ -27,8 +27,9 @@ func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest)
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if team == "" {
-		logs.LogError(nil, "Team data not provided in request.")
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
+		err := errors.New("data missing from request")
+		logs.LogError(err, "Team data not provided in request.")
+		return msgs.SendCustomError(err, 400)
 	}
 
 	exists, err := teams.CheckForExistingTeamById(team)
@@ -36,7 +37,7 @@ func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest)
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if !exists {
-		return msgs.SendServerError(errors.New("no team with this id exists"))
+		return msgs.SendCustomError(errors.New("no team with this id exists"), 404)
 	}
 
 	if name != "" {
@@ -68,5 +69,5 @@ func TeamUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest)
 }
 
 func main() {
-	lambda.Start(TeamUpdateHandler)
+	lambda.Start(teamUpdateHandler)
 }

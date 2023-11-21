@@ -11,14 +11,15 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GuestUpdateHandler handles the request to edit an existing guest user.
+// guestUpdateHandler handles the request to edit an existing guest user.
 // It ensures that the required data is present before continuing on to
 // update the team data.
-func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func guestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	guest, err := data.ExtractGuestUser(event.Body)
 
 	if err != nil {
@@ -26,14 +27,14 @@ func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, userExists, err := data.CheckForExistingUser(guest.Email, "guests")
+	_, userExists, err := users.CheckForExistingUser(guest.Email, "guests")
 
 	if err != nil {
 		logs.LogError(err, "Check For User Error")
 		return msgs.SendServerError(err)
 	} else if !userExists {
 		logs.LogError(fmt.Errorf("user %s not found", guest.Email), "User Not Found Error")
-		return msgs.SendServerError(errors.New("this user has not been registered"))
+		return msgs.SendCustomError(errors.New("this user has not been registered"), 404)
 	}
 
 	// Ensure that the user's assigned team exists.
@@ -44,7 +45,7 @@ func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendServerError(err)
 	} else if !exists {
 		logs.LogError(fmt.Errorf("team with id %s not found", guest.Team), "Team Not Found Error")
-		return msgs.SendServerError(errors.New("no team with the provided id exists"))
+		return msgs.SendCustomError(errors.New("no team with the provided id exists"), 404)
 	}
 
 	err = guests.UpdateGuest(guest)
@@ -58,5 +59,5 @@ func GuestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest
 }
 
 func main() {
-	lambda.Start(GuestUpdateHandler)
+	lambda.Start(guestUpdateHandler)
 }

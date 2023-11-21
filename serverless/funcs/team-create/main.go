@@ -14,26 +14,25 @@ import (
 )
 
 // handleTeamCreation coordinates all the actions associated with creating a new team.
-func handleTeamCreation(teamName string, aprimoName string) error {
+func handleTeamCreation(teamName string, aprimoName string) (bool, error) {
 	var err error
+	var exists bool
 
-	exists, err := teams.CheckForExistingTeam(teamName)
+	exists, err = teams.CheckForExistingTeam(teamName)
 
-	if err != nil {
-		return err
-	} else if exists {
-		return errors.New("a team with this name already exists")
+	if err != nil || exists {
+		return exists, err
 	}
 
 	err = teams.CreateTeam(teamName, aprimoName)
 
-	return err
+	return exists, err
 }
 
-// NewTeamHandler handles the request to add a new team for uploading. It
+// newTeamHandler handles the request to add a new team for uploading. It
 // ensures that the required data is present before continuing on to recording
 // the team name and setting it to active.
-func NewTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func newTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := data.ParseBodyData(event.Body)
 
 	team := parsed.TeamName
@@ -42,13 +41,16 @@ func NewTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 	if err != nil {
 		return msgs.SendServerError(err)
 	} else if team == "" {
-		logs.LogError(nil, "Team name not provided in request.")
-		return msgs.Response{StatusCode: 400}, errors.New("data missing from request")
+		err := errors.New("data missing from request")
+		logs.LogError(err, "Team name not provided in request.")
+		return msgs.SendCustomError(err, 400)
 	}
 
-	err = handleTeamCreation(team, aprimo_name)
+	exists, err := handleTeamCreation(team, aprimo_name)
 
-	if err != nil {
+	if exists {
+		return msgs.SendCustomError(errors.New("a team with this name already exists"), 409)
+	} else if err != nil {
 		return msgs.SendServerError(err)
 	}
 
@@ -69,5 +71,5 @@ func NewTeamHandler(ctx context.Context, event events.APIGatewayProxyRequest) (m
 }
 
 func main() {
-	lambda.Start(NewTeamHandler)
+	lambda.Start(newTeamHandler)
 }

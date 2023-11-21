@@ -8,34 +8,35 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
-	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// PasswordResetHandler handles the request to retrieve a single admin user based on email address.
-func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// passwordResetHandler handles the request to retrieve a single admin user based on email address.
+func passwordResetHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	id := event.QueryStringParameters["id"]
 
 	if id == "" {
-		return msgs.SendServerError(errors.New("user id not provided"))
+		return msgs.SendCustomError(errors.New("user id not provided"), 400)
 	}
 
-	// Ensure the user exists doesn't already have access.
+	// Ensure the user exists
+	user, exists, err := users.CheckForExistingUser(id, "guests")
+
+	if !exists {
+		return msgs.SendCustomError(errors.New("user does not exist"), 404)
+	} else if err != nil {
+		return msgs.SendServerError(err)
+	}
+
 	pass, err := creds.ResetPassword(id)
 
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
 
-	user, _, err := data.CheckForExistingUser(id, "guests")
-
-	if err != nil {
-		return msgs.SendServerError(err)
-	}
-
-	err = provision.MailProvisionedCreds(user, pass, 3)
-
+	_, err = provision.MailProvisionedCreds(user, pass, 3)
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
@@ -44,5 +45,5 @@ func PasswordResetHandler(ctx context.Context, event events.APIGatewayProxyReque
 }
 
 func main() {
-	lambda.Start(PasswordResetHandler)
+	lambda.Start(passwordResetHandler)
 }

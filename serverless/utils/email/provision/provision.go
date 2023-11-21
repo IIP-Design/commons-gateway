@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 const (
@@ -77,21 +77,21 @@ func formatEmailBody(invitee data.User, tmpPassword string, url string, verb str
 func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail string, action ProvisionType) ses.SendEmailInput {
 
 	return ses.SendEmailInput{
-		Destination: &types.Destination{
+		Destination: &sesTypes.Destination{
 			CcAddresses: []string{},
 			ToAddresses: []string{
 				invitee.Email,
 			},
 		},
-		Content: &types.EmailContent{
-			Simple: &types.Message{
-				Body: &types.Body{
-					Html: &types.Content{
+		Content: &sesTypes.EmailContent{
+			Simple: &sesTypes.Message{
+				Body: &sesTypes.Body{
+					Html: &sesTypes.Content{
 						Charset: aws.String(CharSet),
 						Data:    aws.String(formatEmailBody(invitee, tmpPassword, url, action.Verb())),
 					},
 				},
-				Subject: &types.Content{
+				Subject: &sesTypes.Content{
 					Charset: aws.String(CharSet),
 					Data:    aws.String(action.Subject()),
 				},
@@ -108,13 +108,16 @@ func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail 
 //	1 - used when creating a new account
 //	2 - used when reauthorizing an existing expired account
 //	3 - used when resetting an existing account password
-func MailProvisionedCreds(invitee data.User, tmpPassword string, action ProvisionType) error {
+func MailProvisionedCreds(invitee data.User, tmpPassword string, action ProvisionType) (string, error) {
+	var err error
+	var mesageId string
+
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
 
 	if sourceEmail == "" {
 		logs.LogError(errors.New("not configured for sending emails"), "Source Email Empty Error")
-		return nil
+		return mesageId, err
 	}
 
 	awsRegion := os.Getenv("AWS_SES_REGION")
@@ -123,7 +126,7 @@ func MailProvisionedCreds(invitee data.User, tmpPassword string, action Provisio
 
 	if err != nil {
 		logs.LogError(err, "Error Loading AWS Config")
-		return err
+		return mesageId, err
 	}
 
 	sesClient := ses.NewFromConfig(cfg)
@@ -136,11 +139,12 @@ func MailProvisionedCreds(invitee data.User, tmpPassword string, action Provisio
 		action,
 	)
 
-	_, err = sesClient.SendEmail(context.TODO(), &e)
-
+	resp, err := sesClient.SendEmail(context.TODO(), &e)
 	if err != nil {
 		logs.LogError(err, "Credentials Provisioning Email Error")
 	}
 
-	return nil
+	mesageId = *resp.MessageId
+
+	return mesageId, err
 }

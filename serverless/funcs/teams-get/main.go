@@ -10,8 +10,8 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetTeamsHandler handles the request to retrieve a list of all the teams.
-func GetTeamsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getTeamsHandler handles the request to retrieve a list of all the teams.
+func getTeamsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	teams, err := teams.RetrieveTeams()
 
 	if err != nil {
@@ -28,5 +28,5 @@ func GetTeamsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(GetTeamsHandler)
+	lambda.Start(getTeamsHandler)
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/aws/aws-lambda-go/events"
@@ -41,8 +42,7 @@ func extractBody(body string) (PasswordReset, error) {
 func verifyUser(parsed PasswordReset) (creds.CredentialsData, error) {
 	var credentials creds.CredentialsData
 
-	_, exists, err := data.CheckForExistingUser(parsed.Email, "guests")
-
+	_, exists, err := users.CheckForExistingUser(parsed.Email, "guests")
 	if err != nil || !exists {
 		return credentials, errors.New("user does not exist")
 	}
@@ -149,7 +149,7 @@ func updatePassword(email string, salt string, newPasswordHash string, newSalt s
 	return err
 }
 
-func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func passwordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	parsed, err := extractBody(event.Body)
 
 	if err != nil {
@@ -180,5 +180,5 @@ func PasswordChangeHandler(ctx context.Context, event events.APIGatewayProxyRequ
 }
 
 func main() {
-	lambda.Start(PasswordChangeHandler)
+	lambda.Start(passwordChangeHandler)
 }

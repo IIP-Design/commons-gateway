@@ -10,8 +10,8 @@ import (
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
-// GetAdminsHandler handles the request to retrieve a list of all admin users.
-func GetAdminsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+// getAdminsHandler handles the request to retrieve a list of all admin users.
+func getAdminsHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	admins, err := admins.RetrieveAdmins()
 
 	if err != nil {
@@ -28,5 +28,5 @@ func GetAdminsHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 }
 
 func main() {
-	lambda.Start(GetAdminsHandler)
+	lambda.Start(getAdminsHandler)
 }

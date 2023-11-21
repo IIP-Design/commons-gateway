@@ -126,8 +126,8 @@ func RetrieveAdmin(username string) (map[string]any, error) {
 }
 
 // RetrieveAdmins opens a database connection and retrieves the full list of admin users.
-func RetrieveAdmins() ([]map[string]any, error) {
-	var admins []map[string]any
+func RetrieveAdmins() ([]data.AdminUser, error) {
+	var admins []data.AdminUser
 	var err error
 
 	pool := data.ConnectToDB()
@@ -149,16 +149,7 @@ func RetrieveAdmins() ([]map[string]any, error) {
 			return admins, err
 		}
 
-		adminData := map[string]any{
-			"email":      admin.Email,
-			"givenName":  admin.NameFirst,
-			"familyName": admin.NameLast,
-			"role":       admin.Role,
-			"team":       admin.Team,
-			"active":     admin.Active,
-		}
-
-		admins = append(admins, adminData)
+		admins = append(admins, admin)
 	}
 
 	if err = rows.Err(); err != nil {

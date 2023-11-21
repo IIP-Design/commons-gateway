@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// InitDBHandler handles the request to set up the database.
-func InitDBHandler(ctx context.Context) (msgs.Response, error) {
+// initDBHandler handles the request to set up the database.
+func initDBHandler(ctx context.Context) (msgs.Response, error) {
 	migExists := initdb.CheckForTable("migrations")
 
 	// If the migrations table does not exist run the initial setup
@@ -32,5 +32,5 @@ func InitDBHandler(ctx context.Context) (msgs.Response, error) {
 }
 
 func main() {
-	lambda.Start(InitDBHandler)
+	lambda.Start(initDBHandler)
 }

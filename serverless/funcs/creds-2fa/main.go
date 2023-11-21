@@ -13,6 +13,7 @@ import (
 	"github.com/rs/xid"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 	"github.com/IIP-Design/commons-gateway/utils/queue"
@@ -30,7 +31,7 @@ func registerMfaRequest(requestId xid.ID, code string) error {
 	currentTime := time.Now()
 
 	insertMfa := `INSERT INTO mfa( request_id, code, date_created ) VALUES ( $1, $2, $3 );`
-	_, err = pool.Exec(insertMfa, requestId, code, currentTime)
+	_, err = pool.Exec(insertMfa, requestId.String(), code, currentTime)
 
 	if err != nil {
 		logs.LogError(err, "Save MFA Request Query Error")
@@ -93,11 +94,11 @@ func generateMfaHandler(ctx context.Context, event events.APIGatewayProxyRequest
 
 	if username == "" {
 		logs.LogError(nil, "Missing Parameter Error - username")
-		return msgs.SendServerError(errors.New("user email not provided"))
+		return msgs.SendCustomError(errors.New("user email not provided"), 400)
 	}
 
 	// Ensure that the user requesting a 2FA code exists.
-	_, exists, err := data.CheckForExistingUser(username, "guests")
+	_, exists, err := users.CheckForExistingUser(username, "guests")
 
 	if err != nil {
 		logs.LogError(err, "Check For User Error")

@@ -5,6 +5,7 @@ import (
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/IIP-Design/commons-gateway/utils/security/hashing"
 )
@@ -97,7 +98,7 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 	var pass string
 
 	// Ensure invitee doesn't already have access.
-	_, guestHasAccess, err := data.CheckForExistingUser(invite.Invitee.Email, "guests")
+	_, guestHasAccess, err := users.CheckForExistingUser(invite.Invitee.Email, "guests")
 
 	if err != nil {
 		return pass, err

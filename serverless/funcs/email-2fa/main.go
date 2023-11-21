@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	ses "github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
@@ -42,21 +42,21 @@ func formatEmailBody(user data.User, code string) string {
 // formatEmail prepares the email to be sent providing a user with 2FA.
 func formatEmail(user data.User, code string, sourceEmail string) ses.SendEmailInput {
 	return ses.SendEmailInput{
-		Destination: &types.Destination{
+		Destination: &sesTypes.Destination{
 			CcAddresses: []string{},
 			ToAddresses: []string{
 				user.Email,
 			},
 		},
-		Content: &types.EmailContent{
-			Simple: &types.Message{
-				Body: &types.Body{
-					Html: &types.Content{
+		Content: &sesTypes.EmailContent{
+			Simple: &sesTypes.Message{
+				Body: &sesTypes.Body{
+					Html: &sesTypes.Content{
 						Charset: aws.String(CharSet),
 						Data:    aws.String(formatEmailBody(user, code)),
 					},
 				},
-				Subject: &types.Content{
+				Subject: &sesTypes.Content{
 					Charset: aws.String(CharSet),
 					Data:    aws.String(Subject),
 				},

@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
@@ -30,9 +31,9 @@ func deactivateAdmin(email string) error {
 	return err
 }
 
-// DeactivateAdminHandler handles the request to deactivate an existing admin.
+// deactivateAdminHandler handles the request to deactivate an existing admin.
 // It ensures that the required data is present before continuing on to update the admin data.
-func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
+func deactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	username := event.QueryStringParameters["username"]
 
 	if username == "" {
@@ -40,10 +41,12 @@ func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, exists, err := data.CheckForExistingUser(username, "admins")
+	_, exists, err := users.CheckForExistingUser(username, "admins")
 
-	if err != nil || !exists {
-		return msgs.SendServerError(errors.New("admin does not exist"))
+	if !exists {
+		return msgs.SendCustomError(errors.New("admin does not exist"), 404)
+	} else if err != nil {
+		return msgs.SendServerError(err)
 	}
 
 	err = deactivateAdmin(username)
@@ -56,5 +59,5 @@ func DeactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyReq
 }
 
 func main() {
-	lambda.Start(DeactivateAdminHandler)
+	lambda.Start(deactivateAdminHandler)
 }

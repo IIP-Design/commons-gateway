@@ -5,7 +5,7 @@
   "type": "object",
   "properties": {
     "proposer": {
-      "description": "The admin user extending the invitation",
+      "description": "The guest admin user proposing the invitation",
       "type": "string",
       "format": "email",
       "minLength": 6,

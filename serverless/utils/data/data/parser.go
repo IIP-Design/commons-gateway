@@ -82,10 +82,10 @@ type UploaderUser struct {
 
 // Team represents the properties required to record a team.
 type Team struct {
-	Id         string
-	Name       string
-	AprimoName string
-	Active     bool
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	AprimoName string `json:"aprimoName"`
+	Active     bool   `json:"active"`
 }
 
 // User represents the properties required to record an invite.
