@@ -54,7 +54,7 @@ type User struct {
 
 // AdminUser extends the base User struct with unique admin properties.
 type AdminUser struct {
-	Active bool
+	Active bool `json:"active"`
 	User
 }
 
