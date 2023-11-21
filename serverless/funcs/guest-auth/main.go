@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -170,9 +169,6 @@ func authenticationHandler(ctx context.Context, event events.APIGatewayProxyRequ
 	username := parsed.Username
 	mfaId := parsed.MFA.Id
 	mfaCode := parsed.MFA.Code
-
-	fmt.Println(mfaId)
-	fmt.Println(mfaCode)
 
 	// Verify that the provided 2FA code is valid.
 	verified := verify2FA(mfaId, mfaCode)
