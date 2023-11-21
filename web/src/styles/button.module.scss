@@ -64,6 +64,10 @@
   padding: 0!important;
   text-decoration: underline;
   cursor: pointer;
+
+  @include breakpoint('tablet') {
+    font-size:var(--fontSizeNormal);
+  }
 }
 
 .anchor-btn {
