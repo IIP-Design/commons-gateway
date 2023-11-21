@@ -83,11 +83,13 @@ const UploaderTable: FC = () => {
           const isPending = info.row.original.pending as boolean;
           const isActive = info.getValue() as boolean;
 
+          const baseStyle = isPending ? style.pending : style.active;
+          const baseLabel = isPending ? 'Pending' : 'Active';
 
           return (
             <span className={ style.status }>
-              <span className={ isActive ? ( isPending ? style.pending : style.active ) : style.inactive } />
-              { isActive ? ( isPending ? 'Pending' : 'Active' ) : 'Inactive' }
+              <span className={ isActive ? baseStyle : style.inactive } />
+              { isActive ? baseLabel : 'Inactive' }
             </span>
           );
         },
