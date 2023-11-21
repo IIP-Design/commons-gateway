@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - postgres:/var/lib/postgresql/data
-      - ./initdb:/docker-entrypoint-initdb.d/
+      # - ./initdb:/docker-entrypoint-initdb.d/
 
 networks:
   default:

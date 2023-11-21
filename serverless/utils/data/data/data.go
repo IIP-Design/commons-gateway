@@ -66,10 +66,11 @@ func ConnectToDB() *sql.DB {
 	} else {
 		// Connection string for local testing.
 		connStr = fmt.Sprintf(
-			"postgresql://%s:%s@%s/%s?sslmode=disable",
+			"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 			user,
 			password,
 			host,
+			port,
 			name,
 		)
 	}
