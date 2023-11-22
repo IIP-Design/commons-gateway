@@ -71,19 +71,11 @@ const UploaderTable: FC = () => {
       defaultColumnDef( 'email' ),
       {
         ...defaultColumnDef( 'proposer' ),
-        cell: info => {
-          const { String, Valid } = info.getValue() as any;
-
-          return Valid ? String : null;
-        },
+        cell: info => info.row.getValue( 'proposer' ),
       },
       {
         ...defaultColumnDef( 'inviter' ),
-        cell: info => {
-          const { String, Valid } = info.getValue() as any;
-
-          return Valid ? String : null;
-        },
+        cell: info => info.row.getValue( 'inviter' ),
       },
       {
         ...defaultColumnDef( 'active', 'Status' ),
@@ -91,11 +83,13 @@ const UploaderTable: FC = () => {
           const isPending = info.row.original.pending as boolean;
           const isActive = info.getValue() as boolean;
 
+          const baseStyle = isPending ? style.pending : style.active;
+          const baseLabel = isPending ? 'Pending' : 'Active';
 
           return (
             <span className={ style.status }>
-              <span className={ isActive ? ( isPending ? style.pending : style.active ) : style.inactive } />
-              { isActive ? ( isPending ? 'Pending' : 'Active' ) : 'Inactive' }
+              <span className={ isActive ? baseStyle : style.inactive } />
+              { isActive ? baseLabel : 'Inactive' }
             </span>
           );
         },

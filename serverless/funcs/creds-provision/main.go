@@ -31,7 +31,7 @@ func handleInvitation(invite data.Invite) error {
 		return err
 	}
 
-	_, err = provision.MailProvisionedCreds(invite.Invitee, pass, 1)
+	_, err = provision.MailProvisionedCreds(invite.Invitee, pass, 0)
 
 	return err
 }

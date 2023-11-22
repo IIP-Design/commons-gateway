@@ -6,14 +6,15 @@ import (
 	"errors"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/rs/xid"
+
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/users"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/rs/xid"
 )
 
 type PasswordReset struct {
@@ -43,6 +44,7 @@ func verifyUser(parsed PasswordReset) (creds.CredentialsData, error) {
 	var credentials creds.CredentialsData
 
 	_, exists, err := users.CheckForExistingUser(parsed.Email, "guests")
+
 	if err != nil || !exists {
 		return credentials, errors.New("user does not exist")
 	}

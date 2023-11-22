@@ -241,8 +241,8 @@ func RetrieveUploaders(team string) ([]map[string]any, error) {
 			"team":        guest.Team,
 			"expires":     guest.Expires,
 			"dateInvited": guest.DateInvited,
-			"proposer":    guest.Proposer,
-			"inviter":     guest.Inviter,
+			"proposer":    guest.Proposer.String,
+			"inviter":     guest.Inviter.String,
 			"pending":     guest.Pending,
 		}
 

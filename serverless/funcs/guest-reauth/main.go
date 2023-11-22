@@ -20,6 +20,7 @@ import (
 func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	// Need client role to determine reauthorization logic
 	scope, err := jwt.ExtractClientRole(event.Headers["Authorization"])
+
 	if err != nil {
 		return msgs.SendServerError(err)
 	}
@@ -71,7 +72,8 @@ func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		}
 	} else if pass != "" {
 		// For admins, only send an email if they need to re-up their password
-		_, err = provision.MailProvisionedCreds(user, pass, 2)
+		_, err = provision.MailProvisionedCreds(user, pass, 1)
+
 		if err != nil {
 			return msgs.SendServerError(err)
 		}

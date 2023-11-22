@@ -135,6 +135,9 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 	return pass, nil
 }
 
+// ResetPassword assigns a given user a new random temporary password. It allows
+// records this as the user's first login so that they are required to update their
+// password upon their next login.
 func ResetPassword(email string) (string, error) {
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -143,8 +146,8 @@ func ResetPassword(email string) (string, error) {
 	hash := hashing.GenerateHash(pass, salt)
 
 	query :=
-		`UPDATE invites SET salt = $1, pass_hash = $2 WHERE invitee = $3 AND date_invited = ( SELECT MAX(date_invited)
-		 FROM invites WHERE invitee = $3 AND pending = FALSE );`
+		`UPDATE invites SET salt = $1, pass_hash = $2, first_login = TRUE WHERE invitee = $3
+		 AND date_invited = ( SELECT MAX(date_invited) FROM invites WHERE invitee = $3 AND pending = FALSE );`
 	_, err := pool.Exec(query, salt, hash, email)
 
 	if err != nil {

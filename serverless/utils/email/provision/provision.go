@@ -105,19 +105,19 @@ func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail 
 // into the external partner portal. For the action parameter, pass in an integer corresponding
 // to one of the credential provisioning actions. There are three enumerated action types:
 //
-//	1 - used when creating a new account
-//	2 - used when reauthorizing an existing expired account
-//	3 - used when resetting an existing account password
+//	0 - used when creating a new account
+//	1 - used when reauthorizing an existing expired account
+//	2 - used when resetting an existing account password
 func MailProvisionedCreds(invitee data.User, tmpPassword string, action ProvisionType) (string, error) {
 	var err error
-	var mesageId string
+	var messageId string
 
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
 
 	if sourceEmail == "" {
 		logs.LogError(errors.New("not configured for sending emails"), "Source Email Empty Error")
-		return mesageId, err
+		return messageId, err
 	}
 
 	awsRegion := os.Getenv("AWS_SES_REGION")
@@ -126,7 +126,7 @@ func MailProvisionedCreds(invitee data.User, tmpPassword string, action Provisio
 
 	if err != nil {
 		logs.LogError(err, "Error Loading AWS Config")
-		return mesageId, err
+		return messageId, err
 	}
 
 	sesClient := ses.NewFromConfig(cfg)
@@ -140,11 +140,12 @@ func MailProvisionedCreds(invitee data.User, tmpPassword string, action Provisio
 	)
 
 	resp, err := sesClient.SendEmail(context.TODO(), &e)
+
 	if err != nil {
 		logs.LogError(err, "Credentials Provisioning Email Error")
 	}
 
-	mesageId = *resp.MessageId
+	messageId = *resp.MessageId
 
-	return mesageId, err
+	return messageId, err
 }
