@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -11,6 +11,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/teams"
 	"github.com/IIP-Design/commons-gateway/utils/data/users"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
@@ -25,26 +26,35 @@ func updateAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, adminExists, err := users.CheckForExistingUser(admin.Email, "admins")
+	_, adminExists, err := users.CheckForExistingAdminUser(admin.Email)
 
 	if err != nil {
+		logs.LogError(err, "Check For Admin Error")
 		return msgs.SendServerError(err)
 	} else if !adminExists {
-		return msgs.SendCustomError(errors.New("this admin has not been registered"), 404)
+		err = fmt.Errorf("the user %s has not been registered as an admin", admin.Email)
+
+		logs.LogError(err, "Check For Admin Error")
+		return msgs.SendCustomError(err, 404)
 	}
 
 	// Ensure that the user's assigned team exists.
 	exists, err := teams.CheckForExistingTeamById(admin.Team)
 
 	if err != nil {
+		logs.LogError(err, "Check For Team Error")
 		return msgs.SendServerError(err)
 	} else if !exists {
-		return msgs.SendCustomError(errors.New("no team with the provided id exists"), 404)
+		err = fmt.Errorf("no team with the id %s exists", admin.Team)
+
+		logs.LogError(err, "Check For Team Error")
+		return msgs.SendCustomError(err, 404)
 	}
 
 	err = admins.UpdateAdmin(admin)
 
 	if err != nil {
+		logs.LogError(err, "Update Admin Error")
 		return msgs.SendServerError(err)
 	}
 

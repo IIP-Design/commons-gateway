@@ -26,22 +26,29 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func TestGuest(t *testing.T) {
-	_, success, err := CheckForExistingUser(testHelpers.ExampleGuest["email"], "guests")
+func TestUser(t *testing.T) {
+	success, _, err := CheckForExistingUser(testHelpers.ExampleGuest["email"])
 	if !success || err != nil {
 		t.Fatalf(`CheckForExistingUser result %t/%v, want true/nil`, success, err)
 	}
 }
 
 func TestAdmin(t *testing.T) {
-	_, success, err := CheckForExistingUser(testHelpers.ExampleAdmin["email"], "admins")
+	_, success, err := CheckForExistingAdminUser(testHelpers.ExampleAdmin["email"])
+	if !success || err != nil {
+		t.Fatalf(`CheckForExistingUser result %t/%v, want true/nil`, success, err)
+	}
+}
+
+func TestGuest(t *testing.T) {
+	_, success, err := CheckForExistingGuestUser(testHelpers.ExampleAdmin["email"])
 	if !success || err != nil {
 		t.Fatalf(`CheckForExistingUser result %t/%v, want true/nil`, success, err)
 	}
 }
 
 func TestMiss(t *testing.T) {
-	_, success, err := CheckForExistingUser("fake@test.fail", "guests")
+	success, _, err := CheckForExistingUser("fake@test.fail")
 	if success || err != nil {
 		t.Fatalf(`CheckForExistingUser result %t/%v, want true/nil`, success, err)
 	}

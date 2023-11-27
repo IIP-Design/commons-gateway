@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -43,20 +44,27 @@ func extractBody(body string) (PasswordReset, error) {
 func verifyUser(parsed PasswordReset) (creds.CredentialsData, error) {
 	var credentials creds.CredentialsData
 
-	_, exists, err := users.CheckForExistingUser(parsed.Email, "guests")
+	_, exists, err := users.CheckForExistingGuestUser(parsed.Email)
 
 	if err != nil || !exists {
+		err = fmt.Errorf("%s is not registered as a guest user", parsed.Email)
+
+		logs.LogError(err, "Guest User Not Found Error")
 		return credentials, errors.New("user does not exist")
 	}
 
 	credentials, err = creds.RetrieveCredentials(parsed.Email)
 
 	if err != nil {
+		logs.LogError(err, "Retrieve Credentials Error")
 		return credentials, errors.New("failed to load credentials")
 	}
 
 	if credentials.Hash != parsed.CurrentPasswordHash {
-		return credentials, errors.New("credentials do not match")
+		err = errors.New("credentials do not match")
+
+		logs.LogError(err, "Credentials Error")
+		return credentials, err
 	}
 
 	return credentials, nil
