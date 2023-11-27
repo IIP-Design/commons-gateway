@@ -152,11 +152,20 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
 
       await buildQuery( `admin?username=${escaped}`, { ...newAdmin }, 'PUT' )
         .then( () => window.location.assign( '/admins' ) )
-        .catch( err => console.error( err ) );
+        .catch( err => {
+          showError( 'Unable to update user' );
+          console.error( err );
+        } );
     } else {
-      await buildQuery( 'admin', { ...newAdmin, active: true }, 'POST' )
-        .then( () => window.location.assign( '/admins' ) )
-        .catch( err => console.error( err ) );
+      const { ok, status } = await buildQuery( 'admin', { ...newAdmin, active: true }, 'POST' );
+
+      if ( !ok && status === 409 ) {
+        showError( `The user ${adminData.email} already exists` );
+      } else if ( !ok ) {
+        showError( 'Unable to create user' );
+      } else {
+        window.location.assign( '/admins' );
+      }
     }
   };
 
@@ -188,12 +197,13 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
 
     const escaped = escapeQueryStrings( email );
 
-    await buildQuery( `admin?username=${escaped}`, { ...adminData, active: true }, 'PUT' )
-      .then( () => window.location.assign( '/admins' ) )
-      .catch( err => {
-        showError( 'Unable to reactivate user' );
-        console.error( err );
-      } );
+    const { ok } = await buildQuery( `admin?username=${escaped}`, { ...adminData, active: true }, 'PUT' );
+
+    if ( !ok ) {
+      showError( 'Unable to reactivate user' );
+    } else {
+      window.location.assign( '/admins' );
+    }
   };
 
   return (

@@ -138,9 +138,13 @@ const UserForm: FC = () => {
         expiration,
       };
 
-      buildQuery( 'creds/provision', invitation, 'POST' )
-        .then( () => window.location.assign( '/' ) )
-        .catch( err => console.error( err ) );
+      const { ok } = await buildQuery( 'creds/provision', invitation, 'POST' );
+
+      if ( !ok ) {
+        showError( 'Unable to create user' );
+      } else {
+        window.location.assign( '/' );
+      }
     } else {
       const invitation = {
         proposer: currentUser.get().email,
@@ -148,11 +152,12 @@ const UserForm: FC = () => {
         expiration,
       };
 
-      try {
-        await buildQuery( 'creds/propose', invitation, 'POST' );
+      const { ok } = await buildQuery( 'creds/propose', invitation, 'POST' );
+
+      if ( !ok ) {
+        showError( 'Unable to propose user' );
+      } else {
         window.location.assign( '/uploader-users' );
-      } catch ( err ) {
-        console.error( err );
       }
     }
   };
