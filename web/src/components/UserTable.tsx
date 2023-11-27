@@ -92,13 +92,16 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
       {
         ...defaultColumnDef( 'active', 'Status' ),
         cell: info => {
-          const isPending = info.row.original["pending"] as boolean;
+          const isPending = info.row.original.pending as boolean;
           const isActive = info.getValue() as boolean;
+
+          const baseStyle = isPending ? style.pending : style.active;
+          const baseLabel = isPending ? 'Pending' : 'Active';
 
           return (
             <span className={ style.status }>
-              <span className={ isActive ? ( isPending ? style.pending : style.active ) : style.inactive } />
-              { isPending ? 'Pending' : ( isActive ? 'Active' : 'Inactive' ) }
+              <span className={ isActive ? baseStyle : style.inactive } />
+              { isActive ? baseLabel : 'Inactive' }
             </span>
           );
         },

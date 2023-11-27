@@ -27,55 +27,53 @@ interface IModalProps {
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
-const InviteEntry = ( invite: IInvite, idx: number ) => {
-  return (
-    <div key={`${invite.dateInvited}-${idx}`}>
-      <hr style={{marginTop: '10px'}} />
-      <div className="field-group">
-        <label>
-          <span>Invite Date</span>
-          <input
-            type="date"
-            disabled
-            value={invite.dateInvited}
-          />
-        </label>
-        <label>
-          <span>Access End Date</span>
-          <input
-            type="date"
-            disabled
-            value={invite.accessEndDate}
-          />
-        </label>
-      </div>
-      <table className={`${tableStyles.table}`}>
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-            <span className={ tableStyles.status }>
-              <span className={ !invite.pending ? tableStyles.active : tableStyles.inactive } />
-              { invite.pending ? 'Pending' : 'Approved' }
-            </span>
-            </td>
-            <td>
-            <span className={ tableStyles.status }>
-              <span className={ !invite.expired ? tableStyles.active : tableStyles.inactive } />
-              { invite.expired ? 'Expired' : 'Current' }
-            </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+const InviteEntry = ( { dateInvited, accessEndDate, pending, expired }: IInvite, idx: number ) => (
+  <div key={ `${dateInvited}-${idx}` }>
+    <hr style={ { marginTop: '10px' } } />
+    <div className="field-group">
+      <label>
+        <span>Invite Date</span>
+        <input
+          type="date"
+          disabled
+          value={ dateInvited }
+        />
+      </label>
+      <label>
+        <span>Access End Date</span>
+        <input
+          type="date"
+          disabled
+          value={ accessEndDate }
+        />
+      </label>
     </div>
-  );
-}
+    <table className={ `${tableStyles.table}` }>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <span className={ tableStyles.status }>
+              <span className={ !pending ? tableStyles.active : tableStyles.inactive } />
+              { pending ? 'Pending' : 'Approved' }
+            </span>
+          </td>
+          <td>
+            <span className={ tableStyles.status }>
+              <span className={ !expired ? tableStyles.active : tableStyles.inactive } />
+              { expired ? 'Expired' : 'Current' }
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+);
 
 // ////////////////////////////////////////////////////////////////////////////
 // Config
@@ -116,10 +114,10 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
   return (
     <>
       <button
-        className={ `${btnStyle.btn} ${noHistory ? btnStyle['disabled-btn'] : ""}` }
+        className={ `${btnStyle.btn} ${noHistory ? btnStyle['disabled-btn'] : ''}` }
         onClick={ openModal }
         type="button"
-        disabled={noHistory}
+        disabled={ noHistory }
       >
         { anchor }
       </button>
@@ -130,11 +128,9 @@ export const InviteModal: FC<IModalProps> = ( { invites, anchor }: IModalProps )
         style={ modalStyle }
       >
         <h3>Invite History</h3>
-        {
-            invites.slice(0).map( ( invite, idx ) => InviteEntry( invite, idx ) )
-        }
+        { invites.slice( 0 ).map( ( invite, idx ) => InviteEntry( invite, idx ) ) }
         <button
-          className={btnStyle.btn}
+          className={ btnStyle.btn }
           onClick={ closeModal }
           type="button"
         >

@@ -14,7 +14,7 @@ const ToggleSwitch: FC<IToggleSwitchProps> = ( { id, active, toggleable, callbac
   const [toggled, setToggled] = useState( active );
 
   const handleToggle = () => {
-    if( !(toggleable ?? true) ) {
+    if ( !( toggleable ?? true ) ) {
       return;
     }
 
