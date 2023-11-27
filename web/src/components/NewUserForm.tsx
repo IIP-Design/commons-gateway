@@ -91,11 +91,15 @@ const UserForm: FC = () => {
       showError( 'Email address is not valid' );
 
       return false;
-    } if ( !dateSelectionIsValid( userData.accessEndDate ) ) {
+    }
+
+    if ( !dateSelectionIsValid( userData.accessEndDate ) ) {
       showError( `Please select an access grant end date after today and no more than ${MAX_ACCESS_GRANT_DAYS} in the future` );
 
       return false;
-    } if ( isAdmin && !userData.team ) {
+    }
+
+    if ( isAdmin && !userData.team ) {
       // Admin users have the option to set a team, so a team should be
       showError( 'Please assign this user to a valid team' );
 
@@ -147,7 +151,7 @@ const UserForm: FC = () => {
       try {
         await buildQuery( 'creds/propose', invitation, 'POST' );
         window.location.assign( '/uploader-users' );
-      } catch ( err: any ) {
+      } catch ( err ) {
         console.error( err );
       }
     }

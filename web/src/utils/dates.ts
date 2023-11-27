@@ -11,7 +11,10 @@ export const getYearMonthDay = ( date: Date ) => {
   const month = date.getMonth() + 1; // Add one to adjust for zero indexing.
   const day = date.getDate();
 
-  return `${year}-${month > 9 ? month : `0${month}`}-${day > 9 ? day : `0${day}`}`;
+  const fmtMonth = month > 9 ? month : `0${month}`;
+  const fmtDay = day > 9 ? day : `0${day}`;
+
+  return `${year}-${fmtMonth}-${fmtDay}`;
 };
 
 /**

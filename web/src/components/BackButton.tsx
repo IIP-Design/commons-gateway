@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////
 // React Imports
 // ////////////////////////////////////////////////////////////////////////////
 import type { FC } from 'react';
@@ -11,35 +11,35 @@ import { showConfirm } from '../utils/alert';
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import styles from '../styles/button.module.scss'
+import styles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
 // ////////////////////////////////////////////////////////////////////////////
 interface IBackButtonProps {
-    id?: string;
-    text?: string;
-    showConfirmDialog?: boolean;
+    readonly id?: string;
+    readonly text?: string;
+    readonly showConfirmDialog?: boolean;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////////////////////////
 const BackButton: FC<IBackButtonProps> = ( { id, text, showConfirmDialog }: IBackButtonProps ) => {
-    const goBack = () => {
-        if( showConfirmDialog ) {
-            showConfirm( "Are you sure you want to return to the previous page?  You will lose all unsaved progress." )
-                .then( ( result ) => {
-                    if( result.isConfirmed ) {
-                        window.history.back();
-                    }
-                } );
-        } else {
-          window.history.back();
-        }
+  const goBack = () => {
+    if ( showConfirmDialog ) {
+      showConfirm( 'Are you sure you want to return to the previous page?  You will lose all unsaved progress.' )
+        .then( result => {
+          if ( result.isConfirmed ) {
+            window.history.back();
+          }
+        } );
+    } else {
+      window.history.back();
     }
+  };
 
-    return <button id={ id || "back-btn"} type="button" onClick={goBack} className={`${styles.btn} ${styles['back-btn']} ${styles['spaced-btn']}`}>{ text || "Back"}</button>
-}
+  return <button id={ id || 'back-btn' } type="button" onClick={ goBack } className={ `${styles.btn} ${styles['back-btn']} ${styles['spaced-btn']}` }>{ text || 'Back' }</button>;
+};
 
 export default BackButton;

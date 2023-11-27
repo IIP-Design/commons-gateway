@@ -1,7 +1,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 // React Imports
 // ////////////////////////////////////////////////////////////////////////////
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type{ FC } from 'react';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
   };
 
   // Update Controls
-  const handleUpdate = ( key: string, value: any ) => {
+  const handleUpdate = ( key: keyof ITeam, value: ValueOf<ITeam> ) => {
     setLocalTeam( { ...localTeam, [key]: value } );
   };
 

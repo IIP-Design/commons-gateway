@@ -46,6 +46,19 @@ interface IInviteWidgetParams {
   readonly isAdmin: boolean;
 }
 
+// Possible TODO: Remove
+interface IRawInvite {
+  proposer?: {
+    String: string;
+    Valid: boolean;
+  },
+  pending: boolean;
+  expired: boolean;
+  passwordReset: boolean;
+  dateInvited: string;
+  expiration: string;
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
@@ -211,54 +224,50 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
   );
 };
 
-const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite, isAdmin }: IInviteWidgetParams ) => {
-  const [pendingInvite] = useState<IInvite>( invite );
-
-  return (
-    <div id="invite-data-form">
-      <h3>Proposed Access</h3>
-      <div className="field-group">
-        <label>
-          <span>Access End Date</span>
-          <input
-            id="date-input"
-            type="date"
-            disabled
-            value={ pendingInvite.accessEndDate }
-          />
-        </label>
-        <label>
-          <span>Date Invited</span>
-          <input
-            id="date-invited-input"
-            type="date"
-            disabled
-            value={ pendingInvite.dateInvited }
-          />
-        </label>
-      </div>
-      {
-        isAdmin
-          ? (
-            <button
-              className={ `${btnStyles['btn-light']}` }
-              id="finalize-btn"
-              type="button"
-              onClick={ makeApproveUserHandler( email ) }
-            >
-              Finalize
-            </button>
-          )
-          : (
-            <p>
-              { `Proposed by ${pendingInvite.proposer || 'N/A'}` }
-            </p>
-          )
-      }
-
+const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite, isAdmin }: IInviteWidgetParams ) => (
+  <div id="invite-data-form">
+    <h3>Proposed Access</h3>
+    <div className="field-group">
+      <label>
+        <span>Access End Date</span>
+        <input
+          id="date-input"
+          type="date"
+          disabled
+          value={ invite.accessEndDate }
+        />
+      </label>
+      <label>
+        <span>Date Invited</span>
+        <input
+          id="date-invited-input"
+          type="date"
+          disabled
+          value={ invite.dateInvited }
+        />
+      </label>
     </div>
-  );
-};
+    {
+      isAdmin
+        ? (
+          <button
+            className={ `${btnStyles['btn-light']}` }
+            id="finalize-btn"
+            type="button"
+            onClick={ makeApproveUserHandler( email ) }
+          >
+            Finalize
+          </button>
+        )
+        : (
+          <p>
+            { `Proposed by ${invite.proposer || 'N/A'}` }
+          </p>
+        )
+    }
+
+  </div>
+);
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interface and Implementation
@@ -312,7 +321,7 @@ const UserForm: FC = () => {
           accessEndDate: getYearMonthDay( parse( data.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
         } );
 
-        const fmtInvites: IInvite[] = data.invites.map( ( invite: any ) => ( {
+        const fmtInvites: IInvite[] = data.invites.map( ( invite: IRawInvite ) => ( {
           proposer: invite.proposer?.String || null,
           pending: invite.pending,
           expired: invite.expired,

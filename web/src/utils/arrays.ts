@@ -9,7 +9,5 @@
 export const selectSlice = ( arr: any[], count: number, offset: number ) => {
   const startingIndex = offset * count;
 
-  const selection = arr.slice( startingIndex, startingIndex + count );
-
-  return selection;
+  return arr.slice( startingIndex, startingIndex + count );
 };

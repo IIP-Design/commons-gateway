@@ -14,7 +14,7 @@ import {
   flexRender,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import type { Column, Table as ReactTable, ColumnDef, SortingState } from '@tanstack/react-table';
+import type { Column, Table as ReactTable, ColumnDef, SortingState, Header } from '@tanstack/react-table';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Imports
@@ -24,7 +24,7 @@ import { titleCase } from '../utils/string';
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import style from '../styles/table.module.scss';
+import tableStyles from '../styles/table.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -54,8 +54,8 @@ export const Filter = ( {
   column,
   table,
 }: {
-  column: Column<any, any>
-  table: ReactTable<any>
+  column: Column<any, any>  // eslint-disable-line @typescript-eslint/no-explicit-any
+  table: ReactTable<any>    // eslint-disable-line @typescript-eslint/no-explicit-any
 } ) => {
   const skipFiltering = ( column.id.startsWith( '_' ) );
 
@@ -117,9 +117,9 @@ export const Filter = ( {
 };
 
 export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T> } ) => (
-  <div className={ style['pagination-footer'] }>
+  <div className={ tableStyles['pagination-footer'] }>
     <button
-      className={ style['pagination-button'] }
+      className={ tableStyles['pagination-button'] }
       onClick={ () => table.setPageIndex( 0 ) }
       disabled={ !table.getCanPreviousPage() }
       type="button"
@@ -127,21 +127,21 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
       { '<<' }
     </button>
     <button
-      className={ style['pagination-button'] }
+      className={ tableStyles['pagination-button'] }
       onClick={ () => table.previousPage() }
       disabled={ !table.getCanPreviousPage() }
       type="button"
     >
       { '<' }
     </button>
-    <span className={ style['go-to-page-container'] }>
+    <span className={ tableStyles['go-to-page-container'] }>
       <div style={ { display: 'inline' } }>Page</div>
       <strong>
         { `${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}` }
       </strong>
     </span>
     <button
-      className={ style['pagination-button'] }
+      className={ tableStyles['pagination-button'] }
       onClick={ () => table.nextPage() }
       disabled={ !table.getCanNextPage() }
       type="button"
@@ -149,18 +149,18 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
       { '>' }
     </button>
     <button
-      className={ style['pagination-button'] }
+      className={ tableStyles['pagination-button'] }
       onClick={ () => table.setPageIndex( table.getPageCount() - 1 ) }
       disabled={ !table.getCanNextPage() }
       type="button"
     >
       { '>>' }
     </button>
-    <span className={ style['go-to-page-container'] }>
+    <span className={ tableStyles['go-to-page-container'] }>
       { 'Go to page: ' }
       <input
         aria-label="Go to page"
-        className={ style['page-num-select'] }
+        className={ tableStyles['page-num-select'] }
         id="goto-page-number-input"
         defaultValue={ table.getState().pagination.pageIndex + 1 }
         max={ table.getPageCount() }
@@ -173,11 +173,11 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
         } }
       />
     </span>
-    <span className={ style['go-to-page-container'] }>
+    <span className={ tableStyles['go-to-page-container'] }>
       { 'Show ' }
       <select
         aria-label="Select number of results per page"
-        className={ style['page-show-select'] }
+        className={ tableStyles['page-show-select'] }
         id="show-page-number-select"
         style={ { width: 'auto', marginLeft: '0.375em', marginRight: '0.375em' } }
         value={ table.getState().pagination.pageSize }
@@ -204,6 +204,16 @@ export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T
 export const Table = <DataType, >( { data, columns, additionalTableClasses }: ITableProps<DataType> ) => {
   const [sorting, setSorting] = useState<SortingState>( [] );
 
+  const makeHeaderKeyDownHandler = ( header: Header<DataType, unknown> ) => {
+    const handler = header.column.getToggleSortingHandler();
+
+    return ( e: React.KeyboardEvent ) => {
+      if ( e.key === 'Enter' && handler ) {
+        handler( e );
+      }
+    };
+  };
+
   const table = useReactTable<DataType>( {
     data,
     columns,
@@ -218,12 +228,12 @@ export const Table = <DataType, >( { data, columns, additionalTableClasses }: IT
     getSortedRowModel: getSortedRowModel(),
   } );
 
-  const tableClasses = ( additionalTableClasses || [] ).map( c => style[c] ).filter( Boolean )
+  const tableClasses = ( additionalTableClasses || [] ).map( c => tableStyles[c] ).filter( Boolean )
     .join( ' ' );
 
   return (
-    <div className={ style.container }>
-      <table className={ `${style.table} ${tableClasses}` }>
+    <div className={ tableStyles.container }>
+      <table className={ `${tableStyles.table} ${tableClasses}` }>
         <thead>
           { table.getHeaderGroups().map( headerGroup => (
             <tr key={ headerGroup.id }>
@@ -233,13 +243,19 @@ export const Table = <DataType, >( { data, columns, additionalTableClasses }: IT
                     ? null
                     : (
                       <div
-                        className={ header.column.getCanSort() ? style['sortable-header'] : '' }
-                        onClick={ header.column.getToggleSortingHandler() }
+                        className={ header.column.getCanSort() ? tableStyles['sortable-header'] : '' }
                       >
-                        { flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        ) }
+                        <span
+                          onClick={ header.column.getToggleSortingHandler() }
+                          onKeyDown={ makeHeaderKeyDownHandler( header ) }
+                          role="button"
+                          tabIndex={ 0 }
+                        >
+                          { flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          ) }
+                        </span>
                         { {
                           asc: ' 🔺',
                           desc: ' 🔻',

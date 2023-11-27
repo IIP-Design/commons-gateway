@@ -116,7 +116,9 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
       showError( 'Email address is not valid' );
 
       return false;
-    } if ( !adminData.team ) {
+    }
+
+    if ( !adminData.team ) {
       showError( 'Please assign this user to a valid team' );
 
       return false;
