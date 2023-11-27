@@ -10,9 +10,7 @@ import '../styles/form.scss';
 
   if (isLoggedInAsAdmin()) {
     window.location.assign('/');
-  } else if (isLoggedInAsExternalPartner()) {
-    window.location.assign('/invite');
-  } else if (isLoggedIn()) {
+  } else if (isLoggedInAsExternalPartner() || isLoggedIn()) {
     window.location.assign('/upload');
   }
 </script>
