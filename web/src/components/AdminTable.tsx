@@ -16,7 +16,8 @@ import type { TUserRole, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { getTeamName } from '../utils/team';
 import { escapeQueryStrings } from '../utils/string';
-import { Table, defaultColumnDef } from './Table';
+import { defaultColumnDef } from './Table';
+import TableWrapper from './TableWrapper';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
@@ -41,6 +42,7 @@ interface IAdminUser {
 const AdminTable: FC = () => {
   const [admins, setAdmins] = useState<WithUiData<IAdminUser>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
+  const [loading, setLoading] = useState<boolean>( true );
 
   useEffect( () => {
     const getAdmins = async () => {
@@ -57,7 +59,7 @@ const AdminTable: FC = () => {
       }
     };
 
-    getAdmins();
+    getAdmins().finally( () => setLoading( false ) );
   }, [] );
 
   useEffect( () => {
@@ -107,18 +109,10 @@ const AdminTable: FC = () => {
 
   return (
     <div style={ { display: 'flex', marginBottom: '0.75em' } }>
-      { admins.length
-        ? (
-          <Table
-            {
-              ...{
-                data: admins,
-                columns,
-              }
-            }
-          />
-        )
-        : <p className={ style['no-data'] }>No data to show</p> }
+      <TableWrapper
+        loading={ loading }
+        table={ { data: admins, columns } }
+      />
     </div>
   );
 };

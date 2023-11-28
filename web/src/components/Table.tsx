@@ -29,7 +29,7 @@ import tableStyles from '../styles/table.module.scss';
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
 // ////////////////////////////////////////////////////////////////////////////
-type ITableProps<DataType> = {
+export type ITableProps<DataType> = {
   readonly data: DataType[];
   readonly columns: ColumnDef<DataType>[];
   readonly additionalTableClasses?: string[];
@@ -116,90 +116,102 @@ export const Filter = ( {
   return ret;
 };
 
-export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T> } ) => (
-  <div className={ tableStyles['pagination-footer'] }>
-    <button
-      className={ tableStyles['pagination-button'] }
-      onClick={ () => table.setPageIndex( 0 ) }
-      disabled={ !table.getCanPreviousPage() }
-      type="button"
-    >
-      { '<<' }
-    </button>
-    <button
-      className={ tableStyles['pagination-button'] }
-      onClick={ () => table.previousPage() }
-      disabled={ !table.getCanPreviousPage() }
-      type="button"
-    >
-      { '<' }
-    </button>
-    <span className={ tableStyles['go-to-page-container'] }>
-      <div style={ { display: 'inline' } }>Page</div>
-      <strong>
-        { `${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}` }
-      </strong>
-    </span>
-    <button
-      className={ tableStyles['pagination-button'] }
-      onClick={ () => table.nextPage() }
-      disabled={ !table.getCanNextPage() }
-      type="button"
-    >
-      { '>' }
-    </button>
-    <button
-      className={ tableStyles['pagination-button'] }
-      onClick={ () => table.setPageIndex( table.getPageCount() - 1 ) }
-      disabled={ !table.getCanNextPage() }
-      type="button"
-    >
-      { '>>' }
-    </button>
-    <span className={ tableStyles['go-to-page-container'] }>
-      { 'Go to page: ' }
-      <input
-        aria-label="Go to page"
-        className={ tableStyles['page-num-select'] }
-        id="goto-page-number-input"
-        defaultValue={ table.getState().pagination.pageIndex + 1 }
-        max={ table.getPageCount() }
-        min={ 1 }
-        type="number"
-        onChange={ e => {
-          const page = e.target.value ? Number( e.target.value ) - 1 : 0;
+export const PaginationFooter = <T, >( { table }: { readonly table: ReactTable<T> } ) => {
+  const revNavDisabled = !table.getCanPreviousPage();
+  const revNavStyle = revNavDisabled ? { cursor: 'default' } : {};
 
-          table.setPageIndex( page );
-        } }
-      />
-    </span>
-    <span className={ tableStyles['go-to-page-container'] }>
-      { 'Show ' }
-      <select
-        aria-label="Select number of results per page"
-        className={ tableStyles['page-show-select'] }
-        id="show-page-number-select"
-        style={ { width: 'auto', marginLeft: '0.375em', marginRight: '0.375em' } }
-        value={ table.getState().pagination.pageSize }
-        onChange={ e => {
-          table.setPageSize( Number( e.target.value ) );
-        } }
+  const fwdNavDisabled = !table.getCanNextPage();
+  const fwdNavStyle = fwdNavDisabled ? { cursor: 'default' } : {};
+
+  return (
+    <div className={ tableStyles['pagination-footer'] }>
+      <button
+        className={ tableStyles['pagination-button'] }
+        style={ revNavStyle }
+        onClick={ () => table.setPageIndex( 0 ) }
+        disabled={ revNavDisabled }
+        type="button"
       >
-        {
-          [
-            10, 20, 30, 40, 50,
-          ].filter( ( val, idx ) => val < table.getFilteredRowModel().rows.length || idx === 0 )
-            .map( pageSize => (
-              <option key={ pageSize } value={ pageSize }>
-                { pageSize }
-              </option>
-            ) )
-        }
-      </select>
-      { ' per page' }
-    </span>
-  </div>
-);
+        { '<<' }
+      </button>
+      <button
+        className={ tableStyles['pagination-button'] }
+        style={ revNavStyle }
+        onClick={ () => table.previousPage() }
+        disabled={ revNavDisabled }
+        type="button"
+      >
+        { '<' }
+      </button>
+      <span className={ tableStyles['go-to-page-container'] }>
+        <div style={ { display: 'inline' } }>Page</div>
+        <strong>
+          { `${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}` }
+        </strong>
+      </span>
+      <button
+        className={ tableStyles['pagination-button'] }
+        style={ fwdNavStyle }
+        onClick={ () => table.nextPage() }
+        disabled={ fwdNavDisabled }
+        type="button"
+      >
+        { '>' }
+      </button>
+      <button
+        className={ tableStyles['pagination-button'] }
+        style={ fwdNavStyle }
+        onClick={ () => table.setPageIndex( table.getPageCount() - 1 ) }
+        disabled={ fwdNavDisabled }
+        type="button"
+      >
+        { '>>' }
+      </button>
+      <span className={ tableStyles['go-to-page-container'] }>
+        { 'Go to page: ' }
+        <input
+          aria-label="Go to page"
+          className={ tableStyles['page-num-select'] }
+          id="goto-page-number-input"
+          defaultValue={ table.getState().pagination.pageIndex + 1 }
+          max={ table.getPageCount() }
+          min={ 1 }
+          type="number"
+          onChange={ e => {
+            const page = e.target.value ? Number( e.target.value ) - 1 : 0;
+
+            table.setPageIndex( page );
+          } }
+        />
+      </span>
+      <span className={ tableStyles['go-to-page-container'] }>
+        { 'Show ' }
+        <select
+          aria-label="Select number of results per page"
+          className={ tableStyles['page-show-select'] }
+          id="show-page-number-select"
+          style={ { width: 'auto', marginLeft: '0.375em', marginRight: '0.375em' } }
+          value={ table.getState().pagination.pageSize }
+          onChange={ e => {
+            table.setPageSize( Number( e.target.value ) );
+          } }
+        >
+          {
+            [
+              10, 20, 30, 40, 50,
+            ].filter( ( _, idx, arr ) => idx === 0 || arr[idx - 1] < table.getFilteredRowModel().rows.length )
+              .map( pageSize => (
+                <option key={ pageSize } value={ pageSize }>
+                  { pageSize }
+                </option>
+              ) )
+          }
+        </select>
+        { ' per page' }
+      </span>
+    </div>
+  );
+};
 
 export const Table = <DataType, >( { data, columns, additionalTableClasses }: ITableProps<DataType> ) => {
   const [sorting, setSorting] = useState<SortingState>( [] );

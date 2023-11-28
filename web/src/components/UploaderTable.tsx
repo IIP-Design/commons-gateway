@@ -16,13 +16,14 @@ import currentUser from '../stores/current-user';
 import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { isGuestActive } from '../utils/guest';
-import { Table, defaultColumnDef } from './Table';
+import { defaultColumnDef } from './Table';
 import { escapeQueryStrings } from '../utils/string';
+import TableWrapper from './TableWrapper';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import style from '../styles/table.module.scss';
+import tableStyles from '../styles/table.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -40,6 +41,7 @@ interface IUploader extends IUserEntry {
 
 const UploaderTable: FC = () => {
   const [users, setUsers] = useState<WithUiData<IUploader>[]>( [] );
+  const [loading, setLoading] = useState<boolean>( true );
 
   useEffect( () => {
     const body = { team: currentUser.get().team };
@@ -59,7 +61,7 @@ const UploaderTable: FC = () => {
       }
     };
 
-    getUsers();
+    getUsers().finally( () => setLoading( false ) );
   }, [] );
 
   const columns = useMemo<ColumnDef<WithUiData<IUploader>>[]>(
@@ -83,12 +85,12 @@ const UploaderTable: FC = () => {
           const isPending = info.row.original.pending as boolean;
           const isActive = info.getValue() as boolean;
 
-          const baseStyle = isPending ? style.pending : style.active;
+          const baseStyle = isPending ? tableStyles.pending : tableStyles.active;
           const baseLabel = isPending ? 'Pending' : 'Active';
 
           return (
-            <span className={ style.status }>
-              <span className={ isActive ? baseStyle : style.inactive } />
+            <span className={ tableStyles.status }>
+              <span className={ isActive ? baseStyle : tableStyles.inactive } />
               { isActive ? baseLabel : 'Inactive' }
             </span>
           );
@@ -100,19 +102,10 @@ const UploaderTable: FC = () => {
 
   return (
     <div style={ { display: 'flex', marginBottom: '0.75em' } }>
-      { users.length
-        ? (
-          <Table
-            {
-              ...{
-                data: users,
-                columns,
-                additionalTableClasses: ['user-table'],
-              }
-            }
-          />
-        )
-        : <p className={ style['no-data'] }>No data to show</p> }
+      <TableWrapper
+        loading={ loading }
+        table={ { data: users, columns, additionalTableClasses: ['user-table'] } }
+      />
     </div>
   );
 };

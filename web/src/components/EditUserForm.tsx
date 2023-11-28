@@ -129,7 +129,6 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
     if ( !ok ) {
       showError( 'Unable to re-authorize user' );
     } else {
-      showSuccess( `User reauthorized until ${accessEndDate}` );
       window.location.reload();
     }
   };
@@ -496,7 +495,7 @@ const UserForm: FC = () => {
       <div id="additional-options">
         <h3>Additional Options</h3>
         <InviteModal invites={ invites } anchor="Invite History" />
-        <BackButton text="Cancel" showConfirmDialog={ updated } />
+        <BackButton text={ updated ? 'Cancel' : 'Back' } showConfirmDialog={ updated } />
       </div>
     </div>
   );
