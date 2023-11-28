@@ -311,7 +311,7 @@ export const submitHandler = async () => {
   if ( response !== 'ok' ) {
     showError( 'Could not upload file' );
   } else {
-    showSuccess( 'File has been uploaded' );
+    showSuccess( 'File upload has been initiated' );
   }
 
   // Cleanup
