@@ -196,24 +196,25 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
       </div>
       <button
         className={ `${btnStyles.btn} ${updated ? '' : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}` }
+        disabled={ !updated }
         id="update-btn"
         type="button"
         onClick={ handleReauth }
-        disabled={ !updated }
       >
         { isAdmin ? 'Reauthorize' : 'Re-Propose' }
       </button>
       <button
         className={ `${btnStyles['btn-light']} ${!currentInvite.expired ? '' : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}` }
+        disabled={ currentInvite.expired }
         id="reset-password-btn"
         type="button"
         onClick={ handlePasswordReset }
-        disabled={ currentInvite.expired }
       >
         Reset Password
       </button>
       <button
         className={ `${btnStyles.btn} ${btnStyles['back-btn']} ${btnStyles['spaced-btn']}` }
+        disabled={ currentInvite.expired }
         id="deactivate-btn"
         type="button"
         onClick={ handleRevoke }
