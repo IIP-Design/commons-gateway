@@ -7,7 +7,7 @@ import (
 )
 
 func TestValidObjectKey(t *testing.T) {
-	objectKey := "my.great_photos-2014/jan/myvacation.jpg"
+	objectKey := "my.great_photos-2014-jan-myvacation.jpg"
 	sanitized := DefaultKeySanitizer(objectKey)
 	if objectKey != sanitized {
 		t.Fatalf(`DefaultKeySanitizer modified valid key from %s to %s`, objectKey, sanitized)
@@ -15,7 +15,7 @@ func TestValidObjectKey(t *testing.T) {
 }
 
 func TestRemoveSpaces(t *testing.T) {
-	expected := "my.great_photos-2014/jan/myvacation.jpg"
+	expected := "my.great_photos-2014janmyvacation.jpg"
 	objectKey := "    my.great_photos 2014/jan/myvacation.jpg"
 	sanitized := DefaultKeySanitizer(objectKey)
 	if sanitized != expected {
@@ -24,8 +24,17 @@ func TestRemoveSpaces(t *testing.T) {
 }
 
 func TestForbiddenChars(t *testing.T) {
-	expected := "123456!-)*_"
-	objectKey := "123#@%$^&@456!-)+=*_"
+	expected := "123456-_"
+	objectKey := "123#@%$^&@456!-+=*_"
+	sanitized := DefaultKeySanitizer(objectKey)
+	if sanitized != expected {
+		t.Fatalf(`DefaultKeySanitizer modified key to %s, expected %s`, sanitized, expected)
+	}
+}
+
+func TestPercentEncodeChars(t *testing.T) {
+	expected := "-_."
+	objectKey := "-_.!#$&'()*+,/:;=?@[]"
 	sanitized := DefaultKeySanitizer(objectKey)
 	if sanitized != expected {
 		t.Fatalf(`DefaultKeySanitizer modified key to %s, expected %s`, sanitized, expected)
