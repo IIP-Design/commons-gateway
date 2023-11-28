@@ -2,6 +2,7 @@ package creds
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/invites"
@@ -98,18 +99,27 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 	var pass string
 
 	// Ensure invitee doesn't already have access.
-	_, guestHasAccess, err := users.CheckForExistingUser(invite.Invitee.Email, "guests")
+	exists, user, err := users.CheckForExistingUser(invite.Invitee.Email)
 
 	if err != nil {
+		logs.LogError(err, "Check For Existing User Error")
 		return pass, err
-	} else if guestHasAccess {
-		return pass, errors.New("guest user already exists")
+	} else if exists {
+		err = fmt.Errorf(
+			"the user %s has already been registered as a user of type %s",
+			invite.Invitee.Email,
+			user.Type,
+		)
+
+		logs.LogError(err, "Check For Existing User Error")
+		return pass, err
 	}
 
 	// Save credentials
 	err = invites.SaveCredentials(invite.Invitee)
 
 	if err != nil {
+		logs.LogError(err, "Save Credentials Error")
 		return pass, errors.New("something went wrong - credential generation failed")
 	}
 
@@ -129,6 +139,7 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 	err = invites.SaveInvite(email, invite.Invitee.Email, invite.Expires, hash, salt, setPending, true, true)
 
 	if err != nil {
+		logs.LogError(err, "Save Invite Error")
 		return pass, errors.New("something went wrong - saving invite failed")
 	}
 

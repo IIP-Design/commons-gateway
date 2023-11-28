@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -10,6 +10,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/admins"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/users"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
@@ -17,17 +18,25 @@ import (
 func handleAdminCreation(adminData data.User) (bool, error) {
 	var err error
 
-	_, isAdmin, err := users.CheckForExistingUser(adminData.Email, "admins")
+	exists, user, err := users.CheckForExistingUser(adminData.Email)
 
 	if err != nil {
-		return isAdmin, err
-	} else if isAdmin {
-		return isAdmin, errors.New("this user has already been added as an administrator")
+		logs.LogError(err, "Check For Existing User Error")
+		return exists, err
+	} else if exists {
+		err = fmt.Errorf("the user %s has already been registered as a user of type %s", adminData.Email, user.Type)
+
+		logs.LogError(err, "Check For Existing User Error")
+		return exists, err
 	}
 
 	err = admins.CreateAdmin(adminData)
 
-	return isAdmin, err
+	if err != nil {
+		logs.LogError(err, "Admin Creation Error")
+	}
+
+	return exists, err
 }
 
 // newAdminHandler handles the request to create a new administrative user. It

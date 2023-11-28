@@ -27,13 +27,15 @@ func guestUpdateHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, userExists, err := users.CheckForExistingUser(guest.Email, "guests")
+	_, userExists, err := users.CheckForExistingGuestUser(guest.Email)
 
 	if err != nil {
-		logs.LogError(err, "Check For User Error")
+		logs.LogError(err, "Check For Guest User Error")
 		return msgs.SendServerError(err)
 	} else if !userExists {
-		logs.LogError(fmt.Errorf("user %s not found", guest.Email), "User Not Found Error")
+		err = fmt.Errorf("user %s is not registered as a guest", guest.Email)
+
+		logs.LogError(err, "User Not Found Error")
 		return msgs.SendCustomError(errors.New("this user has not been registered"), 404)
 	}
 

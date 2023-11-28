@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -44,17 +45,22 @@ func guestDeactivateHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, exists, err := users.CheckForExistingUser(id, "guests")
+	_, exists, err := users.CheckForExistingGuestUser(id)
 
-	if !exists {
-		return msgs.SendCustomError(errors.New("user does not exist"), 404)
-	} else if err != nil {
+	if err != nil {
+		logs.LogError(err, "Check For Guest User Error")
 		return msgs.SendServerError(err)
+	} else if !exists {
+		err = fmt.Errorf("%s is not registered as a guest user", id)
+
+		logs.LogError(err, "Guest User Not Found Error")
+		return msgs.SendCustomError(errors.New("user does not exist"), 404)
 	}
 
 	err = deactivateGuest(id)
 
 	if err != nil {
+		logs.LogError(err, "Deactivate Guest User Error")
 		return msgs.SendServerError(err)
 	}
 

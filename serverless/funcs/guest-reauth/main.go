@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/data/guests"
@@ -36,12 +37,14 @@ func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 	}
 
 	// Ensure that the user we intend to modify exists.
-	user, userExists, err := users.CheckForExistingUser(guest.Email, "guests")
+	user, userExists, err := users.CheckForExistingGuestUser(guest.Email)
 
 	if err != nil {
 		logs.LogError(err, "User Check Error")
 		return msgs.SendServerError(err)
 	} else if !userExists {
+		err = fmt.Errorf("%s is not registered as a guest user", guest.Email)
+
 		logs.LogError(err, "User Not Found Error")
 		return msgs.SendCustomError(errors.New("this user has not been registered"), 404)
 	}
@@ -55,19 +58,24 @@ func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		return msgs.SendCustomError(err, status)
 	} else if status >= 400 {
 		err := errors.New("user reauthorization conflict")
+
+		logs.LogError(err, "User Reauthorization Error")
 		return msgs.SendCustomError(err, status)
 	}
 
 	// For guest admins, we always need to email an admin to approve the new creds
 	if clientIsGuestAdmin {
-		proposer, _, err := users.CheckForExistingUser(guest.Admin, "guests")
+		proposer, _, err := users.CheckForExistingGuestUser(guest.Admin)
+
 		if err != nil {
+			logs.LogError(err, "User Check Error")
 			return msgs.SendServerError(err)
 		}
 
 		err = propose.MailProposedCreds(user, proposer)
 
 		if err != nil {
+			logs.LogError(err, "Mail Proposed Creds Error")
 			return msgs.SendServerError(err)
 		}
 	} else if pass != "" {
@@ -75,6 +83,7 @@ func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 		_, err = provision.MailProvisionedCreds(user, pass, 1)
 
 		if err != nil {
+			logs.LogError(err, "Mail Provisioned Creds Error")
 			return msgs.SendServerError(err)
 		}
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -41,17 +42,22 @@ func deactivateAdminHandler(ctx context.Context, event events.APIGatewayProxyReq
 	}
 
 	// Ensure that the user we intend to modify exists.
-	_, exists, err := users.CheckForExistingUser(username, "admins")
+	_, exists, err := users.CheckForExistingAdminUser(username)
 
 	if !exists {
-		return msgs.SendCustomError(errors.New("admin does not exist"), 404)
+		err = fmt.Errorf("%s does not exist as an admin user", username)
+
+		logs.LogError(err, "Deactivate Admin Error")
+		return msgs.SendCustomError(err, 404)
 	} else if err != nil {
+		logs.LogError(err, "Deactivate Admin Error")
 		return msgs.SendServerError(err)
 	}
 
 	err = deactivateAdmin(username)
 
 	if err != nil {
+		logs.LogError(err, "Deactivate Admin Error")
 		return msgs.SendServerError(err)
 	}
 

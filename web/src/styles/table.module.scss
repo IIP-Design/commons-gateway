@@ -144,4 +144,9 @@
 .sortable-header {
   cursor: pointer;
   user-select: none;
+  line-height: 1rem;
+
+  > div {
+    margin-top: 0.25rem;
+  }
 }

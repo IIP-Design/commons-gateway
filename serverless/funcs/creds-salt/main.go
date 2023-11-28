@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -19,11 +20,15 @@ func handleCredentialRequest(username string) (creds.CredentialsData, error) {
 	var err error
 	var credentials creds.CredentialsData
 
-	_, exists, err := users.CheckForExistingUser(username, "guests")
+	_, exists, err := users.CheckForExistingGuestUser(username)
 
 	if err != nil {
+		logs.LogError(err, "Check For Guest User Error")
 		return credentials, err
 	} else if !exists {
+		err = fmt.Errorf("%s is not registered as a guest user", username)
+
+		logs.LogError(err, "Guest User Not Found Error")
 		return credentials, errors.New("user not found")
 	}
 
