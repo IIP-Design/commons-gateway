@@ -51,6 +51,11 @@
 
 .back-btn {
   background-color: var(--alizarin-crimson);
+
+  &:disabled {
+    background-color: darkgray;
+    cursor: default;
+  }
 }
 
 .spaced-btn {
