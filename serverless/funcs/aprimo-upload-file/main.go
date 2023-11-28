@@ -61,7 +61,8 @@ func lookupFileType(key string) (string, error) {
 	}
 }
 
-// If the file has been transferred to Aprimo, record the token for (1) possible retry and (2) deduplication
+// If the file has been transferred to Aprimo, record the upload token for
+// (1) possible retry and (2) deduplication
 func markFileUpload(key string, uploadToken string) error {
 	pool := data.ConnectToDB()
 	defer pool.Close()
@@ -132,13 +133,12 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 
 		segmentsDownloaded := (bytesDownloaded / PartSize)
 		lastSegmentIsShort := bytesDownloaded%PartSize > 0
+
 		if lastSegmentIsShort {
-			// DBG
 			fmt.Printf("Excess bytes: %d \n", bytesDownloaded%PartSize)
 			segmentsDownloaded += 1
 		}
 
-		// DBG
 		fmt.Printf("Downloaded %d segments\n", segmentsDownloaded)
 
 		for seg := int64(0); seg < segmentsDownloaded; seg++ {
@@ -162,7 +162,6 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 				break
 			}
 
-			// DBG
 			fmt.Printf("Uploaded bytes %d to %d in %d ms\n", start, end, t2-t1)
 
 			segment += 1
@@ -185,6 +184,7 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 	return uploadToken, err
 }
 
+// sendRecordEvent triggers the SQS queue that creates an Aprimo record corresponding to the uploaded file.
 func sendRecordEvent(key string, fileType string, fileToken string) (string, error) {
 	var messageId string
 	var err error
@@ -211,11 +211,16 @@ func sendRecordEvent(key string, fileType string, fileToken string) (string, err
 // extractS3DataFromSqsEvent retrieves the S3 event embedded in the SQS message.
 func extractS3DataFromSqsEvent(record events.SQSMessage) []events.S3EventRecord {
 	var parsed WrappedS3Events
+
 	json.Unmarshal([]byte(record.Body), &parsed)
 
 	return parsed.Records
 }
 
+// handleUploadFileToAprimo, which is triggered by an event on the SQSAprimoUpload queue,
+// authenticates to Aprimo, downloads the file in question from S3, and then transmits that
+// file for uploading to Aprimo. Upon a successful upload, a new SQS event is triggered
+// directing the application to create a corresponding record in Aprimo.
 func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error {
 	var err error
 
@@ -223,7 +228,7 @@ func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error 
 	token, err := aprimo.GetAuthToken()
 
 	if err != nil {
-		logs.LogError(err, "Unable to Authenticate Error")
+		logs.LogError(err, "Unable to Authenticate to Aprimo Error")
 		return err
 	}
 
@@ -243,7 +248,7 @@ func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error 
 
 	// We are receiving SQS record(s) for increased durability...
 	for _, e := range event.Records {
-		log.Printf("Message ID: %s\n", e.MessageId)
+		log.Printf("Reading SQS Message ID: %s\n", e.MessageId)
 
 		// ...but they are wrapping one or more (should be exactly one, but handle 1..N) S3 events...
 		r := extractS3DataFromSqsEvent(e)
@@ -254,14 +259,17 @@ func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error 
 			key := record.S3.Object.Key
 			size := record.S3.Object.Size
 
+			log.Printf("Initiating Aprimo upload for the file: %s\n", key)
+
 			fileType, err := lookupFileType(key)
 
 			if err != nil {
-				logs.LogError(err, "failed to lookup file type")
+				logs.LogError(err, "File Type Lookup Error")
 				return err
 			}
 
-			if fileType != "" { // Have a new record
+			// Presence of a file type indicates a new record
+			if fileType != "" {
 				var uploadToken string
 
 				// Concerted upload for small files, segmented if necessary
@@ -271,22 +279,25 @@ func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error 
 					uploadToken, err = uploadFileInSegments(key, token, downloader, bucket, fileType, size)
 				}
 
-				if err == nil {
+				if err != nil {
+					logs.LogError(err, "File Upload to Aprimo Error")
+					return err
+				} else {
 					messageId, err := sendRecordEvent(key, fileType, uploadToken)
+
 					if err != nil {
-						logs.LogError(err, "send record event error")
+						logs.LogError(err, "Error Triggering the Create Record SQS Event")
 						return err
 					}
-					log.Printf("Object %s sent onwards with message ID %s\n", key, messageId)
+
+					log.Printf("Object %s sent onwards for record creation with message ID %s\n", key, messageId)
 
 					err = markFileUpload(key, uploadToken)
+
 					if err != nil {
-						logs.LogError(err, "mark file upload error")
+						logs.LogError(err, "Mark File Upload Error")
 						return err
 					}
-				} else {
-					logs.LogError(err, "failed to upload file")
-					return err
 				}
 			} else { // Not a new record
 				log.Printf("Object %s has already been uploaded, but the event was not deleted\n", key)
