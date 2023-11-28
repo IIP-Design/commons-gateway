@@ -19,6 +19,7 @@ aprimoUpload:
   handler: bin/aprimo-upload-file
   description: Copies a file from S3 to Aprimo.
   runtime: go1.x
+  timeout: 60
   events:
     - sqs:
         arn: !GetAtt SQSAprimoUpload.Arn
