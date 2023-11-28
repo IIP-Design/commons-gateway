@@ -32,7 +32,7 @@ func getAdminHandler(ctx context.Context, event events.APIGatewayProxyRequest) (
 		err := fmt.Errorf("user %s does not exist", username)
 
 		logs.LogError(err, "Check For Admin Error")
-		return msgs.SendCustomError(err, 401)
+		return msgs.SendCustomError(err, 400)
 	}
 
 	admin, err := admins.RetrieveAdmin(username)
