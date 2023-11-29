@@ -31,7 +31,7 @@ const TableWrapper = <DataType, >( {
   if ( loading ) {
     return <div style={ { display: 'flex', justifyContent: 'center', width: '100%' } }><Loader /></div>;
   }
-  
+
   if ( !data.length ) {
     return <p className={ tableStyles['no-data'] }>No data to show</p>;
   }

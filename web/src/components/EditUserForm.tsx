@@ -478,9 +478,10 @@ const UserForm: FC = () => {
             ) }
           </div>
           <button
-            className={ `${btnStyles.btn} ${btnStyles['spaced-btn']}` }
+            className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? '' : btnStyles['disabled-btn']}` }
             id="update-btn"
             type="submit"
+            disabled={ !updated }
           >
             Update Guest
           </button>

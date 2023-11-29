@@ -58,8 +58,9 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
     let shouldClose = true;
 
-    if( updated && !skipConfirm ) {
+    if ( updated && !skipConfirm ) {
       const { isConfirmed } = await showConfirm( 'Are you sure you want to close the edit window?  You will lose all unsaved progress.' );
+
       shouldClose = isConfirmed;
     }
 
@@ -178,10 +179,10 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         ) }
         <div className={ style['btn-container'] }>
           <button
-            className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? "" : btnStyles['disabled-btn']}` }
+            className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? '' : btnStyles['disabled-btn']}` }
             onClick={ handleSubmit }
             type="button"
-            disabled={!updated}
+            disabled={ !updated }
           >
             Submit
           </button>

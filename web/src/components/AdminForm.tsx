@@ -274,10 +274,10 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
       </div>
       <div style={ { textAlign: 'center' } }>
         <button
-          className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? "" : btnStyles['disabled-btn']}` }
+          className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? '' : btnStyles['disabled-btn']}` }
           id="update-btn"
           type="submit"
-          disabled={!updated}
+          disabled={ !updated }
         >
           { admin ? 'Update Admin User' : 'Add Admin User' }
         </button>
@@ -305,7 +305,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
             </button>
           )
         }
-        <BackButton text="Cancel" showConfirmDialog={updated} />
+        <BackButton text="Cancel" showConfirmDialog={ updated } />
       </div>
     </form>
   );

@@ -121,7 +121,7 @@ const FILE_VALIDATION_MAP: TFileTypeMap = {
       'htm', 'html', 'shtml', 'xhtml',
     ], // Is anything other than ".html" allowed by Aprimo?
     plain: ['txt'],
-    vtt: [ 'vtt' ],
+    vtt: ['vtt'],
   },
   video: {
     avi: ['avi'],
