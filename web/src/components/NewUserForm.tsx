@@ -48,6 +48,7 @@ const UserForm: FC = () => {
   const [isAdmin, setIsAdmin] = useState( false );
   const [teamList, setTeamList] = useState( [] );
   const [userData, setUserData] = useState<INewUserFormData>( initialState );
+  const [updated, setUpdated] = useState( false );
 
   const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
 
@@ -81,6 +82,7 @@ const UserForm: FC = () => {
    */
   const handleUpdate = ( key: keyof INewUserFormData, value?: string|Date ) => {
     setUserData( { ...userData, [key]: value } );
+    setUpdated( true );
   };
 
   /**
@@ -245,7 +247,7 @@ const UserForm: FC = () => {
         >
           { isAdmin ? 'Invite' : 'Propose' }
         </button>
-        <BackButton text="Cancel" showConfirmDialog />
+        <BackButton text="Cancel" showConfirmDialog={updated} />
       </div>
     </form>
   );

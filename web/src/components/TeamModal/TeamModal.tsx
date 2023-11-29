@@ -13,13 +13,13 @@ import Modal from 'react-modal';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import { buildQuery } from '../../utils/api';
-import { showError } from '../../utils/alert';
+import { showConfirm, showError } from '../../utils/alert';
 import ToggleSwitch from '../ToggleSwitch/ToggleSwitch';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import btnStyle from '../../styles/button.module.scss';
+import btnStyles from '../../styles/button.module.scss';
 import style from './TeamModal.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -42,23 +42,34 @@ Modal.setAppElement( document.getElementById( 'root' ) as HTMLElement );
 export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITeamModalProps ) => {
   // Team Setup
   const [localTeam, setLocalTeam] = useState<Partial<ITeam>>( team || { active: true } );
+  const [updated, setUpdated] = useState( false );
 
   // Modal Setup
   const [modalIsOpen, setModalIsOpen] = useState( false );
 
   // Modal Controls
   const openModal = () => setModalIsOpen( true );
-  const closeModal = () => {
+  const closeModal = async ( skipConfirm = false ) => {
     // Clear the new team modal when closed.
     if ( !team ) {
       setLocalTeam( { ...localTeam, name: '', aprimoName: '' } );
+      setUpdated( false );
     }
-    setModalIsOpen( false );
+
+    let shouldClose = true;
+
+    if( updated && !skipConfirm ) {
+      const { isConfirmed } = await showConfirm( 'Are you sure you want to close the edit window?  You will lose all unsaved progress.' );
+      shouldClose = isConfirmed;
+    }
+
+    setModalIsOpen( !shouldClose );
   };
 
   // Update Controls
   const handleUpdate = ( key: keyof ITeam, value: ValueOf<ITeam> ) => {
     setLocalTeam( { ...localTeam, [key]: value } );
+    setUpdated( true );
   };
 
   // Update Team
@@ -83,16 +94,16 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
     // If the team is new, send a create request, otherwise send an update request.
     if ( !id ) {
       const response = await buildQuery( 'team', { teamName: name, teamAprimo: aprimoName }, 'POST' );
-      const { data, message } = await response.json();
+      const { data, error } = await response.json();
 
       newList = data;
-      errMessage = message;
+      errMessage = error;
     } else {
       const response = await buildQuery( 'team', { active, team: id, teamName: name, teamAprimo: aprimoName }, 'PUT' );
-      const { data, message } = await response.json();
+      const { data, error } = await response.json();
 
       newList = data;
-      errMessage = message;
+      errMessage = error;
     }
 
     // Update the team list with new data from the API.
@@ -103,7 +114,7 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
     if ( errMessage ) {
       showError( `Unable to complete your request. Reason: ${errMessage}` );
     } else {
-      closeModal();
+      closeModal( true );
     }
   };
 
@@ -126,10 +137,10 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
 
   return (
     <>
-      <button className={ btnStyle['anchor-btn'] } onClick={ openModal } type="button">{ anchor }</button>
+      <button className={ btnStyles['anchor-btn'] } onClick={ openModal } type="button">{ anchor }</button>
       <Modal
         isOpen={ modalIsOpen }
-        onRequestClose={ closeModal }
+        onRequestClose={ () => closeModal() }
         contentLabel="Example Modal"
         style={ modalStyle }
       >
@@ -167,15 +178,16 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         ) }
         <div className={ style['btn-container'] }>
           <button
-            className={ btnStyle.btn }
+            className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? "" : btnStyles['disabled-btn']}` }
             onClick={ handleSubmit }
             type="button"
+            disabled={!updated}
           >
             Submit
           </button>
           <button
-            className={ `${btnStyle.btn} ${btnStyle['back-btn']} ` }
-            onClick={ closeModal }
+            className={ `${btnStyles.btn} ${btnStyles['back-btn']} ` }
+            onClick={ () => closeModal() }
             type="button"
           >
             Cancel

@@ -32,14 +32,14 @@ const title = 'Submit Files';
   <PageContainer title={title} droppable={false}>
     <p class="section-header"><strong>Upload video or photo files <span>*</span></strong></p>
     <div class="drop-zone" id="drop-zone">
-      <strong>drag and drop files</strong>
+      <strong>Drag and drop a file</strong>
       <ul class="file-list" id="file-list"></ul>
     </div>
     <File id="add-files-button" promptText="or search your computer: " />
 
     <p class="section-header"><strong>Description <span>*</span></strong></p>
     <p class="desc-label">Include a point of contact email in case questions arise.</p>
-    <textarea id="description-text" aria-label="Enter uploaded media metadata"></textarea>
+    <textarea id="description-text" aria-label="Enter uploaded media metadata" style="resize: vertical;"></textarea>
     <Loader id="loader" style={{display: 'none'}} />
     <Button id="upload-files-btn" type="submit">Submit</Button>
   </PageContainer>
