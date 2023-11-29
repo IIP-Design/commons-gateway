@@ -121,6 +121,7 @@ const FILE_VALIDATION_MAP: TFileTypeMap = {
       'htm', 'html', 'shtml', 'xhtml',
     ], // Is anything other than ".html" allowed by Aprimo?
     plain: ['txt'],
+    vtt: ['vtt'],
   },
   video: {
     avi: ['avi'],
@@ -182,7 +183,7 @@ const validateFile = ( { type, size, name }: File ) => {
   const extensionMatched = allowedExtensions.includes( ext );
 
   if ( !extensionMatched ) {
-    showError( 'Invalid file extension. Make sure your file extension matched the file type, such as ".docx" for a Word file.' );
+    showError( 'Invalid file extension. Make sure your file extension matches the file type, such as ".docx" for a Word file.' );
 
     return false;
   }

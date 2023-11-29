@@ -19,7 +19,7 @@ import { escapeQueryStrings } from '../utils/string';
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import '../styles/form.scss';
-import styles from '../styles/button.module.scss';
+import btnStyles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Interfaces and Types
@@ -53,6 +53,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
   const [isAdmin, setIsAdmin] = useState( false );
   const [teamList, setTeamList] = useState( [] );
   const [adminData, setAdminData] = useState<IAdminFormData>( initialState );
+  const [updated, setUpdated] = useState( false );
 
   // Check whether the user is an admin and set that value in state.
   // Doing so outside of a useEffect hook causes a mismatch in values
@@ -106,6 +107,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
    */
   const handleUpdate = ( key: keyof IAdminFormData, value?: string|Date ) => {
     setAdminData( { ...adminData, [key]: value } );
+    setUpdated( true );
   };
 
   /**
@@ -272,16 +274,17 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
       </div>
       <div style={ { textAlign: 'center' } }>
         <button
-          className={ `${styles.btn} ${styles['spaced-btn']}` }
+          className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? '' : btnStyles['disabled-btn']}` }
           id="update-btn"
           type="submit"
+          disabled={ !updated }
         >
           { admin ? 'Update Admin User' : 'Add Admin User' }
         </button>
         {
           admin && adminData.active && (
             <button
-              className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
+              className={ `${btnStyles['btn-light']} ${btnStyles['spaced-btn']}` }
               id="deactivate-btn"
               type="button"
               onClick={ handleDeactivate }
@@ -293,7 +296,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
         {
           admin && !adminData.active && (
             <button
-              className={ `${styles['btn-light']} ${styles['spaced-btn']}` }
+              className={ `${btnStyles['btn-light']} ${btnStyles['spaced-btn']}` }
               id="deactivate-btn"
               type="button"
               onClick={ handleReactivate }
@@ -302,7 +305,7 @@ const AdminForm: FC<IAdminFormProps> = ( { admin } ) => {
             </button>
           )
         }
-        <BackButton text="Cancel" showConfirmDialog />
+        <BackButton text="Cancel" showConfirmDialog={ updated } />
       </div>
     </form>
   );

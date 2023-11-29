@@ -27,7 +27,7 @@ import type { IUserFormData } from '../utils/users';
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
 import '../styles/form.scss';
-import styles from '../styles/button.module.scss';
+import btnStyles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -48,6 +48,7 @@ const UserForm: FC = () => {
   const [isAdmin, setIsAdmin] = useState( false );
   const [teamList, setTeamList] = useState( [] );
   const [userData, setUserData] = useState<INewUserFormData>( initialState );
+  const [updated, setUpdated] = useState( false );
 
   const partnerRoles = [{ name: 'External Partner', value: 'guest' }, { name: 'External Team Lead', value: 'guest admin' }];
 
@@ -81,6 +82,7 @@ const UserForm: FC = () => {
    */
   const handleUpdate = ( key: keyof INewUserFormData, value?: string|Date ) => {
     setUserData( { ...userData, [key]: value } );
+    setUpdated( true );
   };
 
   /**
@@ -239,13 +241,14 @@ const UserForm: FC = () => {
       </div>
       <div style={ { textAlign: 'center' } }>
         <button
-          className={ `${styles.btn} ${styles['spaced-btn']}` }
+          className={ `${btnStyles.btn} ${btnStyles['spaced-btn']} ${updated ? '' : btnStyles['disabled-btn']}` }
           id="update-btn"
           type="submit"
+          disabled={ !updated }
         >
           { isAdmin ? 'Invite' : 'Propose' }
         </button>
-        <BackButton text="Cancel" showConfirmDialog />
+        <BackButton text="Cancel" showConfirmDialog={ updated } />
       </div>
     </form>
   );
