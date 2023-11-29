@@ -839,7 +839,7 @@ var latinMap = map[string]string{
 	"ₓ": "x",
 }
 
-var SAFE_CHARACTERS_REGEX = regexp.MustCompile(`(?m)[^0-9a-zA-Z! _\.\\*'\(\)\/-]`)
+var SAFE_CHARACTERS_REGEX = regexp.MustCompile(`(?m)[^0-9a-zA-Z _\.-]`)
 var LATIN_REGEX = regexp.MustCompile(`(?m)[^A-Za-z0-9[\] ]`)
 var SPACE_REGEX = regexp.MustCompile("(?m) ")
 var TIMESTAMP_REGEX = regexp.MustCompile(`(.+)\.([^\.]+)$`)
