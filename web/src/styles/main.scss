@@ -95,3 +95,7 @@ button {
 .cursor-pointer {
   cursor: pointer;
 }
+
+.ReactModal__Overlay--after-open {
+  z-index: 2;
+}
