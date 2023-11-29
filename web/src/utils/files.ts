@@ -145,7 +145,7 @@ const FILE_VALIDATION_MAP: TFileTypeMap = {
 const fileExtension = ( fileName: string ) => {
   const segments = fileName.split( '.' );
 
-  return segments[segments.length - 1];
+  return segments[segments.length - 1]?.toLowerCase();
 };
 
 const typeInfo = ( fileType: string ) => {
