@@ -42,7 +42,9 @@ func handleProposedInvitation(invite data.Invite) error {
 		return err
 	}
 
-	err = propose.MailProposedCreds(invite.Invitee, proposer)
+	fmt.Printf("Sending %s their temporary credentials\n", invite.Invitee.Email)
+
+	err = propose.MailProposedInvite(proposer, invite.Invitee)
 
 	return err
 }

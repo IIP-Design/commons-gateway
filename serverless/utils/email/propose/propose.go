@@ -121,7 +121,10 @@ func formatEmail(
 	}
 }
 
-func MailProposedCreds(proposer data.User, invitee data.User) error {
+// MailProposedInvite sends an email to all admins of the relevant team, informing
+// them that the proposer has requested access for a new user (the invitee). The
+// list of recipient admin is derived from the team to which the proposer is assigned.
+func MailProposedInvite(proposer data.User, invitee data.User) error {
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
 

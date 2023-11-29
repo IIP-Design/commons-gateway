@@ -72,7 +72,7 @@ func guestReauthHandler(ctx context.Context, event events.APIGatewayProxyRequest
 			return msgs.SendServerError(err)
 		}
 
-		err = propose.MailProposedCreds(user, proposer)
+		err = propose.MailProposedInvite(proposer, user)
 
 		if err != nil {
 			logs.LogError(err, "Mail Proposed Creds Error")
