@@ -13,13 +13,14 @@ import type { ColumnDef } from '@tanstack/react-table';
 // Local Imports
 // ////////////////////////////////////////////////////////////////////////////
 import { buildQuery } from '../utils/api';
-import { Table, defaultColumnDef } from './Table';
+import { defaultColumnDef } from './Table';
 import { TeamModal } from './TeamModal/TeamModal';
+import TableWrapper from './TableWrapper';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import style from '../styles/table.module.scss';
+import tableStyles from '../styles/table.module.scss';
 import btnStyle from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -28,6 +29,7 @@ import btnStyle from '../styles/button.module.scss';
 
 const TeamTable: FC = () => {
   const [teams, setTeams] = useState<ITeam[]>( [] );
+  const [loading, setLoading] = useState<boolean>( true );
 
   useEffect( () => {
     const getTeams = async () => {
@@ -39,7 +41,7 @@ const TeamTable: FC = () => {
       }
     };
 
-    getTeams();
+    getTeams().finally( () => setLoading( false ) );
   }, [] );
 
   const columns = useMemo<ColumnDef<ITeam>[]>(
@@ -60,8 +62,8 @@ const TeamTable: FC = () => {
           const isActive = info.getValue() as boolean;
 
           return (
-            <span className={ style.status }>
-              <span className={ isActive ? style.active : style.inactive } />
+            <span className={ tableStyles.status }>
+              <span className={ isActive ? tableStyles.active : tableStyles.inactive } />
               { isActive ? 'Active' : 'Inactive' }
             </span>
           );
@@ -76,7 +78,7 @@ const TeamTable: FC = () => {
       <TeamModal
         anchor={ (
           <span
-            className={ `${style['add-btn']} ${btnStyle.btn}` }
+            className={ `${tableStyles['add-btn']} ${btnStyle.btn}` }
             style={ { fontSize: 'var(--fontSizeSmall)' } }
           >
             + New Team
@@ -84,13 +86,9 @@ const TeamTable: FC = () => {
         ) }
         setTeams={ setTeams }
       />
-      <Table
-        {
-          ...{
-            data: teams,
-            columns,
-          }
-        }
+      <TableWrapper
+        loading={ loading }
+        table={ { data: teams, columns } }
       />
     </div>
   );

@@ -19,12 +19,13 @@ import { userIsSuperAdmin } from '../utils/auth';
 import { isGuestActive } from '../utils/guest';
 import { getTeamName } from '../utils/team';
 import { escapeQueryStrings } from '../utils/string';
-import { Table, defaultColumnDef } from './Table';
+import { defaultColumnDef } from './Table';
+import TableWrapper from './TableWrapper';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import style from '../styles/table.module.scss';
+import tableStyles from '../styles/table.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -40,6 +41,7 @@ interface IUserTableProps {
 const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
   const [users, setUsers] = useState<WithUiData<IUserEntry>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
+  const [loading, setLoading] = useState<boolean>( true );
 
   useEffect( () => {
     const body = {
@@ -62,7 +64,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
       }
     };
 
-    getUsers();
+    getUsers().finally( () => setLoading( false ) );
   }, [role] );
 
   useEffect( () => {
@@ -95,12 +97,12 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
           const isPending = info.row.original.pending as boolean;
           const isActive = info.getValue() as boolean;
 
-          const baseStyle = isPending ? style.pending : style.active;
+          const baseStyle = isPending ? tableStyles.pending : tableStyles.active;
           const baseLabel = isPending ? 'Pending' : 'Active';
 
           return (
-            <span className={ style.status }>
-              <span className={ isActive ? baseStyle : style.inactive } />
+            <span className={ tableStyles.status }>
+              <span className={ isActive ? baseStyle : tableStyles.inactive } />
               { isActive ? baseLabel : 'Inactive' }
             </span>
           );
@@ -112,19 +114,10 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
 
   return (
     <div style={ { display: 'flex' } }>
-      { users.length
-        ? (
-          <Table
-            {
-              ...{
-                data: users,
-                columns,
-                additionalTableClasses: ['user-table'],
-              }
-            }
-          />
-        )
-        : <p className={ style['no-data'] }>No data to show</p> }
+      <TableWrapper
+        loading={ loading }
+        table={ { data: users, columns, additionalTableClasses: ['user-table'] } }
+      />
     </div>
   );
 };

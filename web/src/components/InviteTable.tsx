@@ -18,14 +18,14 @@ import type { IUserEntry, WithUiData } from '../utils/types';
 import { buildQuery } from '../utils/api';
 import { userIsSuperAdmin } from '../utils/auth';
 import { getTeamName } from '../utils/team';
-import { Table, defaultColumnDef } from './Table';
+import { defaultColumnDef } from './Table';
 import { makeApproveUserHandler } from '../utils/users';
+import TableWrapper from './TableWrapper';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Styles and CSS
 // ////////////////////////////////////////////////////////////////////////////
-import btnStyle from '../styles/button.module.scss';
-import style from '../styles/table.module.scss';
+import btnStyles from '../styles/button.module.scss';
 
 // ////////////////////////////////////////////////////////////////////////////
 // Types and Interfaces
@@ -42,6 +42,7 @@ interface IInvite extends IUserEntry {
 const UserTable: FC = () => {
   const [users, setUsers] = useState<WithUiData<IInvite>[]>( [] );
   const [teams, setTeams] = useState<ITeam[]>( [] );
+  const [loading, setLoading] = useState<boolean>( true );
 
   useEffect( () => {
     const body = userIsSuperAdmin() ? {} : { team: currentUser.get().team };
@@ -60,7 +61,7 @@ const UserTable: FC = () => {
       }
     };
 
-    getUsers();
+    getUsers().finally( () => setLoading( false ) );
   }, [] );
 
   useEffect( () => {
@@ -82,7 +83,7 @@ const UserTable: FC = () => {
         ...defaultColumnDef( 'name' ),
         cell: info => (
           <button
-            className={ btnStyle['link-btn'] }
+            className={ btnStyles['link-btn'] }
             onClick={ makeApproveUserHandler( info.row.getValue( 'email' ) ) }
             type="button"
           >
@@ -118,19 +119,10 @@ const UserTable: FC = () => {
 
   return (
     <div style={ { display: 'flex', marginBottom: '0.75em' } }>
-      { users.length
-        ? (
-          <Table
-            {
-              ...{
-                data: users,
-                columns,
-                additionalTableClasses: ['user-table'],
-              }
-            }
-          />
-        )
-        : <p className={ style['no-data'] }>No pending invites at this time</p> }
+      <TableWrapper
+        loading={ loading }
+        table={ { data: users, columns, additionalTableClasses: ['user-table'] } }
+      />
     </div>
   );
 };

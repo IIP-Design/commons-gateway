@@ -1,0 +1,52 @@
+// ////////////////////////////////////////////////////////////////////////////
+// Local Imports
+// ////////////////////////////////////////////////////////////////////////////
+import Loader from './Loader/Loader';
+import { Table, type ITableProps } from './Table';
+
+// ////////////////////////////////////////////////////////////////////////////
+// Styles and CSS
+// ////////////////////////////////////////////////////////////////////////////
+import tableStyles from '../styles/table.module.scss';
+
+// ////////////////////////////////////////////////////////////////////////////
+// Types and Interfaces
+// ////////////////////////////////////////////////////////////////////////////
+type ITableWrapperProps<DataType> = {
+  readonly loading: boolean;
+  readonly table: ITableProps<DataType>;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// Implementation
+// ////////////////////////////////////////////////////////////////////////////
+const TableWrapper = <DataType, >( {
+  loading,
+  table: {
+    data,
+    columns,
+    additionalTableClasses,
+  },
+}: ITableWrapperProps<DataType> ) => {
+  if ( loading ) {
+    return <div style={ { display: 'flex', justifyContent: 'center', width: '100%' } }><Loader /></div>;
+  }
+  
+  if ( !data.length ) {
+    return <p className={ tableStyles['no-data'] }>No data to show</p>;
+  }
+
+  return (
+    <Table
+      {
+        ...{
+          data,
+          columns,
+          additionalTableClasses,
+        }
+      }
+    />
+  );
+};
+
+export default TableWrapper;
