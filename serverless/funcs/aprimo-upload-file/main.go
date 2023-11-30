@@ -28,9 +28,9 @@ type WrappedS3Events struct {
 }
 
 const (
-	PartSize        = 19 * 1024 * 1024 // 19 MB per part
-	PartsToDownload = 10
-	S3DownloadBytes = PartSize * PartsToDownload
+	PART_SIZE         = 19 * 1024 * 1024 // 19 MB per part
+	PARTS_TO_DOWNLOAD = 10
+	S3_DOWNLOAD_BYTES = PART_SIZE * PARTS_TO_DOWNLOAD
 )
 
 // Needed before go 1.21
@@ -95,7 +95,7 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 
 	uri := aprimo.InitFileUpload(key, token)
 
-	buf := make([]byte, S3DownloadBytes)
+	buf := make([]byte, S3_DOWNLOAD_BYTES)
 	segment := 0
 	downloadBlock := 0
 	readyToCommit := false
@@ -105,8 +105,8 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 
 	for !readyToCommit {
 		// NB: Range appears to be inclusive at both ends
-		s3DownloadStartByte := S3DownloadBytes * downloadBlock
-		s3DownloadEndByte := min(int64(S3DownloadBytes*(downloadBlock+1)-1), fileSize)
+		s3DownloadStartByte := S3_DOWNLOAD_BYTES * downloadBlock
+		s3DownloadEndByte := min(int64(S3_DOWNLOAD_BYTES*(downloadBlock+1)-1), fileSize)
 
 		// DBG
 		fmt.Printf("bytes=%d-%d\n", s3DownloadStartByte, s3DownloadEndByte)
@@ -131,19 +131,19 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 
 		dataBytes := data.Bytes()
 
-		segmentsDownloaded := (bytesDownloaded / PartSize)
-		lastSegmentIsShort := bytesDownloaded%PartSize > 0
+		segmentsDownloaded := (bytesDownloaded / PART_SIZE)
+		lastSegmentIsShort := bytesDownloaded%PART_SIZE > 0
 
 		if lastSegmentIsShort {
-			fmt.Printf("Excess bytes: %d \n", bytesDownloaded%PartSize)
+			fmt.Printf("Excess bytes: %d \n", bytesDownloaded%PART_SIZE)
 			segmentsDownloaded += 1
 		}
 
 		fmt.Printf("Downloaded %d segments\n", segmentsDownloaded)
 
 		for seg := int64(0); seg < segmentsDownloaded; seg++ {
-			start := PartSize * int64(seg)
-			end := min(int64(PartSize*(seg+1)), bytesDownloaded)
+			start := PART_SIZE * int64(seg)
+			end := min(int64(PART_SIZE*(seg+1)), bytesDownloaded)
 
 			// Send to Aprimo
 			t1 = time.Now().UnixMilli()
@@ -167,7 +167,7 @@ func uploadFileInSegments(key string, token string, downloader *manager.Download
 			segment += 1
 		}
 
-		readyToCommit = (bytesDownloaded < S3DownloadBytes)
+		readyToCommit = (bytesDownloaded < S3_DOWNLOAD_BYTES)
 
 		downloadBlock += 1
 	}
@@ -243,7 +243,7 @@ func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error 
 	s3Client := s3.NewFromConfig(sdkConfig)
 
 	downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
-		d.PartSize = PartSize
+		d.PartSize = PART_SIZE
 	})
 
 	// We are receiving SQS record(s) for increased durability...
@@ -273,7 +273,7 @@ func handleUploadFileToAprimo(ctx context.Context, event events.SQSEvent) error 
 				var uploadToken string
 
 				// Concerted upload for small files, segmented if necessary
-				if size <= PartSize {
+				if size <= PART_SIZE {
 					uploadToken, err = uploadSmallFile(key, token, downloader, bucket, fileType)
 				} else {
 					uploadToken, err = uploadFileInSegments(key, token, downloader, bucket, fileType, size)
