@@ -139,9 +139,11 @@ const FILE_VALIDATION_MAP: TFileTypeMap = {
   },
 };
 
-const ALLOWED_FILE_EXTENSIONS = new Set( Object.values(FILE_VALIDATION_MAP).map( t => {
-  return Object.values(t).map( ext => ext );
-} ).flat(2) );
+const ALLOWED_FILE_EXTENSIONS = new Set(
+  Object.values( FILE_VALIDATION_MAP )
+    .map( t => Object.values( t ).map( ext => ext ) )
+    .flat( 2 ),
+);
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
