@@ -139,6 +139,10 @@ const FILE_VALIDATION_MAP: TFileTypeMap = {
   },
 };
 
+const ALLOWED_FILE_EXTENSIONS = new Set( Object.values(FILE_VALIDATION_MAP).map( t => {
+  return Object.values(t).map( ext => ext );
+} ).flat(2) );
+
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 // ////////////////////////////////////////////////////////////////////////////
@@ -156,37 +160,41 @@ const typeInfo = ( fileType: string ) => {
 
 const validateFile = ( { type, size, name }: File ) => {
   const ext = fileExtension( name );
-  const { mediaType, subtype } = typeInfo( type );
 
-  if ( !ext || ext.length < 2 || ext.length > 4 ) {
+  // Validate full type if available, or check file extension if not
+  // N.B.: https://developer.mozilla.org/en-US/docs/Web/API/Blob/type
+  // Because of this, uncommon file types (e.g., SRT) may not show a type in some browsers
+  if ( type ) {
+    const { mediaType, subtype } = typeInfo( type );
+    const lookupType = FILE_VALIDATION_MAP[mediaType as TMediaType];
+
+    if ( !lookupType ) {
+      showError( 'Invalid media type. Most audio, video, picture, text, and Office documents are supported.' );
+
+      return false;
+    }
+
+    const allowedExtensions = lookupType[subtype];
+
+    if ( !allowedExtensions ) {
+      showError( 'Invalid file type. Try converting to a more common file format.' );
+
+      return false;
+    }
+
+    const extensionMatched = allowedExtensions.includes( ext );
+
+    if ( !extensionMatched ) {
+      showError( 'Invalid file extension. Make sure your file extension matches the file type, such as ".docx" for a Word file.' );
+
+      return false;
+    }
+  } else if ( !ext || ext.length < 2 || ext.length > 4 || !ALLOWED_FILE_EXTENSIONS.has( ext ) ) {
     showError( 'Uploaded files must have a valid file extension' );
 
     return false;
   }
 
-  const lookupType = FILE_VALIDATION_MAP[mediaType as TMediaType];
-
-  if ( !lookupType ) {
-    showError( 'Invalid media type. Most audio, video, picture, text, and Office documents are supported.' );
-
-    return false;
-  }
-
-  const allowedExtensions = lookupType[subtype];
-
-  if ( !allowedExtensions ) {
-    showError( 'Invalid file type. Try converting to a more common file format.' );
-
-    return false;
-  }
-
-  const extensionMatched = allowedExtensions.includes( ext );
-
-  if ( !extensionMatched ) {
-    showError( 'Invalid file extension. Make sure your file extension matches the file type, such as ".docx" for a Word file.' );
-
-    return false;
-  }
 
   if ( size > MAX_FILE_SIZE ) {
     showError( `Max file size is ${prettyBytes( MAX_FILE_SIZE )}, but the uploaded file is ${prettyBytes( size )}` );
