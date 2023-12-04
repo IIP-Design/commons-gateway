@@ -40,8 +40,14 @@ interface IUserTableProps {
 
 const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
   const [users, setUsers] = useState<WithUiData<IUserEntry>[]>( [] );
-  const [teams, setTeams] = useState<ITeam[]>( [] );
   const [loading, setLoading] = useState<boolean>( true );
+
+  const getTeams = async () => {
+    const response = await buildQuery( 'teams', null, 'GET' );
+    const { data } = await response.json();
+
+    return data as ITeam[];
+  };
 
   useEffect( () => {
     const body = {
@@ -49,7 +55,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
       ...( role ? { role } : {} ),
     };
 
-    const getUsers = async () => {
+    const getUsers = async ( teams: ITeam[] ) => {
       const response = await buildQuery( 'guests', body );
       const { data } = await response.json();
 
@@ -59,26 +65,16 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
             ...user,
             name: `${user.givenName} ${user.familyName}`,
             active: isGuestActive( user.expires ),
+            team: getTeamName( user.team, teams ),
           } ) ),
         );
       }
     };
 
-    getUsers().finally( () => setLoading( false ) );
+    getTeams()
+      .then( teams => getUsers( teams ) )
+      .finally( () => setLoading( false ) );
   }, [role] );
-
-  useEffect( () => {
-    const getTeams = async () => {
-      const response = await buildQuery( 'teams', null, 'GET' );
-      const { data } = await response.json();
-
-      if ( data ) {
-        setTeams( data );
-      }
-    };
-
-    getTeams();
-  }, [] );
 
   const columns = useMemo<ColumnDef<WithUiData<IUserEntry>>[]>(
     () => [
@@ -87,10 +83,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
         cell: info => <a href={ `/edit-user?id=${escapeQueryStrings( info.row.getValue( 'email' ) )}` }>{ info.getValue() as string }</a>,
       },
       defaultColumnDef( 'email' ),
-      {
-        ...defaultColumnDef( 'team' ),
-        cell: info => getTeamName( info.getValue() as string, teams ),
-      },
+      defaultColumnDef( 'team' ),
       {
         ...defaultColumnDef( 'active', 'Status' ),
         cell: info => {
@@ -109,7 +102,7 @@ const UserTable: FC<IUserTableProps> = ( { role }: IUserTableProps ) => {
         },
       },
     ],
-    [teams],
+    [],
   );
 
   return (

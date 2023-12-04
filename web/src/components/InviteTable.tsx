@@ -41,13 +41,19 @@ interface IInvite extends IUserEntry {
 
 const UserTable: FC = () => {
   const [users, setUsers] = useState<WithUiData<IInvite>[]>( [] );
-  const [teams, setTeams] = useState<ITeam[]>( [] );
   const [loading, setLoading] = useState<boolean>( true );
+
+  const getTeams = async () => {
+    const response = await buildQuery( 'teams', null, 'GET' );
+    const { data } = await response.json();
+
+    return data as ITeam[];
+  };
 
   useEffect( () => {
     const body = userIsSuperAdmin() ? {} : { team: currentUser.get().team };
 
-    const getUsers = async () => {
+    const getUsers = async ( teams: ITeam [] ) => {
       const response = await buildQuery( 'guests/pending', body );
       const { data } = await response.json();
 
@@ -56,25 +62,15 @@ const UserTable: FC = () => {
           data.map( ( user: IInvite ) => ( {
             ...user,
             name: `${user.givenName} ${user.familyName}`,
+            team: getTeamName( user.team, teams ),
           } ) ),
         );
       }
     };
 
-    getUsers().finally( () => setLoading( false ) );
-  }, [] );
-
-  useEffect( () => {
-    const getTeams = async () => {
-      const response = await buildQuery( 'teams', null, 'GET' );
-      const { data } = await response.json();
-
-      if ( data ) {
-        setTeams( data );
-      }
-    };
-
-    getTeams();
+    getTeams()
+      .then( teams => getUsers( teams ) )
+      .finally( () => setLoading( false ) );
   }, [] );
 
   const columns = useMemo<ColumnDef<WithUiData<IInvite>>[]>(
@@ -92,10 +88,7 @@ const UserTable: FC = () => {
         ),
       },
       defaultColumnDef( 'email' ),
-      {
-        ...defaultColumnDef( 'team' ),
-        cell: info => getTeamName( info.getValue() as string, teams ),
-      },
+      defaultColumnDef( 'team' ),
       defaultColumnDef( 'proposer' ),
       {
         accessorFn: row => row.expiration,
@@ -114,7 +107,7 @@ const UserTable: FC = () => {
         cell: info => daysUntil( info.getValue() as string ) * -1,
       },
     ],
-    [teams],
+    [],
   );
 
   return (
