@@ -64,7 +64,7 @@ export const submitFiles = async ( file: File, meta: IMetadata ): Promise<TUploa
 
   if ( !fileSuccess ) { return 'uploadFailed'; }
 
-  const metaSuccess = await submitFileMetadata( { ...meta, key, fileType: file.type } );
+  const metaSuccess = await submitFileMetadata( { ...meta, key, fileType: file.type || 'unknown' } );
 
   if ( !metaSuccess ) { return 'metadataFailed'; }
 

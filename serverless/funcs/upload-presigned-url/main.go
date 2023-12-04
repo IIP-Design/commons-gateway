@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"time"
@@ -25,16 +26,20 @@ const (
 
 func presignedUrlHandler(ctx context.Context, event events.APIGatewayProxyRequest) (msgs.Response, error) {
 	rawContentType := event.QueryStringParameters["contentType"]
+	var contentType string
 
 	if rawContentType == "" {
-		return msgs.SendServerError(errors.New("no content type submitted"))
-	}
+		fmt.Println("Unknown content type provided, assuming application/octet-stream")
+		contentType = "application/octet-stream"
+	} else {
+		ct, err := url.PathUnescape(rawContentType)
 
-	contentType, err := url.PathUnescape(rawContentType)
+		if err != nil {
+			logs.LogError(err, "content-type decode error")
+			return msgs.SendServerError(err)
+		}
 
-	if err != nil {
-		logs.LogError(err, "content-type decode error")
-		return msgs.SendServerError(err)
+		contentType = ct
 	}
 
 	rawFilename := event.QueryStringParameters["fileName"]
