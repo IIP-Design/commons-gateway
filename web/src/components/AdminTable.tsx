@@ -41,11 +41,17 @@ interface IAdminUser {
 // ////////////////////////////////////////////////////////////////////////////
 const AdminTable: FC = () => {
   const [admins, setAdmins] = useState<WithUiData<IAdminUser>[]>( [] );
-  const [teams, setTeams] = useState<ITeam[]>( [] );
   const [loading, setLoading] = useState<boolean>( true );
 
+  const getTeams = async () => {
+    const response = await buildQuery( 'teams', null, 'GET' );
+    const { data } = await response.json();
+
+    return data as ITeam[];
+  };
+
   useEffect( () => {
-    const getAdmins = async () => {
+    const getAdmins = async ( teams: ITeam[] ) => {
       const response = await buildQuery( 'admins', null, 'GET' );
       const { data } = await response.json();
 
@@ -54,25 +60,15 @@ const AdminTable: FC = () => {
           data.map( ( user: IAdminUser ) => ( {
             ...user,
             name: `${user.givenName} ${user.familyName}`,
+            team: getTeamName( user.team, teams ),
           } ) ),
         );
       }
     };
 
-    getAdmins().finally( () => setLoading( false ) );
-  }, [] );
-
-  useEffect( () => {
-    const getTeams = async () => {
-      const response = await buildQuery( 'teams', null, 'GET' );
-      const { data } = await response.json();
-
-      if ( data ) {
-        setTeams( data );
-      }
-    };
-
-    getTeams();
+    getTeams()
+      .then( teams => getAdmins( teams ) )
+      .finally( () => setLoading( false ) );
   }, [] );
 
   const columns = useMemo<ColumnDef<WithUiData<IAdminUser>>[]>(
@@ -86,10 +82,7 @@ const AdminTable: FC = () => {
         cell: info => <span style={ { textTransform: 'capitalize' } }>{ info.getValue() as string }</span>,
       },
       defaultColumnDef( 'email' ),
-      {
-        ...defaultColumnDef( 'team' ),
-        cell: info => getTeamName( info.getValue() as string, teams ),
-      },
+      defaultColumnDef( 'team' ),
       {
         ...defaultColumnDef( 'active' ),
         cell: info => {
@@ -104,7 +97,7 @@ const AdminTable: FC = () => {
         },
       },
     ],
-    [teams],
+    [],
   );
 
   return (
