@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -11,6 +11,7 @@ import (
 	"github.com/IIP-Design/commons-gateway/utils/data/creds"
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
 	"github.com/IIP-Design/commons-gateway/utils/email/provision"
+	"github.com/IIP-Design/commons-gateway/utils/logs"
 	msgs "github.com/IIP-Design/commons-gateway/utils/messages"
 )
 
@@ -20,18 +21,31 @@ func handleInvitation(invite data.Invite) error {
 	_, adminActive, err := admins.CheckForActiveAdmin(invite.Inviter)
 
 	if err != nil {
+		logs.LogError(err, "Admin Check Error")
 		return err
 	} else if !adminActive {
-		return errors.New("you are not authorized to invite users")
+		err = fmt.Errorf("the user %s is not authorized to add users", invite.Inviter)
+
+		logs.LogError(err, "Admin Check Error")
+		return err
 	}
+
+	fmt.Printf("Registering the invitation of %s by %s\n", invite.Invitee.Email, invite.Inviter)
 
 	pass, err := creds.SaveInitialInvite(invite, false)
 
 	if err != nil {
+		logs.LogError(err, "Save Credentials Error")
 		return err
 	}
 
+	fmt.Printf("Sending %s their temporary credentials\n", invite.Invitee.Email)
+
 	_, err = provision.MailProvisionedCreds(invite.Invitee, pass, 0)
+
+	if err != nil {
+		logs.LogError(err, "Mail Credentials Error")
+	}
 
 	return err
 }
@@ -45,12 +59,14 @@ func provisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 	invite, err := data.ExtractInvite(event.Body)
 
 	if err != nil {
+		logs.LogError(err, "Extract Invite Error")
 		return msgs.SendServerError(err)
 	}
 
 	err = handleInvitation(invite)
 
 	if err != nil {
+		logs.LogError(err, "Handle Invite Error")
 		return msgs.SendServerError(err)
 	}
 

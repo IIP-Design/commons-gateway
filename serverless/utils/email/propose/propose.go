@@ -2,8 +2,8 @@ package propose
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -25,6 +25,7 @@ type RequestSupportStaffData struct {
 	Url      string    `json:"url"`
 }
 
+// getAdmins retrieves a list of admins assigned to a given team.
 func getAdmins(team string) ([]data.User, error) {
 	var admins []data.User
 
@@ -67,23 +68,27 @@ func getAdmins(team string) ([]data.User, error) {
 	return admins, nil
 }
 
+// formatEmailBody populates the template of the invite proposal
+// notification email with the relevant values.
 func formatEmailBody(
 	proposer data.User,
 	invitee data.User,
 	admin data.User,
 	url string,
 ) string {
-	return fmt.Sprintf(`<p>%s %s,</p> 
-	<p>%s %s has submitted a ticket for adding
-	 %s %s for your approval.
-	  Please follow <a href="%s">this link</a> to approve or deny this request.</p>
-	<p>This email was generated automatically. Please do not reply to this email.</p>`,
+	return fmt.Sprintf(
+		`<p>%s %s,</p>
+		 <p>%s %s has submitted a ticket for adding %s %s for your approval. Please follow <a href="%s">this link</a> to approve or deny this request.</p>
+		 <p>This email was generated automatically. Please do not reply to this email.</p>`,
 		admin.NameFirst, admin.NameLast,
 		proposer.NameFirst, proposer.NameLast,
 		invitee.NameFirst, invitee.NameLast,
-		url)
+		url,
+	)
 }
 
+// formatEmail prepares the event object that is sent to SES in order
+// to initiate the invite proposal notification email.
 func formatEmail(
 	proposer data.User,
 	invitee data.User,
@@ -116,12 +121,17 @@ func formatEmail(
 	}
 }
 
-func MailProposedCreds(proposer data.User, invitee data.User) error {
+// MailProposedInvite sends an email to all admins of the relevant team, informing
+// them that the proposer has requested access for a new user (the invitee). The
+// list of recipient admin is derived from the team to which the proposer is assigned.
+func MailProposedInvite(proposer data.User, invitee data.User) error {
 	sourceEmail := os.Getenv("SOURCE_EMAIL_ADDRESS")
 	redirectUrl := os.Getenv("EMAIL_REDIRECT_URL")
 
 	if sourceEmail == "" {
-		log.Println("Not configured for sending emails")
+		err := errors.New("not configured for sending emails")
+
+		logs.LogError(err, "Missing Source Email Error")
 		return nil
 	}
 
@@ -130,12 +140,16 @@ func MailProposedCreds(proposer data.User, invitee data.User) error {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(awsRegion),
 	)
+
 	if err != nil {
+		logs.LogError(err, "Error Loading AWS Configuration")
 		return err
 	}
 
 	admins, err := getAdmins(proposer.Team)
+
 	if err != nil {
+		logs.LogError(err, "Get Admins Error")
 		return err
 	}
 
@@ -151,8 +165,9 @@ func MailProposedCreds(proposer data.User, invitee data.User) error {
 		)
 
 		_, err := sesClient.SendEmail(context.TODO(), &e)
+
 		if err != nil {
-			log.Println(err.Error())
+			logs.LogError(err, "Send Error")
 		}
 
 	}
