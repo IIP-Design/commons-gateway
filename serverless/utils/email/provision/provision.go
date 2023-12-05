@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
+	"github.com/IIP-Design/commons-gateway/utils/data/guests"
 	"github.com/IIP-Design/commons-gateway/utils/logs"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -58,12 +59,40 @@ func (pt ProvisionType) Verb() string {
 	}
 }
 
+// formatExpirationLine retrieves the access expiration date for a given user. It then
+// formats that date into a common locale string and outputs a sentence informing the
+// user when their access expires. If there is a problem with retrieving the expiration
+// date, the function simply returns an empty string.
+func formatExpirationLine(email string) string {
+	// Defines an easily readable date format.
+	const LocaleDate = "January 2, 2006"
+
+	var expirationText string
+	expires, err := guests.RetrieveGuestExpiration(email)
+
+	if err != nil {
+		logs.LogError(err, "Set Expiration Text Error")
+		expirationText = ""
+	} else {
+		textDate := expires.Format(LocaleDate)
+		expirationText = fmt.Sprintf("You have been granted access to the uploader portal until %s.", textDate)
+	}
+
+	return expirationText
+}
+
+// formatEmailBody populates the email template providing a user with their credentials. It replaces
+// placeholders with account information pertinent to the given user/account action.
 func formatEmailBody(invitee data.User, tmpPassword string, url string, verb string) string {
+
+	expirationText := formatExpirationLine(invitee.Email)
+
 	return fmt.Sprintf(
 		`<p>%s %s,</p>
 		<p>Your content upload account has been successfully %s. Please access the link below to finish provisioning your account.</p>
 		<a href="%s">%s</a>
 		<p>Please use this email address as your username. Your temporary password is: %s</p>
+		<p>%s</p>
 		<p>This email was generated automatically. Please do not reply to this email.</p>`,
 		invitee.NameFirst,
 		invitee.NameLast,
@@ -71,9 +100,12 @@ func formatEmailBody(invitee data.User, tmpPassword string, url string, verb str
 		url,
 		url,
 		tmpPassword,
+		expirationText,
 	)
 }
 
+// formatEmail populates an SES template with the information specific to the given user/account
+// action. This is then used to trigger an SES event that email the user their temporary credentials.
 func formatEmail(invitee data.User, tmpPassword string, url string, sourceEmail string, action ProvisionType) ses.SendEmailInput {
 
 	return ses.SendEmailInput{

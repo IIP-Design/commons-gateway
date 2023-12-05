@@ -85,6 +85,23 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 	return guest, err
 }
 
+// RetrieveGuestExpiration opens a database connection and retrieves a single user's access expiration.
+func RetrieveGuestExpiration(email string) (time.Time, error) {
+	var expires time.Time
+
+	pool := data.ConnectToDB()
+	defer pool.Close()
+
+	query := `SELECT expiration FROM invites WHERE invitee = $1 ORDER BY date_invited DESC LIMIT 1`
+	err := pool.QueryRow(query, email).Scan(&expires)
+
+	if err != nil {
+		logs.LogError(err, "Retrieve Guest Expiration Query Error")
+	}
+
+	return expires, err
+}
+
 // RetrieveGuests opens a database connection and retrieves the full list of guest users.
 func RetrieveGuests(team string, role string) ([]data.GuestUser, error) {
 	var guests []data.GuestUser
