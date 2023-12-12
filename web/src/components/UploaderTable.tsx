@@ -72,12 +72,8 @@ const UploaderTable: FC = () => {
       },
       defaultColumnDef( 'email' ),
       {
-        ...defaultColumnDef( 'proposer' ),
+        ...defaultColumnDef( 'proposer', 'Invited By' ),
         cell: info => info.row.getValue( 'proposer' ),
-      },
-      {
-        ...defaultColumnDef( 'inviter' ),
-        cell: info => info.row.getValue( 'inviter' ),
       },
       {
         ...defaultColumnDef( 'active', 'Status' ),
