@@ -2,6 +2,7 @@ package guests
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/IIP-Design/commons-gateway/utils/data/data"
@@ -11,12 +12,13 @@ import (
 )
 
 type InviteRecord struct {
-	Proposer      sql.NullString `json:"proposer"`
-	Pending       bool           `json:"pending"`
-	DateInvited   string         `json:"dateInvited"`
-	Expiration    string         `json:"expiration"`
-	Expired       bool           `json:"expired"`
-	PasswordReset bool           `json:"passwordReset"`
+	Proposer      string `json:"proposer"`
+	Pending       bool   `json:"pending"`
+	DateInvited   string `json:"dateInvited"`
+	Expiration    string `json:"expiration"`
+	Expired       bool   `json:"expired"`
+	Inviter       string `json:"inviter"`
+	PasswordReset bool   `json:"passwordReset"`
 }
 
 type GuestData struct {
@@ -47,7 +49,11 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 		return guest, err
 	}
 
-	query = `SELECT proposer, pending, date_invited, expiration, expiration < NOW() AS expired, password_reset FROM invites WHERE invitee = $1 ORDER BY date_invited DESC`
+	query = `SELECT i.pending, i.date_invited, i.expiration, i.expiration < NOW() AS expired, i.password_reset,
+	  a.first_name, a.last_name, COALESCE( i.proposer, '' )
+		FROM invites i
+		JOIN admins a ON i.inviter = a.email
+		WHERE invitee = $1 ORDER BY date_invited DESC`
 	rows, err := pool.Query(query, email)
 
 	if err != nil {
@@ -58,25 +64,54 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var proposer sql.NullString
+		var inviterFirst string
+		var inviterLast string
+		var proposer string
 		var pending bool
 		var dateInvited time.Time
 		var expiration time.Time
 		var expired bool
 		var passwordReset bool
 
-		if err := rows.Scan(&proposer, &pending, &dateInvited, &expiration, &expired, &passwordReset); err != nil {
+		if err := rows.Scan(
+			&pending,
+			&dateInvited,
+			&expiration,
+			&expired,
+			&passwordReset,
+			&inviterFirst,
+			&inviterLast,
+			&proposer,
+		); err != nil {
 			logs.LogError(err, "Scan Guests Query Error")
 			return guest, err
 		}
 
+		proposerName := ""
+
+		if proposer != "" {
+			query := "SELECT first_name, last_name FROM guests WHERE email = $1"
+
+			var proposerFirstName string
+			var proposerLastName string
+
+			pool.QueryRow(query, proposer).Scan(&proposerFirstName, &proposerLastName)
+
+			if err != nil || proposerFirstName == "" || proposerLastName == "" {
+				logs.LogError(err, "Retrieve Proposer Query Error")
+			} else {
+				proposerName = fmt.Sprintf("%s %s", proposerFirstName, proposerLastName)
+			}
+		}
+
 		var invite = InviteRecord{
-			Proposer:      proposer,
-			Pending:       pending,
 			DateInvited:   dateInvited.Format(time.RFC3339),
 			Expiration:    expiration.Format(time.RFC3339),
 			Expired:       expired,
+			Inviter:       fmt.Sprintf("%s %s", inviterFirst, inviterLast),
 			PasswordReset: passwordReset,
+			Pending:       pending,
+			Proposer:      proposerName,
 		}
 
 		guest.Invites = append(guest.Invites, invite)
