@@ -23,7 +23,7 @@
   --baseFontSize: 16px;
   --typeScale: 1.25;
 
-  --fontSizeSmall: calc(var(--baseFontSize) / 1.15);
+  --fontSizeSmall: calc(var(--baseFontSize) / 1.12);
   --fontSizeNormal: --baseFontSize;
   --fontSizeMediumSmall: calc(var(--baseFontSize) * var(--typeScale));
   --fontSizeMedium: calc(var(--fontSizeMediumSmall) * var(--typeScale));
