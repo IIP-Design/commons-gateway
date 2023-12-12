@@ -48,10 +48,8 @@ interface IInviteWidgetParams {
 
 // Possible TODO: Remove
 interface IRawInvite {
-  proposer?: {
-    String: string;
-    Valid: boolean;
-  },
+  proposer?: string;
+  inviter?: string;
   pending: boolean;
   expired: boolean;
   passwordReset: boolean;
@@ -147,6 +145,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
 
   const handleRevoke = async () => {
     const { email, givenName, familyName } = userData;
+
     const { isConfirmed } = await showConfirm( `Are you sure you want to deactivate ${givenName} ${familyName}?` );
 
     if ( !isConfirmed ) {
@@ -166,8 +165,7 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
   return (
     <div id="invite-data-form">
       <h3 style={ { display: 'flex' } }>
-        { currentInvite.expired ? 'Most Recent' : 'Current' }
-        { ' Access ' }
+        { `${currentInvite.expired ? 'Most Recent' : 'Current'} Access` }
         <StatusToken active={ !currentInvite.expired } />
       </h3>
       <div className="field-group">
@@ -192,6 +190,18 @@ const CurrentInvite: FC<IInviteWidgetParams> = ( { userData, invite, isAdmin }: 
             value={ currentInvite.dateInvited }
           />
         </label>
+      </div>
+      <div className="field-group">
+        <div>
+          <span>{ currentInvite.proposer ? 'Invited By:' : 'Added By:' }</span>
+          <span>{ currentInvite.proposer ? currentInvite.proposer : currentInvite.inviter }</span>
+        </div>
+        { currentInvite.proposer && (
+          <div>
+            <span>Approved By:</span>
+            <span>{ currentInvite.inviter }</span>
+          </div>
+        ) }
       </div>
       <button
         className={ `${btnStyles.btn} ${updated ? '' : btnStyles['disabled-btn']} ${btnStyles['spaced-btn']}` }
@@ -247,25 +257,21 @@ const PendingInvite: FC<IInviteWidgetParams> = ( { userData: { email }, invite, 
         />
       </label>
     </div>
-    {
-      isAdmin
-        ? (
-          <button
-            className={ `${btnStyles['btn-light']}` }
-            id="finalize-btn"
-            type="button"
-            onClick={ makeApproveUserHandler( email ) }
-          >
-            Finalize
-          </button>
-        )
-        : (
-          <p>
-            { `Proposed by ${invite.proposer || 'N/A'}` }
-          </p>
-        )
-    }
-
+    <div className="field-group">
+      <div>
+        <span>{ `Proposed by: ${invite.proposer || 'N/A'}` }</span>
+      </div>
+    </div>
+    { isAdmin && (
+      <button
+        className={ `${btnStyles['btn-light']}` }
+        id="finalize-btn"
+        type="button"
+        onClick={ makeApproveUserHandler( email ) }
+      >
+        Finalize
+      </button>
+    ) }
   </div>
 );
 
@@ -322,8 +328,9 @@ const UserForm: FC = () => {
         } );
 
         const fmtInvites: IInvite[] = data.invites.map( ( invite: IRawInvite ) => ( {
-          proposer: invite.proposer?.String || null,
+          proposer: invite.proposer || null,
           pending: invite.pending,
+          inviter: invite.inviter,
           expired: invite.expired,
           dateInvited: getYearMonthDay( parse( invite.dateInvited, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),
           accessEndDate: getYearMonthDay( parse( invite.expiration, "yyyy-MM-dd'T'HH:mm:ssX", new Date() ) ),

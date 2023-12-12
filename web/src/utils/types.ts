@@ -35,6 +35,7 @@ export interface IInvite {
   dateInvited: string;
   accessEndDate: string;
   proposer?: string;
+  inviter?: string
 }
 
 // ////////////////////////////////////////////////////////////////////////////

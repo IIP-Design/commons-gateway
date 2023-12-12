@@ -26,11 +26,21 @@ select {
   display: flex;
   flex-direction: column;
 
+  > div {
+    margin-bottom: 1.5rem;
+    font-size: var(--fontSizeSmall);
+
+    > span:first-of-type {
+      margin-right: 0.5rem;
+    }
+  }
+
   @include breakpoint('tablet') {
     flex-direction: row;
     justify-content: space-between;
 
-    > label {
+    > label,
+    > div {
       width: 45%;
     }
   }
