@@ -27,7 +27,7 @@ export const routes: IRoute[] = [
   },
   {
     href: 'uploader-users',
-    name: 'Uploaders',
+    name: 'My Team',
     rolesAccessible: ['guest admin'],
   },
   {
