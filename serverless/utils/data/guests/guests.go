@@ -49,10 +49,10 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 		return guest, err
 	}
 
-	query = `SELECT i.pending, i.date_invited, i.expiration, i.expiration < NOW() AS expired, i.password_reset,
-	  a.first_name, a.last_name, COALESCE( i.proposer, '' )
-		FROM invites i
-		JOIN admins a ON i.inviter = a.email
+	query = `SELECT pending, date_invited, expiration,
+	  expiration < NOW() AS expired, password_reset,
+	  COALESCE( inviter, '' ), COALESCE( proposer, '' )
+		FROM invites
 		WHERE invitee = $1 ORDER BY date_invited DESC`
 	rows, err := pool.Query(query, email)
 
@@ -64,8 +64,7 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var inviterFirst string
-		var inviterLast string
+		var inviter string
 		var proposer string
 		var pending bool
 		var dateInvited time.Time
@@ -79,8 +78,7 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 			&expiration,
 			&expired,
 			&passwordReset,
-			&inviterFirst,
-			&inviterLast,
+			&inviter,
 			&proposer,
 		); err != nil {
 			logs.LogError(err, "Scan Guests Query Error")
@@ -104,11 +102,28 @@ func RetrieveGuest(email string) (GuestDetails, error) {
 			}
 		}
 
+		inviterName := ""
+
+		if inviter != "" {
+			query := "SELECT first_name, last_name FROM admins WHERE email = $1"
+
+			var inviterFirstName string
+			var inviterLastName string
+
+			pool.QueryRow(query, inviter).Scan(&inviterFirstName, &inviterLastName)
+
+			if err != nil || inviterFirstName == "" || inviterLastName == "" {
+				logs.LogError(err, "Retrieve Inviter Query Error")
+			} else {
+				inviterName = fmt.Sprintf("%s %s", inviterFirstName, inviterLastName)
+			}
+		}
+
 		var invite = InviteRecord{
 			DateInvited:   dateInvited.Format(time.RFC3339),
 			Expiration:    expiration.Format(time.RFC3339),
 			Expired:       expired,
-			Inviter:       fmt.Sprintf("%s %s", inviterFirst, inviterLast),
+			Inviter:       inviterName,
 			PasswordReset: passwordReset,
 			Pending:       pending,
 			Proposer:      proposerName,
