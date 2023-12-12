@@ -67,6 +67,11 @@ func provisionHandler(ctx context.Context, event events.APIGatewayProxyRequest) 
 
 	if err != nil {
 		logs.LogError(err, "Handle Invite Error")
+
+		if err.Error() == "user already exists" {
+			return msgs.SendCustomError(err, 409)
+		}
+
 		return msgs.SendServerError(err)
 	}
 

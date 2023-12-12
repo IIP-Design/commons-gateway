@@ -112,7 +112,7 @@ func SaveInitialInvite(invite data.Invite, setPending bool) (string, error) {
 		)
 
 		logs.LogError(err, "Check For Existing User Error")
-		return pass, err
+		return pass, fmt.Errorf("user already exists")
 	}
 
 	// Save credentials

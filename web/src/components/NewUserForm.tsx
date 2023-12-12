@@ -140,10 +140,12 @@ const UserForm: FC = () => {
         expiration,
       };
 
-      const { ok } = await buildQuery( 'creds/provision', invitation, 'POST' );
+      const { ok, status } = await buildQuery( 'creds/provision', invitation, 'POST' );
 
-      if ( !ok ) {
-        showError( 'Unable to create user' );
+      if ( !ok && status === 409 ) {
+        showError( `The user ${invitee.email} already exists` );
+      } else if ( !ok ) {
+        showError( 'Unable to create user.' );
       } else {
         window.location.assign( '/' );
       }
