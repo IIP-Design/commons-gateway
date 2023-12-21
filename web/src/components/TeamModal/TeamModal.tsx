@@ -162,7 +162,11 @@ export const TeamModal: FC<ITeamModalProps> = ( { team, setTeams, anchor }: ITea
         <label className={ style.label } htmlFor="aprimo-name-input">
           Aprimo Name
         </label>
-        <span />
+        <span className={ style.note }>
+          This value must match the &quot;Team Name&quot; property
+          <br />
+          of an existing team in Content Commons.
+        </span>
         <input
           className={ style.input }
           id="aprimo-name-input"
