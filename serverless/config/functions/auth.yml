@@ -1,5 +1,6 @@
 # All of the functions pertaining to authentication and credentials.
 authorizer:
+  name: gateway-${opt:stage}-authorizer
   handler: bin/authorizer
   description: Verifies that the request is accompanied by a valid JSON web token.
   runtime: go1.x
