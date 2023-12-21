@@ -14,6 +14,11 @@ Resources:
       VpcSubnetIds:
         - !Ref SubnetA
         - !Ref SubnetB
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   RDSProxyTargetGroup:
     Type: AWS::RDS::DBProxyTargetGroup
@@ -28,23 +33,28 @@ Resources:
     Properties:
       RoleName: CommonsGatewayRDSProxyRole-${opt:stage}
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
-            Action: "sts:AssumeRole"
+            Action: 'sts:AssumeRole'
             Principal:
-              Service: "rds.amazonaws.com"
+              Service: 'rds.amazonaws.com'
       Policies:
         - PolicyName: CommonsGatewayRDSProxyPolicy-${opt:stage}
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
-                Action: "secretsmanager:GetSecretValue"
+                Action: 'secretsmanager:GetSecretValue'
                 Resource: !GetAtt RDSInstance.MasterUserSecret.SecretArn
               - Effect: Allow
-                Action: "kms:Decrypt"
-                Resource: "arn:aws:kms:${aws:region}:${aws:accountId}:key/*"
+                Action: 'kms:Decrypt'
+                Resource: 'arn:aws:kms:${aws:region}:${aws:accountId}:key/*'
                 Condition:
                   StringEquals:
-                    kms:ViaService: "secretsmanager.${aws:region}.amazonaws.com"
+                    kms:ViaService: 'secretsmanager.${aws:region}.amazonaws.com'
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}

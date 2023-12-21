@@ -38,6 +38,9 @@ provider:
   deploymentBucket:
     name: gpalab-automatic-deployments-${param:deployment}
   disableRollback: ${param:rollback}
+  tags:
+    application: gateway
+    environment: ${opt:stage}
 
 useDotenv: true
 

@@ -6,6 +6,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-vpc-${opt:stage}
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SubnetA:
     Type: AWS::EC2::Subnet
@@ -16,6 +20,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-subnet-a
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SubnetB:
     Type: AWS::EC2::Subnet
@@ -26,6 +34,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-subnet-b
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -36,6 +48,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-lambdas
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   RDSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -51,3 +67,7 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-rds
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}

@@ -5,8 +5,13 @@ Resources:
     Type: AWS::EC2::KeyPair
     Properties:
       KeyFormat: pem
-      KeyName: commons-gateway-${opt:stage}-jump
+      KeyName: commons-gateway-${opt:stage}-jump-key
       KeyType: ed25519
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # Security group to manage connections to the jump server. By default,
   # no ingress is allowed and SSH access should be added manually by IP.
@@ -19,6 +24,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-jump
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # The EC2 instance that provides access to the VPC
   JumpServer:
@@ -38,3 +47,7 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-jump
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}

@@ -91,6 +91,11 @@ Resources:
           AcmCertificateArn: ${env:CERTIFICATE_ARN}
           MinimumProtocolVersion: TLSv1.2_2021
           SslSupportMethod: sni-only
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   CloudFrontS3BucketPolicy:
     Type: AWS::S3::BucketPolicy

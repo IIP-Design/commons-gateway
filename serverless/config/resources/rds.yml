@@ -22,6 +22,11 @@ Resources:
       DBSubnetGroupName: !Ref RDSSubnetGroup
       VPCSecurityGroups:
         - !GetAtt RDSSecurityGroup.GroupId
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   RDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -31,3 +36,8 @@ Resources:
       SubnetIds:
         - !Ref SubnetA
         - !Ref SubnetB
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}

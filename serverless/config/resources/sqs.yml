@@ -3,11 +3,21 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: content-gateway-${opt:stage}-send-2fa
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SQSAprimoUploadDLQ:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-upload-dlq
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SQSAprimoUpload:
     Type: AWS::SQS::Queue
@@ -17,11 +27,21 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SQSAprimoUploadDLQ.Arn
         maxReceiveCount: 5
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SQSAprimoRecordDLQ:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: content-gateway-${opt:stage}-aprimo-record-dlq
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SQSAprimoRecord:
     Type: AWS::SQS::Queue
@@ -31,6 +51,11 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SQSAprimoRecordDLQ.Arn
         maxReceiveCount: 5
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SQSAprimoUploadPolicy:
     Type: AWS::SQS::QueuePolicy
@@ -59,6 +84,11 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: content-gateway-${opt:stage}-unlock-guest-account-dlq
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SQSUnlockGuestAccount:
     Type: AWS::SQS::Queue
@@ -68,3 +98,8 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SQSUnlockGuestAccountDLQ.Arn
         maxReceiveCount: 5
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}

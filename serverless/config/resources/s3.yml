@@ -11,6 +11,11 @@ Resources:
               - PUT
             AllowedOrigins: ${file(./config/${param:deployment}.json):cors.origins}
             Id: commons-gateway-${opt:stage}-upload-cors
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # Bucket where successfully scanned files end up.
   CleanBucket:
@@ -21,9 +26,19 @@ Resources:
         QueueConfigurations:
           - Event: s3:ObjectCreated:*
             Queue: !GetAtt SQSAprimoUpload.Arn
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # Bucket from which static site is served.
   StaticSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: commons-gateway-${opt:stage}-site
+      Tags:
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}

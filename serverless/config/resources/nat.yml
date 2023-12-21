@@ -9,6 +9,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-subnet-public-a
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   SubnetPublicB:
     Type: AWS::EC2::Subnet
@@ -19,6 +23,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-subnet-public-b
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # Create an Internet Gateway for the public subnets.
   InternetGateway:
@@ -27,6 +35,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-ig
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -42,6 +54,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-public
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   RoutePublic:
     Type: AWS::EC2::Route
@@ -71,6 +87,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-a-ip
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   ElasticIPB:
     Type: AWS::EC2::EIP
@@ -80,6 +100,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-b-ip
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # Create two NAT Gateways.
   NatGatewayA:
@@ -91,6 +115,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-a
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   NatGatewayB:
     Type: AWS::EC2::NatGateway
@@ -101,6 +129,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-nat-b
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   # Route the private subnet A to NAT A.
   RouteTablePrivateA:
@@ -110,6 +142,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-private-a
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   RoutePrivateA:
     Type: AWS::EC2::Route
@@ -132,6 +168,10 @@ Resources:
       Tags:
         - Key: Name
           Value: commons-gateway-${opt:stage}-private-b
+        - Key: application
+          Value: gateway
+        - Key: environment
+          Value: ${opt:stage}
 
   RoutePrivateB:
     Type: AWS::EC2::Route
